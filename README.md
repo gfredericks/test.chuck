@@ -52,6 +52,7 @@ There are a few minor generators and helpers, see the docstrings
 for details:
 
 - `for` (described below)
+- `string-from-regex`
 - `subset`
 - `cap-size`
 - `partition`
@@ -101,6 +102,8 @@ of `gen/bind`, `gen/fmap`, `gen/such-that`, and `gen/tuple`:
 ;;     {:n 24, :factors [3 8]}
 ;;     {:n 14, :factors [2 7]})
 ```
+
+#### `string-from-regex`
 
 ## Contributing
 

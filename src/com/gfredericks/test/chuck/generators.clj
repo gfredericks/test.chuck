@@ -2,7 +2,8 @@
   "Yes this namespace's name has five components."
   (:refer-clojure :exclude [double for partition])
   (:require [clojure.core :as core]
-            [clojure.test.check.generators :as gen]))
+            [clojure.test.check.generators :as gen]
+            [com.gfredericks.test.chuck.regexes :as regexes]))
 
 ;; Hoping this will be in test.check proper:
 ;; http://dev.clojure.org/jira/browse/TCHECK-15
@@ -207,3 +208,15 @@
     (let [bignumber (apply * (repeat 52 2))]
       (bounded-int (- bignumber) bignumber))
     (bounded-int -1022 1023))))
+
+(defn string-from-regex
+  "Given a regular expression, returns a generator that generates
+  strings matching that regular expression.
+
+  As jvm regular expressions are quite complex, this function does
+  not support all of their features. However, it endeavors to at
+  least accurately recognize features that it doesn't support and
+  throw helpful exceptions if it is called with a regular expression
+  using any of those features."
+  [regex]
+  (regexes/gen-string-from-regex regex))
