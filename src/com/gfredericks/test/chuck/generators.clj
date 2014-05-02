@@ -146,3 +146,9 @@
                      (update-in ret [(dec (count ret))] conj x)))
                  [[(first coll)]]
                  (map vector bools (rest coll)))))))
+
+(defn map->hash-map
+  "Like test.check.generators/hash-map, but takes a single map argument
+  instead of varargs."
+  [m]
+  (apply gen/hash-map (apply concat m)))
