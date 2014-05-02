@@ -12,7 +12,7 @@
   and the left half is the value it's generating. The body of the for
   should be a generated value.
 
-  Both :let and :when are available as in  clojure.core/for. Using
+  Both :let and :when are available as in clojure.core/for. Using
   :when will apply a filter to the previous generator via such-that.
 
   Note that if some of your clauses are independent you should consider
