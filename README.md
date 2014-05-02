@@ -25,6 +25,11 @@ Currently there are only generator helpers, which are in the
 `com.gfredericks.test.chuck.generators` namespace. The docstrings are
 hopefully sufficiently clear.
 
+## Contributing
+
+I welcome pull request for any test.check utility that seems halfway
+reasonable.
+
 ## License
 
 Copyright © 2014 Gary Fredericks
