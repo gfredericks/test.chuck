@@ -1,7 +1,8 @@
 (ns com.gfredericks.test.chuck.generators
   "Yes this namespace's name has five components."
   (:refer-clojure :exclude [for partition])
-  (:require [clojure.test.check.generators :as gen]))
+  (:require [clojure.core :as core]
+            [clojure.test.check.generators :as gen]))
 
 ;; Hoping this will be in test.check proper:
 ;; http://dev.clojure.org/jira/browse/TCHECK-15
@@ -82,7 +83,7 @@
                 (loop [lettings []
                        bindings []
                        values   []
-                       xs (partition 2 v2)]
+                       xs (core/partition 2 v2)]
                   (if-let [[[k v] & xs] (seq xs)]
                     (if (symbol? k)
                       (recur (conj lettings k v)
