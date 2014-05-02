@@ -5,9 +5,25 @@
 _test.chuck_ is a dumping ground of utilities for use with
 [test.check](https://github.com/clojure/test.check).
 
+```
+
+
+
+       (this space intentionally left blank)
+
+
+
+```
+
 ## Usage
 
-hahaha
+Leiningen dependency coordinates:
+
+[![version](https://clojars.org/com.gfredericks/test.chuck/latest-version.svg)](https://clojars.org/com.gfredericks/test.chuck)
+
+Currently there are only generator helpers, which are in the
+`com.gfredericks.test.chuck.generators` namespace. The docstrings are
+hopefully sufficiently clear.
 
 ## License
 
