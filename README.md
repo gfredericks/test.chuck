@@ -21,9 +21,58 @@ Leiningen dependency coordinates:
 
 [![version](https://clojars.org/com.gfredericks/test.chuck/latest-version.svg)](https://clojars.org/com.gfredericks/test.chuck)
 
-Currently there are only generator helpers, which are in the
-`com.gfredericks.test.chuck.generators` namespace. The docstrings are
-hopefully sufficiently clear.
+### General Helpers
+
+``` clojure
+(require '[com.gfredericks.test.chuck :as chuck])
+```
+
+#### `times`
+
+A helper function for being able to scale your test run count with an
+environment variable. To use with `defspec`, simply wrap your test-count
+argument in a call to `times`:
+
+``` clojure
+(defspec foo-bar-test (chuck/times 20)
+  ...)
+```
+
+This will normally run the test 20 times, but if you set the
+`TEST_CHECK_FACTOR` environment variable to e.g. `3.5`, it will run
+the tests 70 times.
+
+### Generators
+
+``` clojure
+(require '[com.gfredericks.test.chuck.generators :as gen'])
+```
+
+There are a few minor generators and helpers, see the docstrings.
+
+#### `for`
+
+A macro that uses the syntax of `clojure.core/for` to provide the functionality
+of `gen/bind`, `gen/fmap`, and `gen/such-that`:
+
+``` clojure
+(gen'/for [[n1 n2] (gen/tuple gen/nat gen/nat)
+           :when (coprime? n1 n2)
+           :let [product (* n1 n2)]]
+  {:n product, :factors [n1 n2]})
+
+(gen/sample *1)
+;; => ({:n 1, :factors [1 1]}
+;;     {:n 0, :factors [1 0]}
+;;     {:n 2, :factors [1 2]}
+;;     {:n 0, :factors [0 1]}
+;;     {:n 6, :factors [3 2]}
+;;     {:n 20, :factors [4 5]}
+;;     {:n 0, :factors [1 0]}
+;;     {:n 4, :factors [1 4]}
+;;     {:n 24, :factors [3 8]}
+;;     {:n 14, :factors [2 7]})
+```
 
 ## Contributing
 
