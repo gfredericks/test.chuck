@@ -29,3 +29,13 @@
       ;; check that both x and y are in the list
       (or (and (= x y) (> (f x) 1))
           (and (not= x y) (pos? (f x)) (pos? (f y)))))))
+
+(def destructuring-usage
+  (gen'/for [{:keys [foo]} (gen/hash-map :foo gen/nat)
+             :let [unused-binding 42]
+             vs (gen/vector gen/boolean foo)]
+    [foo vs]))
+
+(defspec destructuring-usage-spec 100
+  (prop/for-all [[n vs] destructuring-usage]
+    (= n (count vs))))
