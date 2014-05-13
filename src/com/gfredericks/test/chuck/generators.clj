@@ -49,7 +49,11 @@
   ;;
   ;; becomes
   ;;
-  ;;   (for [[x y] (fmap (fn [x] (let [y (f x)] [x y])) g)] (h x y))
+  ;;   (for [[x y] (fmap (fn [arg]
+  ;;                       (let [x arg, y (f x)]
+  ;;                         [arg y]))
+  ;;                     g)]
+  ;;     (h x y))
   ;;
   ;; A :when clause gets absorbed into the preceding clause
   ;; via a transformation with such-that:
@@ -97,7 +101,11 @@
                                xs)))
                     [lettings bindings values]))
                 k1' (apply vector k1 bindings)
-                v1' `(gen/fmap (fn [~k1] (let [~@lettings] [~k1 ~@values])) ~v1)]
+                v1' `(gen/fmap (fn [arg#]
+                                 (let [~k1 arg#
+                                       ~@lettings]
+                                   [arg# ~@values]))
+                               ~v1)]
             `(for [~k1' ~v1' ~@even-more] ~expr))
 
           (= k2 :when)
