@@ -39,3 +39,13 @@
 (defspec destructuring-usage-spec 100
   (prop/for-all [[n vs] destructuring-usage]
     (= n (count vs))))
+
+(def parallel-usage
+  (gen'/for [:parallel [x gen/nat
+                        y gen/boolean]]
+    [x y]))
+
+(defspec parallel-usage-spec 100
+  (prop/for-all [[x y] parallel-usage]
+    (and (>= x 0)
+         (or (= true y) (= false y)))))

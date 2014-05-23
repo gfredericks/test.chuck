@@ -15,12 +15,9 @@
   Both :let and :when are available as in clojure.core/for. Using
   :when will apply a filter to the previous generator via such-that.
 
-  Note that if some of your clauses are independent you should consider
-  combining them with tuple so that they can shrink independently.
-  E.g., replace
-    (for [x g1, y g2] (f x y))
-  with
-    (for [[x y] (tuple g1 g2)] (f x y))"
+  An additional available clause is the :parallel clause, which is an
+  alternative to tuple, for use when several generators are
+  independent."
   [bindings expr]
   ;; The strategy here is to rewrite the expression one clause at
   ;; a time using two varieties of recursion:
@@ -63,9 +60,28 @@
   ;; becomes
   ;;
   ;;   (for [x (such-that (fn [x] (f x)) g)] (h x))
+  ;;
+  ;; A :parallel clause is easily transformed to a call to
+  ;; gen/tuple:
+  ;;
+  ;;   (for [:parallel [v1 g1, v2 g2]] (f v1 v2))
+  ;;
+  ;; becomes
+  ;;
+  ;;   (for [[v1 v2] (gen/tuple g1 g2)] (f v1 v2))
   (let [[k1 v1 & [k2 v2 & even-more :as more]] bindings]
-    (assert (not (keyword? k1)))
-    (cond (empty? more)
+    (assert (or (= :parallel k1) (not (keyword? k1))))
+    (cond (= :parallel k1)
+          (do (assert (even? (count v1))
+                      ":parallel clause must have an even number of bindings!")
+              (let [pairs (core/partition 2 v1)
+                    names (map first pairs)
+                    gens (map second pairs)]
+                `(for [[~@names] (gen/tuple ~@gens)
+                       ~@more]
+                   ~expr)))
+
+          (empty? more)
           ;; special case to avoid extra call to fmap
           (if (and (symbol? k1) (= k1 expr))
             v1
