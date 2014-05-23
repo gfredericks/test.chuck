@@ -53,10 +53,29 @@ There are a few minor generators and helpers, see the docstrings.
 #### `for`
 
 A macro that uses the syntax of `clojure.core/for` to provide the functionality
-of `gen/bind`, `gen/fmap`, and `gen/such-that`:
+of `gen/bind`, `gen/fmap`, `gen/such-that`, and `gen/tuple`:
 
 ``` clojure
-(gen'/for [[n1 n2] (gen/tuple gen/nat gen/nat)
+(gen'/for [len gen/nat
+           bools (gen/vector gen/boolean len)]
+  [len bools])
+  
+(gen/sample *1)
+;; => ([0 []] 
+       [0 []] 
+       [2 [false true]] 
+       [3 [true false true]] 
+       [1 [true]] 
+       [5 [true true false false true]] 
+       [2 [false false]] 
+       [1 [true]] 
+       [8 [true false false true false false false false]] 
+       [1 [true]])
+```
+
+``` clojure
+(gen'/for [:parallel [n1 gen/nat
+                      n2 gen/nat]
            :when (coprime? n1 n2)
            :let [product (* n1 n2)]]
   {:n product, :factors [n1 n2]})
