@@ -128,7 +128,7 @@
           (let [v1' `(gen/such-that (fn [~k1] ~v2) ~v1)]
             `(for [~k1 ~v1' ~@even-more] ~expr))
 
-          ((some-fn symbol? vector? map?) k2)
+          ((some-fn symbol? vector? map? #{:parallel}) k2)
           `(gen/bind ~v1 (fn [~k1] (for ~more ~expr)))
 
           :else

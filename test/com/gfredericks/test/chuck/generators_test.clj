@@ -49,3 +49,13 @@
   (prop/for-all [[x y] parallel-usage]
     (and (>= x 0)
          (or (= true y) (= false y)))))
+
+(def parallel-as-second-clause
+  (gen'/for [n gen/nat
+             :parallel [v1 (gen/vector gen/boolean n)
+                        v2 (gen/vector gen/boolean n)]]
+    [n (concat v1 v2)]))
+
+(defspec parallel-as-second-clause-spec 100
+  (prop/for-all [[n v] parallel-as-second-clause]
+    (= (* 2 n) (count v))))
