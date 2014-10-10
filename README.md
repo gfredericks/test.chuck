@@ -48,7 +48,16 @@ the tests 70 times.
 (require '[com.gfredericks.test.chuck.generators :as gen'])
 ```
 
-There are a few minor generators and helpers, see the docstrings.
+There are a few minor generators and helpers, see the docstrings
+for details:
+
+- `for` (described below)
+- `subset`
+- `cap-size`
+- `partition`
+- `map->hash-map`
+- `bounded-int`
+- `double`
 
 #### `for`
 

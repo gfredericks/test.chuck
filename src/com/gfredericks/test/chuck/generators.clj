@@ -1,6 +1,6 @@
 (ns com.gfredericks.test.chuck.generators
   "Yes this namespace's name has five components."
-  (:refer-clojure :exclude [for partition])
+  (:refer-clojure :exclude [double for partition])
   (:require [clojure.core :as core]
             [clojure.test.check.generators :as gen]))
 
@@ -176,3 +176,31 @@
   instead of varargs."
   [m]
   (apply gen/hash-map (apply concat m)))
+
+
+;;
+;; Numbers!
+;;
+
+(defn bounded-int
+  "Like clojure.test.check.generators/choose, but generates
+  smallish numbers for small sizes.
+
+  Both bounds are inclusive."
+  [min max]
+  (gen/sized (fn [size]
+               (let [exp (apply * (repeat size 2N))
+                     min' (clojure.core/max min (- exp))
+                     max' (clojure.core/min max exp)]
+                 (gen/choose min' max')))))
+
+(def double
+  "Generates a Double, which can include Infinity and -Infinity
+  but not NaN."
+  (gen/fmap
+   (fn [[signed-significand exp]]
+     (Math/scalb (core/double signed-significand) exp))
+   (gen/tuple
+    (let [bignumber (apply * (repeat 52 2))]
+      (bounded-int (- bignumber) bignumber))
+    (bounded-int -1022 1023))))

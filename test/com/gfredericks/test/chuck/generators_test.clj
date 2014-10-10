@@ -59,3 +59,7 @@
 (defspec parallel-as-second-clause-spec 100
   (prop/for-all [[n v] parallel-as-second-clause]
     (= (* 2 n) (count v))))
+
+(defspec double-generates-doubles 100
+  (prop/for-all [x gen'/double]
+    (instance? Double x)))
