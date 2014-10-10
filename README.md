@@ -59,18 +59,18 @@ of `gen/bind`, `gen/fmap`, `gen/such-that`, and `gen/tuple`:
 (gen'/for [len gen/nat
            bools (gen/vector gen/boolean len)]
   [len bools])
-  
+
 (gen/sample *1)
-;; => ([0 []] 
-       [0 []] 
-       [2 [false true]] 
-       [3 [true false true]] 
-       [1 [true]] 
-       [5 [true true false false true]] 
-       [2 [false false]] 
-       [1 [true]] 
-       [8 [true false false true false false false false]] 
-       [1 [true]])
+;; => ([0 []]
+;;     [0 []]
+;;     [2 [false true]]
+;;     [3 [true false true]]
+;;     [1 [true]]
+;;     [5 [true true false false true]]
+;;     [2 [false false]]
+;;     [1 [true]]
+;;     [8 [true false false true false false false false]]
+;;     [1 [true]])
 ```
 
 ``` clojure
