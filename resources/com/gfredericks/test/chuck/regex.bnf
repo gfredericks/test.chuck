@@ -1,0 +1,19 @@
+Regex = Alternation
+
+Alternation = Concatenation ('|' Concatenation) *
+
+Concatenation = SuffixedExpr *
+
+SuffixedExpr = SingleExpr Suffix *
+SingleExpr = BaseExpr | '(' Alternation ')'
+Suffix = '?' | '+' | '*'
+BaseExpr = CharExpr | LiteralChar | Anchor
+Anchor = '^' | '$'
+LiteralChar = PlainChar | '\\' (#"." | CharThatInstaparseExcludes)
+PlainChar = #"[^.|\\+*$^\[(){]"
+CharThatInstaparseExcludes = #"[\u0000\u000A]"
+CharExpr = Dot | SpecialCharClass | ExplicitCharClass
+Dot = '.'
+(* probably missing something here *)
+SpecialCharClass = #"\\[wWsS]"
+ExplicitCharClass = '[' (#"[^\]]") * ']'
