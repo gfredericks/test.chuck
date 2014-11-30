@@ -1,17 +1,25 @@
-Regex = Alternation
+Regex = Expr * PartialQELiteral ?
 
-Alternation = Concatenation ('|' Concatenation) *
+Expr = BaseExpr | '(' Expr * ')'
 
-Concatenation = SuffixedExpr *
-
-SuffixedExpr = SingleExpr Suffix *
-SingleExpr = BaseExpr | '(' Alternation ')'
-Suffix = '?' | '+' | '*'
-BaseExpr = CharExpr | LiteralChar | Anchor
+BaseExpr = LiteralChar | CharExpr | Anchor | Suffix | Pipe | QELiteral
+Pipe = '|'
+Suffix = '?' | '+' | '*' | CurlySuffix
+CurlySuffix = '{' #"\d+" ( ',' ( #"\d+" ) ? ) ? '}'
 Anchor = '^' | '$'
-LiteralChar = PlainChar | '\\' (#"." | CharThatInstaparseExcludes)
-PlainChar = #"[^.|\\+*$^\[(){]"
-CharThatInstaparseExcludes = #"[\u0000\u000A]"
+LiteralChar = PlainChar | '\\' AnyCharAtAll | ControlChar
+
+(* What even are these? *)
+ControlChar = '\\c' AnyCharAtAll
+
+AnyCharAtAll = (#"." | CharThatInstaparseDotExcludes)
+CharThatInstaparseDotExcludes = #"[\u0000\u000A\u000D\u005c]"
+
+PartialQELiteral = '\\Q' NotSlashE *
+QELiteral = '\\Q' NotSlashE * '\\E'
+NotSlashE = #"[^\\]|\\[^E]"
+
+PlainChar = #"[^.|\\+*$^\[(){]" | CharThatInstaparseDotExcludes
 CharExpr = Dot | SpecialCharClass | ExplicitCharClass
 Dot = '.'
 (* probably missing something here *)
