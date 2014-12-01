@@ -9,3 +9,9 @@
       (clojure.java.io/resource)
       (slurp)
       (insta/parser)))
+
+(defn analyze
+  [parsed-regex]
+  (insta/transform
+   {}
+   parsed-regex))

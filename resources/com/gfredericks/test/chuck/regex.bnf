@@ -1,15 +1,24 @@
+(* I think we need a special AlternationWithAllowedQ *)
 Regex = Alternation
 
 Alternation = Concatenation ('|' Concatenation) *
 
 Concatenation = SuffixedExpr *
 
+(* Note to self:
+   We can do suffixes with \Q\E by special casing them
+   at the end of the \Q\E parse *)
+
 SuffixedExpr = SingleExpr Suffix *
 SingleExpr = BaseExpr | '(' Alternation ')'
 Suffix = '?' | '+' | '*'
 BaseExpr = CharExpr | LiteralChar | Anchor
-Anchor = '^' | '$'
-LiteralChar = PlainChar | '\\' (#"." | CharThatInstaparseExcludes)
+Anchor = '^' | '$' | '\\' #"[bBAGZz]"
+LiteralChar = PlainChar | EscapedChar | '\\' (#"[^a-zA-Z]" | CharThatInstaparseExcludes)
+
+EscapedChar = #"\\[tnrfae]" | WhatDoesThisMean
+WhatDoesThisMean = '\\v'
+
 PlainChar = #"[^.|\\+*$^\[(){]"
 CharThatInstaparseExcludes = #"[\u0000\u000A]"
 CharExpr = Dot | SpecialCharClass | ExplicitCharClass
