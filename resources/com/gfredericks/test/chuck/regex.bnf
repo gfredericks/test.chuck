@@ -1,5 +1,7 @@
 (* I think we need a special AlternationWithAllowedQ *)
-Regex = Alternation
+Regex = AlternationWithAllowedQ
+
+AlternationWithAllowedQ = Concatenation ('|' Concatenation) * PartialQE ?
 
 Alternation = Concatenation ('|' Concatenation) *
 
@@ -14,15 +16,25 @@ SingleExpr = BaseExpr | '(' Alternation ')'
 Suffix = '?' | '+' | '*'
 BaseExpr = CharExpr | LiteralChar | Anchor
 Anchor = '^' | '$' | '\\' #"[bBAGZz]"
-LiteralChar = PlainChar | EscapedChar | '\\' (#"[^a-zA-Z]" | CharThatInstaparseExcludes)
+LiteralChar = PlainChar | EscapedChar | '\\' (#"[^a-zA-Z]" | CharThatInstaparseExcludes) | ControlChar
 
 EscapedChar = #"\\[tnrfae]" | WhatDoesThisMean
 WhatDoesThisMean = '\\v'
+
+(* What are these? *)
+ControlChar = #"\\c."
 
 PlainChar = #"[^.|\\+*$^\[(){]"
 CharThatInstaparseExcludes = #"[\u0000\u000A]"
 CharExpr = Dot | SpecialCharClass | ExplicitCharClass
 Dot = '.'
 (* probably missing something here *)
-SpecialCharClass = #"\\[wWsS]"
-ExplicitCharClass = '[' (#"[^\]]") * ']'
+SpecialCharClass = #"\\[wWsSdD]"
+
+(* the meaning of ] is different depending on if its the first character *)
+ExplicitCharClass = '[' ( ']' NotClosedBracket * | NotClosedBracket + ) ']'
+NotClosedBracket = #"[^\]]"
+
+PartialQE = '\\Q' AnyCharButSlashE *
+QE = '\\Q' AnyCharButSlashE * '\\E'
+AnyCharButSlashE = #"[^\\]" | #"\\[^E]"
