@@ -2,7 +2,9 @@
   "Yes this namespace's name has five components."
   (:refer-clojure :exclude [double for partition])
   (:require [clojure.core :as core]
-            [clojure.test.check.generators :as gen]))
+            [clojure.string :as string]
+            [clojure.test.check.generators :as gen]
+            [com.gfredericks.test.chuck.regexes :as regexes]))
 
 ;; Hoping this will be in test.check proper:
 ;; http://dev.clojure.org/jira/browse/TCHECK-15
@@ -204,3 +206,40 @@
     (let [bignumber (apply * (repeat 52 2))]
       (bounded-int (- bignumber) bignumber))
     (bounded-int -1022 1023))))
+
+;;
+;; Regexes
+;;
+
+;; should we do something more efficient than strings everywhere?
+;; did somebody implement ropes?
+
+(defmulti analyzed-regex->generator :type)
+
+(defmethod analyzed-regex->generator :concatenation
+  [{:keys [contents]}]
+  (->> contents
+       (map analyzed-regex->generator)
+       (apply gen/tuple)
+       (gen/fmap string/join)))
+
+(defmethod analyzed-regex->generator :alternation
+  [{:keys [contents]}]
+  (->> contents
+       (map analyzed-regex->generator)
+       (apply gen/one-of)))
+
+(defmethod analyzed-regex->generator :literal
+  [{:keys [char]}]
+  (gen/return (str char)))
+
+(defmethod analyzed-regex->generator :default
+  [m]
+  (throw (ex-info "Missing analyzed-regex->generator dispatch!" {:arg m})))
+
+(defn string-from-regex
+  [regex]
+  (-> (str regex)
+      (regexes/parse)
+      (regexes/analyze)
+      (analyzed-regex->generator)))

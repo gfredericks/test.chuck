@@ -18,3 +18,17 @@
   (prop/for-all [re gen-regex]
     (let [parse (regexes/parse (str re))]
       (not (insta/failure? parse)))))
+
+(defspec creating-a-generator-spec 1000
+  (prop/for-all [re gen-regex]
+    (-> re str regexes/parse regexes/analyze gen'/analyzed-regex->generator)))
+
+(def gen-regex-and-string
+  ;; porblem...some regexes have no matches
+  (gen'/for [re gen-regex
+             s (gen'/string-from-regex re)]
+    [re s]))
+
+(defspec the-generator-spec 1000
+  (prop/for-all [[re s] gen-regex-and-string]
+    (re-matches re s)))

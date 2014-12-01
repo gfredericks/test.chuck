@@ -1,13 +1,15 @@
 Regex = Expr * PartialQELiteral ?
 
-Expr = BaseExpr | '(' Expr * ')'
+Expr = BaseExpr | ParentheticalExpr
+ParentheticalExpr = '(' Expr * ')'
 
 BaseExpr = LiteralChar | CharExpr | Anchor | Suffix | Pipe | QELiteral
 Pipe = '|'
 Suffix = '?' | '+' | '*' | CurlySuffix
 CurlySuffix = '{' #"\d+" ( ',' ( #"\d+" ) ? ) ? '}'
 Anchor = '^' | '$'
-LiteralChar = PlainChar | '\\' AnyCharAtAll | ControlChar
+LiteralChar = PlainChar | EscapedChar | ControlChar
+EscapedChar = '\\' AnyCharAtAll
 
 (* What even are these? *)
 ControlChar = '\\c' AnyCharAtAll
