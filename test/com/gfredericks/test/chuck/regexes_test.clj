@@ -6,15 +6,21 @@
             [com.gfredericks.test.chuck.generators :as gen']
             [instaparse.core :as insta]))
 
-(def gen-regex
-  (gen'/for [s gen/string
-             :let [re (try (re-pattern s)
-                           (catch java.util.regex.PatternSyntaxException e e))]
-             :when (instance? java.util.regex.Pattern re)]
-    re))
+(def gen-regex-parsing-attempt
+  (gen'/for [s gen/string]
+    (try (do
+           (re-pattern s)
+           [:parsed s])
+         (catch java.util.regex.PatternSyntaxException e
+           [:not-parsed s]))))
 
-;; test that anything re-pattern accepts can be parsed
+;; I don't think we can maintain this parse-or-doesn't-parse parity
+;; because we can't distinguish #"[a-b]" from #"[b-a] in the parser.
 (defspec the-parser-spec 1000
-  (prop/for-all [re gen-regex]
-    (let [parse (regexes/parse (str re))]
-      (not (insta/failure? parse)))))
+  (prop/for-all [[flag s] gen-regex-parsing-attempt]
+    (try (let [x (regexes/parse s)]
+           (case flag :parsed true :not-parsed false))
+         (catch clojure.lang.ExceptionInfo e
+           (if (= ::regexes/parse-error (:type (ex-data e)))
+             (case flag :parsed false :not-parsed true)
+             (throw e))))))

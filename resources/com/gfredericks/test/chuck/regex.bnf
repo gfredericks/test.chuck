@@ -7,34 +7,56 @@ Alternation = Concatenation ('|' Concatenation) *
 
 Concatenation = SuffixedExpr *
 
-(* Note to self:
-   We can do suffixes with \Q\E by special casing them
-   at the end of the \Q\E parse *)
-
-SuffixedExpr = SingleExpr Suffix *
-SingleExpr = BaseExpr | '(' Alternation ')'
-Suffix = '?' | '+' | '*'
+SuffixedExpr = SingleExpr Suffix ?
+SingleExpr = BaseExpr | CurlyRepetition | '(' Alternation ')'
+Suffix = ('?' | '+' | '*' | CurlyRepetition ) Quantifier ?
+CurlyRepetition = <'{'> #"\d+" (',' #"\d+" ?) ? <'}'>
+Quantifier = '?' | '+'
 BaseExpr = CharExpr | LiteralChar | Anchor
 Anchor = '^' | '$' | '\\' #"[bBAGZz]"
-LiteralChar = PlainChar | EscapedChar | '\\' (#"[^a-zA-Z]" | CharThatInstaparseExcludes) | ControlChar
+LiteralChar = PlainChar | CharClassLiteral | BasicEscapedChar | ControlChar
 
-EscapedChar = #"\\[tnrfae]" | WhatDoesThisMean
+CharClassLiteral = #"\\[tnrfae]" | WhatDoesThisMean
 WhatDoesThisMean = '\\v'
 
 (* What are these? *)
 ControlChar = #"\\c."
 
-PlainChar = #"[^.|\\+*$^\[(){]"
-CharThatInstaparseExcludes = #"[\u0000\u000A]"
-CharExpr = Dot | SpecialCharClass | ExplicitCharClass
+PlainChar = #"[^.|\\+*$^\[(){?]"
+CharExpr = Dot | SpecialCharClass | UnicodeCharacterClass | BCC
 Dot = '.'
 (* probably missing something here *)
 SpecialCharClass = #"\\[wWsSdD]"
-
-(* the meaning of ] is different depending on if its the first character *)
-ExplicitCharClass = '[' ( ']' NotClosedBracket * | NotClosedBracket + ) ']'
-NotClosedBracket = #"[^\]]"
+(* Gotta figure out what these mean *)
+UnicodeCharacterClass = #"\\p[CLMNPSZ]"
 
 PartialQE = '\\Q' AnyCharButSlashE *
 QE = '\\Q' AnyCharButSlashE * '\\E'
 AnyCharButSlashE = #"[^\\]" | #"\\[^E]"
+
+
+(** BRACKETED CHARACTER CLASSES (AKA BCC) **)
+(** (which are more complicated than you thought they were) **)
+
+(* TODO: double-check the negation vs intersection precedence *)
+BCC = '[' BCCNegation ? BCCIntersection ']'
+BCCNegation = '^'
+BCCIntersection = BCCInitialElement BCCSubsequentElement * ('&&' + BCCSubsequentElement +) *
+BCCInitialElement = ']' | '-' | BCCSubsequentElementBase
+BCCSubsequentElement = BCCSubsequentElementBase | '^'
+BCCSubsequentElementBase = BCCChar | BCCRange | BCC
+BCCRange = BCCChar <'-'> BCCChar
+BCCChar = BCCPlainChar | BasicEscapedChar | BCCAmpersand | BCCDash
+BCCPlainChar = #"[^-\]\[&]"
+(* only match an odd number of ampersands whatever *)
+BCCAmpersand = '&' ('&&' *) !'&'
+BCCDash = '-' !BCCChar
+
+(** BRACKETED CHARACTER CLASSES WITHOUT INTERSECTIONS (AKA BCCWI) **)
+(** This is where we give up on intersections for now **)
+
+
+(** BASE CHARACTER STUFFS **)
+
+BasicEscapedChar = '\\' (#"[^a-zA-Z0]" | CharThatRegexNegationDoesntCatch)
+CharThatRegexNegationDoesntCatch = #"[\u0000\u000A]"
