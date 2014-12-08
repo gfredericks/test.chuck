@@ -8,7 +8,8 @@ Alternation = Concatenation ('|' Concatenation) *
 Concatenation = SuffixedExpr *
 
 SuffixedExpr = SingleExpr Suffix ?
-SingleExpr = BaseExpr | CurlyRepetition | '(' Alternation ')'
+(* Seems a CurlyRepetition can appear by itself; gotta fix some ambiguity here. *)
+SingleExpr = BaseExpr | CurlyRepetition | '(' Alternation ')' | Flag
 Suffix = ('?' | '+' | '*' | CurlyRepetition ) Quantifier ?
 CurlyRepetition = <'{'> #"\d+" (',' #"\d+" ?) ? <'}'>
 Quantifier = '?' | '+'
@@ -50,7 +51,7 @@ BCCElemNonLeft = BCCElemBase
 
 
 BCCElemBase = BCCCharNonRange | SpecialCharClass | UnicodeCharacterClass | BCCRange | BCC
-BCCRangeRightable = BCCChar | SpecialCharClass | UnicodeCharacterClass
+BCCRangeRightable = BCCChar | SpecialCharClass | UnicodeCharacterClass | '&'
 BCCRange = BCCChar <'-'> BCCChar
 BCCRangeWithDash = '--' BCCChar
 BCCRangeWithBracket = ']-' BCCChar
@@ -68,13 +69,18 @@ OctalChar = '\\0' (OctalDigits1 | OctalDigits2 | OctalDigits3)
 OctalDigits1 = #"[0-7]" ! #"[0-7]"
 OctalDigits2 = (#"[0-3][0-7]" ! #"[0-7]") | #"[4-7][0-7]"
 OctalDigits3 = #"[0-3][0-7]{2}"
-BasicEscapedChar = <'\\'> (#"[^a-zA-Z0-9]" | CharThatRegexNegationDoesntCatch)
-CharThatRegexNegationDoesntCatch = #"[\u000A]"
+BasicEscapedChar = <'\\'> #"[^a-zA-Z0-9]"
 
 (* probably missing something here *)
 SpecialCharClass = #"\\[wWsSdD]"
 (* Gotta figure out what these mean *)
-UnicodeCharacterClass = #"\\p[CLMNPSZ]"
+UnicodeCharacterClass = #"\\[pP][CLMNPSZ]"
 
 NormalSlashedCharacters = #"\\[tnrfae]" | WhatDoesThisMean
 WhatDoesThisMean = '\\v'
+
+(** FLAGS **)
+Flag = UnknownFlag
+
+(* no idea what this is; seems a NOOP *)
+UnknownFlag = '(?)'
