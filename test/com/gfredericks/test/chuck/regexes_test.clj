@@ -8,7 +8,14 @@
             [instaparse.core :as insta]))
 
 (def gen-regexy-fragment
-  (gen/elements "?*+!()[]{}^$\\:-&"))
+  (gen/frequency
+   [[10 (gen/elements "?*+!()[]{}^$\\:-&")]
+    [1 (gen'/for [d gen/nat
+                  s (gen/elements ["{%d}" "{%d,}"])]
+         (format s d))]
+    [1 (gen'/for [:parallel [d1 gen/nat
+                             d2 gen/nat]]
+         (format "{%d,%d}" d1 (+ d1 d2)))]]))
 
 (def gen-regexy-string
   (gen/fmap
