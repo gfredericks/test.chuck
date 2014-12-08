@@ -39,7 +39,7 @@
 
           (seq more)
           (throw (ex-info "Ambiguous parse!"
-                          {:type ::parse-error
+                          {:type ::ambiguous-grammar
                            :parses ret}))
 
           :else
