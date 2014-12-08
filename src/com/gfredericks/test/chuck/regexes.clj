@@ -14,19 +14,33 @@
                                   {:type ::parse-error
                                    :character-class-range [begin end]})))
                 {:type :range, :begin begin, :end end})
+
+    :BCCChar identity
+    :BCCDash first
     :BCCPlainChar first
-    :BCCChar identity}
+    :BCCAmpersand first
+    :BasicEscapedChar first}
+
    parsed-regex))
 
-(def parse
-  (comp
-   analyze
-   #(if (insta/failure? %)
-      (throw (ex-info "Parse failure!"
-                      {:type ::parse-error
-                       :instaparse-data %}))
-      %)
-   (-> grammar-path
-       (clojure.java.io/resource)
-       (slurp)
-       (insta/parser))))
+(def the-parser
+  (-> grammar-path
+      (clojure.java.io/resource)
+      (slurp)
+      (insta/parser)))
+
+(defn parse
+  [s]
+  (let [[the-parse & more :as ret] (insta/parses the-parser s)]
+    (cond (nil? the-parse)
+          (throw (ex-info "Parse failure!"
+                          {:type ::parse-error
+                           :instaparse-data (meta ret)}))
+
+          (seq more)
+          (throw (ex-info "Ambiguous parse!"
+                          {:type ::parse-error
+                           :parses ret}))
+
+          :else
+          (analyze the-parse))))

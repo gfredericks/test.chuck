@@ -14,14 +14,11 @@ CurlyRepetition = <'{'> #"\d+" (',' #"\d+" ?) ? <'}'>
 Quantifier = '?' | '+'
 BaseExpr = CharExpr | LiteralChar | Anchor | BackReference
 Anchor = '^' | '$' | '\\' #"[bBAGZz]"
-LiteralChar = PlainChar | CharClassLiteral | BasicEscapedChar | ControlChar
+LiteralChar = PlainChar | NormalSlashedCharacters | BasicEscapedChar | ControlChar
 
 (* this will be hard -- will require counting in the analyzer to figure
    out where the number stops and numberic literals begin *)
 BackReference = <'\\'> #"[1-9][0-9]*"
-
-CharClassLiteral = #"\\[tnrfae]" | WhatDoesThisMean
-WhatDoesThisMean = '\\v'
 
 (* What are these? *)
 ControlChar = #"\\c."
@@ -37,19 +34,31 @@ AnyCharButSlashE = #"[^\\]" | #"\\[^E]"
 (** BRACKETED CHARACTER CLASSES (AKA BCC) **)
 (** (which are more complicated than you thought they were) **)
 
-(* TODO: double-check the negation vs intersection precedence *)
-BCC = '[' BCCNegation ? BCCIntersection ']'
+BCC = '[' BCCIntersection ']'
+(* using + with '&&' allows arbitrary even numbers of ampersands, which
+   is how the jvm parses it *)
+BCCIntersection = BCCUnionLeft (('&&' + BCCUnionCenter ) * '&&' + BCCUnionRight) ?
+(* TODO: is this ambiguous wrt leading ^? *)
+BCCUnionLeft = (BCCNegation BCCElemHardLeft | !'^' BCCElemHardLeft) (BCCElemCenter * BCCElemRight) ?
+BCCUnionRight = BCCElemLeft (BCCElemCenter * BCCElemRight) ?
+BCCUnionCenter = BCCElemLeft (BCCElemCenter * BCCElemRight) ?
 BCCNegation = '^'
-BCCIntersection = BCCInitialElement BCCSubsequentElement * ('&&' + BCCSubsequentElement +) *
-BCCInitialElement = ']' | '-' | BCCSubsequentElementBase
-BCCSubsequentElement = BCCSubsequentElementBase | '^'
-BCCSubsequentElementBase = BCCChar | SpecialCharClass | UnicodeCharacterClass | BCCRange | BCC
-BCCRange = BCCChar <'-'> BCCChar
-BCCChar = BCCPlainChar | BasicEscapedChar | BCCAmpersand | BCCDash
+
+BCCElemHardLeft = BCCElemBase | BCCDash | ']' | BCCRangeWithDash | BCCRangeWithBracket
+BCCElemLeft = BCCElemBase | BCCDash | BCCRangeWithDash
+BCCElemCenter = BCCElemBase
+BCCElemRight = BCCElemBase | BCCDash
+
+
+BCCElemBase = BCCChar | SpecialCharClass | UnicodeCharacterClass | BCCRange | BCC
+BCCRange = BCCChar <'-'> (BCCChar | BCCDash)
+BCCRangeWithDash = '--' (BCCChar | BCCDash)
+BCCRangeWithBracket = ']-' (BCCChar | BCCDash)
+BCCChar = BCCPlainChar | BasicEscapedChar | NormalSlashedCharacters | BCCAmpersand
 BCCPlainChar = #"[^-\]\[&\\]"
 (* only match an odd number of ampersands whatever *)
-BCCAmpersand = '&' ('&&' *) !'&'
-BCCDash = '-' !BCCChar
+BCCAmpersand = '&' <('&&' *)> !'&'
+BCCDash = '-'
 
 
 (** BASE CHARACTER STUFFS **)
@@ -58,10 +67,13 @@ OctalChar = '\\0' (OctalDigits1 | OctalDigits2 | OctalDigits3)
 OctalDigits1 = #"[0-7]" ! #"[0-7]"
 OctalDigits2 = (#"[0-3][0-7]" ! #"[0-7]") | #"[4-7][0-7]"
 OctalDigits3 = #"[0-3][0-7]{2}"
-BasicEscapedChar = '\\' (#"[^a-zA-Z0-9]" | CharThatRegexNegationDoesntCatch)
-CharThatRegexNegationDoesntCatch = #"[\u0000\u000A]"
+BasicEscapedChar = <'\\'> (#"[^a-zA-Z0-9]" | CharThatRegexNegationDoesntCatch)
+CharThatRegexNegationDoesntCatch = #"[\u000A]"
 
 (* probably missing something here *)
 SpecialCharClass = #"\\[wWsSdD]"
 (* Gotta figure out what these mean *)
 UnicodeCharacterClass = #"\\p[CLMNPSZ]"
+
+NormalSlashedCharacters = #"\\[tnrfae]" | WhatDoesThisMean
+WhatDoesThisMean = '\\v'
