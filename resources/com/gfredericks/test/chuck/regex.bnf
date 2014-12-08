@@ -39,23 +39,23 @@ BCC = '[' BCCIntersection ']'
    is how the jvm parses it *)
 BCCIntersection = BCCUnionLeft (('&&' + BCCUnionCenter ) * '&&' + BCCUnionRight) ?
 (* TODO: is this ambiguous wrt leading ^? *)
-BCCUnionLeft = (BCCNegation BCCElemHardLeft | !'^' BCCElemHardLeft) (BCCElemCenter * BCCElemRight) ?
-BCCUnionRight = BCCElemLeft (BCCElemCenter * BCCElemRight) ?
-BCCUnionCenter = BCCElemLeft (BCCElemCenter * BCCElemRight) ?
+BCCUnionLeft = (BCCNegation BCCElemHardLeft | !'^' BCCElemHardLeft) BCCElemNonLeft *
+BCCUnionRight = BCCElemLeft BCCElemNonLeft
+BCCUnionCenter = BCCElemLeft BCCElemNonLeft
 BCCNegation = '^'
 
 BCCElemHardLeft = BCCElemBase | BCCDash | ']' | BCCRangeWithDash | BCCRangeWithBracket
 BCCElemLeft = BCCElemBase | BCCDash | BCCRangeWithDash
-BCCElemCenter = BCCElemBase
-BCCElemRight = BCCElemBase | BCCDash
+BCCElemNonLeft = BCCElemBase
 
 
 BCCElemBase = BCCChar | SpecialCharClass | UnicodeCharacterClass | BCCRange | BCC
+BCCRangeRightable = BCCChar | SpecialCharClass | UnicodeCharacterClass
 BCCRange = BCCChar <'-'> (BCCChar | BCCDash)
 BCCRangeWithDash = '--' (BCCChar | BCCDash)
 BCCRangeWithBracket = ']-' (BCCChar | BCCDash)
-BCCChar = BCCPlainChar | BasicEscapedChar | NormalSlashedCharacters | BCCAmpersand
-BCCPlainChar = #"[^-\]\[&\\]"
+BCCChar = (BCCPlainChar | BasicEscapedChar | NormalSlashedCharacters | BCCAmpersand) ! ('-' BCCRangeRightable)
+BCCPlainChar = #"[^\]\[&\\]"
 (* only match an odd number of ampersands whatever *)
 BCCAmpersand = '&' <('&&' *)> !'&'
 BCCDash = '-'
