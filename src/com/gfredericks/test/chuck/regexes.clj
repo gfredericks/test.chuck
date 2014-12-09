@@ -18,7 +18,6 @@
   (insta/transform
    {:BCCRange analyze-range
     :BCCRangeWithBracket #(analyze-range \] %)
-    :BCCRangeWithDash #(analyze-range \- %)
     :BCCChar identity
     :BCCDash first
     :BCCPlainChar first

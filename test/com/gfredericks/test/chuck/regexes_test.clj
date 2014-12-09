@@ -53,7 +53,7 @@
 (deftest parser-regression
   (are [s] (parses? s)
        "[]-_]" "[-x]" "[x+--y]" "[\\e]" "\\\0" "[[x]-y]" "(?)"
-       "[&&x]" "[x&&y]" "[x&&]"
+       "[&&x]" "[x&&y]" "[x&&]" "[--?]"
        "{0}?")
   (are [s] (not (parses? s))
        "[b-a]" "[^]" "[]-X]"))

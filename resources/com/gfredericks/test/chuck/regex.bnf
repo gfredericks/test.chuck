@@ -43,15 +43,14 @@ BCCUnionCenter = BCCElemLeft BCCElemNonLeft *
 BCCNegation = '^'
 
 (* The optional '&&' here cover some quirky NOOP edge cases *)
-BCCElemHardLeft = <'&&'>? BCCElemBase | (']' ! ('-' BCCRangeRightable)) | BCCRangeWithDash | BCCRangeWithBracket
-BCCElemLeft = BCCElemBase | BCCRangeWithDash
+BCCElemHardLeft = <'&&'>? BCCElemBase | (']' ! ('-' BCCRangeRightable)) | BCCRangeWithBracket
+BCCElemLeft = BCCElemBase
 BCCElemNonLeft = BCCElemBase
 
 
 BCCElemBase = BCCCharNonRange | SpecialCharClass | UnicodeCharacterClass | BCCRange | BCC
 BCCRangeRightable = BCCChar | SpecialCharClass | UnicodeCharacterClass | '&'
 BCCRange = BCCChar <'-'> BCCChar
-BCCRangeWithDash = <'--'> BCCChar
 BCCRangeWithBracket = <']-'> BCCChar
 BCCCharNonRange = BCCChar ! ('-' BCCRangeRightable)
 BCCChar = BCCPlainChar | BasicEscapedChar | NormalSlashedCharacters | BCCAmpersand | ControlChar
