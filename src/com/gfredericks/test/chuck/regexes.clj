@@ -4,17 +4,21 @@
 
 (def grammar-path "com/gfredericks/test/chuck/regex.bnf")
 
+(defn ^:private analyze-range
+  [begin end]
+  {:pre [(char? begin) (char? end)]}
+  (when (< (int end) (int begin))
+    (throw (ex-info "Parse failure!"
+                    {:type ::parse-error
+                     :character-class-range [begin end]})))
+  {:type :range, :begin begin, :end end})
+
 (defn analyze
   [parsed-regex]
   (insta/transform
-   {:BCCRange (fn [begin end]
-                {:pre [(char? begin) (char? end)]}
-                (when (< (int end) (int begin))
-                  (throw (ex-info "Parse failure!"
-                                  {:type ::parse-error
-                                   :character-class-range [begin end]})))
-                {:type :range, :begin begin, :end end})
-
+   {:BCCRange analyze-range
+    :BCCRangeWithBracket #(analyze-range \] %)
+    :BCCRangeWithDash #(analyze-range \- %)
     :BCCChar identity
     :BCCDash first
     :BCCPlainChar first

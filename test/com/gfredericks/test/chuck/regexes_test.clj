@@ -53,9 +53,9 @@
 (deftest parser-regression
   (are [s] (parses? s)
        "[]-_]" "[-x]" "[x+--y]" "[\\e]" "\\\0" "[[x]-y]" "(?)"
-       "[&&x]")
+       "[&&x]" "[x&&y]")
   (are [s] (not (parses? s))
-       "[b-a]" "[^]"))
+       "[b-a]" "[^]" "[]-X]"))
 
 (defspec the-parser-spec 1000
   (prop/for-all [[flag s] gen-regex-parsing-attempt]

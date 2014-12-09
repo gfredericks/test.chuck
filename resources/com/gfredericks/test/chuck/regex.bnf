@@ -40,13 +40,13 @@ BCC = <'['> BCCIntersection <']'>
 (* using + with '&&' allows arbitrary even numbers of ampersands, which
    is how the jvm parses it *)
 BCCIntersection = BCCUnionLeft (('&&' + BCCUnionCenter ) * '&&' + BCCUnionRight) ?
-(* TODO: is this ambiguous wrt leading ^? *)
 BCCUnionLeft = (BCCNegation BCCElemHardLeft | !'^' BCCElemHardLeft) BCCElemNonLeft *
-BCCUnionRight = BCCElemLeft BCCElemNonLeft
-BCCUnionCenter = BCCElemLeft BCCElemNonLeft
+BCCUnionRight = BCCElemLeft BCCElemNonLeft *
+BCCUnionCenter = BCCElemLeft BCCElemNonLeft *
 BCCNegation = '^'
 
-BCCElemHardLeft = BCCElemBase | (']' ! ('-' BCCRangeRightable)) | BCCRangeWithDash | BCCRangeWithBracket
+(* The optional '&&' here cover some quirky NOOP edge cases *)
+BCCElemHardLeft = <'&&'>? BCCElemBase | (']' ! ('-' BCCRangeRightable)) | BCCRangeWithDash | BCCRangeWithBracket
 BCCElemLeft = BCCElemBase | BCCRangeWithDash
 BCCElemNonLeft = BCCElemBase
 
@@ -54,8 +54,8 @@ BCCElemNonLeft = BCCElemBase
 BCCElemBase = BCCCharNonRange | SpecialCharClass | UnicodeCharacterClass | BCCRange | BCC
 BCCRangeRightable = BCCChar | SpecialCharClass | UnicodeCharacterClass | '&'
 BCCRange = BCCChar <'-'> BCCChar
-BCCRangeWithDash = '--' BCCChar
-BCCRangeWithBracket = ']-' BCCChar
+BCCRangeWithDash = <'--'> BCCChar
+BCCRangeWithBracket = <']-'> BCCChar
 BCCCharNonRange = BCCChar ! ('-' BCCRangeRightable)
 BCCChar = BCCPlainChar | BasicEscapedChar | NormalSlashedCharacters | BCCAmpersand
 BCCPlainChar = #"[^\]\[&\\]"
