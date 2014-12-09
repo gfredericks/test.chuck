@@ -5,12 +5,13 @@ AlternationWithAllowedQ = Concatenation ('|' Concatenation) * PartialQE ?
 
 Alternation = Concatenation ('|' Concatenation) *
 
-Concatenation = SuffixedExpr *
+Concatenation = DanglingCurlyRepetitions SuffixedExpr *
+
+DanglingCurlyRepetitions = CurlyRepetition *
 
 SuffixedExpr = SingleExpr Suffix ?
-(* Seems a CurlyRepetition can appear by itself; gotta fix some ambiguity here. *)
-SingleExpr = BaseExpr | CurlyRepetition | '(' Alternation ')' | Flag
-Suffix = ('?' | '+' | '*' | CurlyRepetition ) Quantifier ?
+SingleExpr = BaseExpr | '(' GroupFlags ? Alternation ')' | UnknownFlag
+Suffix = ('?' | '+' | '*' | CurlyRepetition ) Quantifier ? DanglingCurlyRepetitions
 CurlyRepetition = <'{'> #"\d+" (',' #"\d+" ?) ? <'}'>
 Quantifier = '?' | '+'
 BaseExpr = CharExpr | LiteralChar | Anchor | BackReference
@@ -80,7 +81,28 @@ NormalSlashedCharacters = #"\\[tnrfae]" | WhatDoesThisMean
 WhatDoesThisMean = '\\v'
 
 (** FLAGS **)
-Flag = UnknownFlag
+GroupFlags = NamedCapturingGroup
+           | NonCapturingFlag
+           | MutatingMatchFlags
+           | MatchFlags
+           | PositiveLookAheadFlag
+           | NegativeLookAheadFlag
+           | PositiveLookBehindFlag
+           | PositiveLookBehindFlag
+           | IndependentNonCapturingFlag
+
+NamedCapturingGroup = <'?<'> GroupName <'>'>
+NonCapturingFlag = <'?:'>
+MutatingMatchFlags = <'?'> MatchFlagsExpr & ')'
+MatchFlags = <'?'> MatchFlagsExpr <':'>
+PositiveLookAheadFlag = <'?='>
+NegativeLookAheadFlag = <'?!'>
+PositiveLookBehindFlag = <'?<='>
+PositiveLookBehindFlag = <'?<!'>
+IndependentNonCapturingFlag = <'?>'>
+MatchFlagsExpr = '?' #"[idmsuxU]" * ('-' #"[idmsuxU]" *) ?
 
 (* no idea what this is; seems a NOOP *)
 UnknownFlag = '(?)'
+
+GroupName = #"[a-zA-Z][a-zA-Z0-9]*"
