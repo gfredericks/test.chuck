@@ -14,6 +14,9 @@
                      :character-class-range [begin end]})))
   {:type :range, :begin begin, :end end})
 
+(def normal-slashed-characters
+  {\t \tab, \n \newline, \r \return, \f \formfeed, \a \u0007, \e \u001B})
+
 (defn analyze
   [parsed-regex]
   (insta/transform
@@ -24,6 +27,8 @@
     :BCCPlainChar first
     :BCCOddAmpersands first
     :EscapedChar identity
+    :NormalSlashedCharacters (fn [[_slash c]]
+                               (normal-slashed-characters c))
     :BasicEscapedChar first}
 
    parsed-regex))
