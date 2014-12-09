@@ -28,7 +28,7 @@ PlainChar = #"[^.|\\+*$^\[(){?]"
 CharExpr = Dot | SpecialCharClass | UnicodeCharacterClass | BCC
 Dot = '.'
 
-PartialQE = '\\Q' AnyCharButSlashE *
+PartialQE = '\\Q' AnyCharButSlashE * '\\' ?
 QE = '\\Q' AnyCharButSlashE * '\\E'
 AnyCharButSlashE = #"[^\\]" | #"\\[^E]"
 
