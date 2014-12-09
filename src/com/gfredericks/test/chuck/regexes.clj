@@ -1,6 +1,7 @@
 (ns com.gfredericks.test.chuck.regexes
   "Generic regex analysis code, not test.check specific."
-  (:require [instaparse.core :as insta]))
+  (:require [clojure.test.check.generators :as gen]
+            [instaparse.core :as insta]))
 
 (def grammar-path "com/gfredericks/test/chuck/regex.bnf")
 
@@ -47,3 +48,22 @@
 
           :else
           (analyze the-parse))))
+
+(defmulti analyzed->generator :type)
+
+(defmethod analyzed->generator :default
+  [m]
+  (throw (ex-info "No match in analyzed->generator!" {:arg m})))
+
+(defmethod analyzed->generator :concatenation
+  [{:keys [elements]}]
+  (->> elements
+       (map analyzed->generator)
+       (apply gen/tuple)
+       (gen/fmap #(apply str %))))
+
+(defmethod analyzed->generator :alternation
+  [{:keys [elements]}]
+  (->> elements
+       (map analyzed->generator)
+       (gen/one-of)))

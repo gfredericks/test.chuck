@@ -31,10 +31,13 @@
         [open els closed]))
     (gen/one-of [gen/string gen-regexy-fragment]))))
 
+(def gen-strings-that-might-be-regex-like
+  (gen/one-of [gen-regexy-string
+               gen/string-ascii
+               gen/string]))
+
 (def gen-regex-parsing-attempt
-  (gen'/for [s (gen/one-of [gen-regexy-string
-                            gen/string-ascii
-                            gen/string])]
+  (gen'/for [s gen-strings-that-might-be-regex-like]
     (try (do
            (re-pattern s)
            [:parsed s])
@@ -63,3 +66,18 @@
     (let [parsed? (parses? s)]
       (or (= [flag parsed?] [:parsed true])
           (= [flag parsed?] [:not-parsed false])))))
+
+(def gen-regex
+  (let [maybes (gen/fmap #(try (re-pattern %)
+                               (catch java.util.regex.PatternSyntaxException e))
+                         gen-strings-that-might-be-regex-like)]
+    (gen/such-that identity maybes 100)))
+
+(def gen-generator-scenario
+  (gen'/for [regex gen-regex
+             s (-> regex regexes/parse regexes/analyzed->generator)]
+    {:regex regex, :s s}))
+
+(defspec generator-spec 1000
+  (prop/for-all [{:keys [regex s]} gen-generator-scenario]
+    (re-matches regex s)))
