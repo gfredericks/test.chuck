@@ -56,7 +56,7 @@
        "[&&x]" "[x&&y]" "[x&&]" "[--?]"
        "{0}?")
   (are [s] (not (parses? s))
-       "[b-a]" "[^]" "[]-X]"))
+       "[b-a]" "[^]" "[]-X]" "[&&&]"))
 
 (defspec the-parser-spec 1000
   (prop/for-all [[flag s] gen-regex-parsing-attempt]

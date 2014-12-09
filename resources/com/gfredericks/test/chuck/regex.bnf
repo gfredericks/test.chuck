@@ -36,16 +36,18 @@ AnyCharButSlashE = #"[^\\]" | #"\\[^E]"
 BCC = <'['> BCCIntersection <'&&'>? <']'>
 (* using + with '&&' allows arbitrary even numbers of ampersands, which
    is how the jvm parses it *)
-BCCIntersection = BCCUnionLeft (('&&' + BCCUnionCenter ) * '&&' + BCCUnionRight) ?
+BCCIntersection = BCCUnionLeft ((BCCEvenAmpersands BCCUnionCenter ) * BCCEvenAmpersands BCCUnionRight) ?
 BCCUnionLeft = (BCCNegation BCCElemHardLeft | !'^' BCCElemHardLeft) BCCElemNonLeft *
 BCCUnionRight = BCCElemLeft BCCElemNonLeft *
 BCCUnionCenter = BCCElemLeft BCCElemNonLeft *
 BCCNegation = '^'
+<BCCEvenAmpersands> = ('&&' + !'&')
+BCCOddAmpersands = '&' <'&&'>+ ! '&'
 
 (* The optional '&&' here cover some quirky NOOP edge cases *)
-BCCElemHardLeft = <'&&'>? BCCElemBase | (']' ! ('-' BCCRangeRightable)) | BCCRangeWithBracket
-BCCElemLeft = BCCElemBase
-BCCElemNonLeft = BCCElemBase
+BCCElemHardLeft = !'&&&' <'&&'> ? BCCElemBase | (']' ! ('-' BCCRangeRightable)) | BCCRangeWithBracket
+BCCElemLeft = BCCElemBase | BCCOddAmpersands
+BCCElemNonLeft = BCCElemBase | BCCOddAmpersands
 
 
 BCCElemBase = BCCCharNonRange | SpecialCharClass | UnicodeCharacterClass | BCCRange | BCC
@@ -53,10 +55,10 @@ BCCRangeRightable = BCCChar | SpecialCharClass | UnicodeCharacterClass | '&'
 BCCRange = BCCChar <'-'> BCCChar
 BCCRangeWithBracket = <']-'> BCCChar
 BCCCharNonRange = BCCChar ! ('-' BCCRangeRightable)
-BCCChar = BCCPlainChar | BasicEscapedChar | NormalSlashedCharacters | BCCAmpersand | ControlChar
+BCCChar = BCCPlainChar | BasicEscapedChar | NormalSlashedCharacters | BCCOddAmpersands | ControlChar
 BCCPlainChar = #"[^\]\[&\\]"
 (* only match an odd number of ampersands whatever *)
-BCCAmpersand = '&' <('&&' *)> !'&'
+(* This is problematic because re-pattern won't take repeated ampersands in the HardLeft position *)
 BCCDash = '-'
 
 
