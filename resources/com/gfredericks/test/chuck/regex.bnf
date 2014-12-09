@@ -16,7 +16,7 @@ CurlyRepetition = <'{'> #"\d+" (',' #"\d+" ?) ? <'}'>
 Quantifier = '?' | '+'
 BaseExpr = CharExpr | LiteralChar | Anchor | BackReference
 Anchor = '^' | '$' | '\\' #"[bBAGZz]"
-LiteralChar = PlainChar | NormalSlashedCharacters | BasicEscapedChar | ControlChar
+LiteralChar = PlainChar | NormalSlashedCharacters | BasicEscapedChar | ControlChar | OctalChar
 
 (* this will be hard -- will require counting in the analyzer to figure
    out where the number stops and numberic literals begin *)
@@ -55,7 +55,7 @@ BCCRangeRightable = BCCChar | SpecialCharClass | UnicodeCharacterClass | '&'
 BCCRange = BCCChar <'-'> BCCChar
 BCCRangeWithBracket = <']-'> BCCChar
 BCCCharNonRange = BCCChar ! ('-' BCCRangeRightable)
-BCCChar = BCCPlainChar | BasicEscapedChar | NormalSlashedCharacters | BCCOddAmpersands | ControlChar
+BCCChar = BCCPlainChar | BasicEscapedChar | OctalChar | NormalSlashedCharacters | BCCOddAmpersands | ControlChar
 BCCPlainChar = #"[^\]\[&\\]"
 (* only match an odd number of ampersands whatever *)
 (* This is problematic because re-pattern won't take repeated ampersands in the HardLeft position *)
@@ -78,7 +78,7 @@ UnicodeCharacterClass = #"\\[pP][CLMNPSZ]"
 NormalSlashedCharacters = #"\\[tnrfae]" | WhatDoesThisMean
 WhatDoesThisMean = '\\v'
 (* What are these? *)
-ControlChar = #"\\c."
+ControlChar = #"(?s)\\c."
 
 (** FLAGS **)
 GroupFlags = NamedCapturingGroup
