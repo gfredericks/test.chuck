@@ -7,7 +7,7 @@ Alternation = Concatenation ('|' Concatenation) *
 
 Concatenation = DanglingCurlyRepetitions SuffixedExpr *
 
-DanglingCurlyRepetitions = CurlyRepetition *
+DanglingCurlyRepetitions = (CurlyRepetition Quantifier ?) *
 
 SuffixedExpr = SingleExpr Suffix ?
 SingleExpr = BaseExpr | '(' GroupFlags ? Alternation ')' | UnknownFlag
@@ -22,9 +22,6 @@ LiteralChar = PlainChar | NormalSlashedCharacters | BasicEscapedChar | ControlCh
    out where the number stops and numberic literals begin *)
 BackReference = <'\\'> #"[1-9][0-9]*"
 
-(* What are these? *)
-ControlChar = #"\\c."
-
 PlainChar = #"[^.|\\+*$^\[(){?]"
 CharExpr = Dot | SpecialCharClass | UnicodeCharacterClass | BCC
 Dot = '.'
@@ -36,7 +33,7 @@ AnyCharButSlashE = #"[^\\]" | #"\\[^E]"
 (** BRACKETED CHARACTER CLASSES (AKA BCC) **)
 (** (which are more complicated than you thought they were) **)
 
-BCC = <'['> BCCIntersection <']'>
+BCC = <'['> BCCIntersection <'&&'>? <']'>
 (* using + with '&&' allows arbitrary even numbers of ampersands, which
    is how the jvm parses it *)
 BCCIntersection = BCCUnionLeft (('&&' + BCCUnionCenter ) * '&&' + BCCUnionRight) ?
@@ -57,7 +54,7 @@ BCCRange = BCCChar <'-'> BCCChar
 BCCRangeWithDash = <'--'> BCCChar
 BCCRangeWithBracket = <']-'> BCCChar
 BCCCharNonRange = BCCChar ! ('-' BCCRangeRightable)
-BCCChar = BCCPlainChar | BasicEscapedChar | NormalSlashedCharacters | BCCAmpersand
+BCCChar = BCCPlainChar | BasicEscapedChar | NormalSlashedCharacters | BCCAmpersand | ControlChar
 BCCPlainChar = #"[^\]\[&\\]"
 (* only match an odd number of ampersands whatever *)
 BCCAmpersand = '&' <('&&' *)> !'&'
@@ -79,6 +76,8 @@ UnicodeCharacterClass = #"\\[pP][CLMNPSZ]"
 
 NormalSlashedCharacters = #"\\[tnrfae]" | WhatDoesThisMean
 WhatDoesThisMean = '\\v'
+(* What are these? *)
+ControlChar = #"\\c."
 
 (** FLAGS **)
 GroupFlags = NamedCapturingGroup
