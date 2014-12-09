@@ -16,7 +16,7 @@ CurlyRepetition = <'{'> #"\d+" (',' #"\d+" ?) ? <'}'>
 Quantifier = '?' | '+'
 BaseExpr = CharExpr | LiteralChar | Anchor | BackReference
 Anchor = '^' | '$' | '\\' #"[bBAGZz]"
-LiteralChar = PlainChar | NormalSlashedCharacters | BasicEscapedChar | ControlChar | OctalChar
+LiteralChar = PlainChar | EscapedChar
 
 (* this will be hard -- will require counting in the analyzer to figure
    out where the number stops and numberic literals begin *)
@@ -55,7 +55,7 @@ BCCRangeRightable = BCCChar | SpecialCharClass | UnicodeCharacterClass | '&'
 BCCRange = BCCChar <'-'> BCCChar
 BCCRangeWithBracket = <']-'> BCCChar
 BCCCharNonRange = BCCChar ! ('-' BCCRangeRightable)
-BCCChar = BCCPlainChar | BasicEscapedChar | OctalChar | NormalSlashedCharacters | BCCOddAmpersands | ControlChar
+BCCChar = BCCPlainChar | EscapedChar | BCCOddAmpersands
 BCCPlainChar = #"[^\]\[&\\]"
 (* only match an odd number of ampersands whatever *)
 (* This is problematic because re-pattern won't take repeated ampersands in the HardLeft position *)
@@ -64,10 +64,15 @@ BCCDash = '-'
 
 (** BASE CHARACTER STUFFS **)
 
+EscapedChar = OctalChar | HexChar | BasicEscapedChar | NormalSlashedCharacters | ControlChar
 OctalChar = '\\0' (OctalDigits1 | OctalDigits2 | OctalDigits3)
 OctalDigits1 = #"[0-7]" ! #"[0-7]"
 OctalDigits2 = (#"[0-3][0-7]" ! #"[0-7]") | #"[4-7][0-7]"
 OctalDigits3 = #"[0-3][0-7]{2}"
+HexChar = ShortHexChar | MediumHexChar | LongHexChar
+ShortHexChar = #'\\x[0-9a-fA-F]{2}'
+MediumHexChar = #'\\u[0-9a-fA-F]{4}'
+LongHexChar = #'\\x\{[0-9a-fA-F]+\}'
 BasicEscapedChar = <'\\'> #"[^a-zA-Z0-9]"
 
 (* probably missing something here *)
