@@ -14,7 +14,7 @@ SingleExpr = BaseExpr | '(' GroupFlags ? Alternation ')' | UnknownFlag
 Suffix = ('?' | '+' | '*' | CurlyRepetition ) Quantifier ? DanglingCurlyRepetitions
 CurlyRepetition = <'{'> #"\d+" (',' #"\d+" ?) ? <'}'>
 Quantifier = '?' | '+'
-BaseExpr = CharExpr | LiteralChar | Anchor | BackReference
+BaseExpr = CharExpr | LiteralChar | Anchor | BackReference | QE
 Anchor = '^' | '$' | '\\' #"[bBAGZz]"
 LiteralChar = PlainChar | EscapedChar
 

@@ -9,7 +9,8 @@
 
 (def gen-regexy-fragment
   (gen/frequency
-   [[10 (gen/elements "?*+!()[]{}^$\\:-&")]
+   [[10 (gen/elements (concat "?*+!()[]{}^$\\:-&"
+                              ["\\Q" "\\E"]))]
     [1 (gen'/for [d gen/nat
                   s (gen/elements ["{%d}" "{%d,}"])]
          (format s d))]
@@ -57,7 +58,7 @@
   (are [s] (parses? s)
        "[]-_]" "[-x]" "[x+--y]" "[\\e]" "\\\0" "[[x]-y]" "(?)"
        "[&&x]" "[x&&y]" "[x&]" "[x&&]" "[&]" "[--?]"
-       "{0}?" "[\\c\n]" "[\\e- ]")
+       "{0}?" "[\\c\n]" "[\\e- ]" "\\Q\\E")
   (are [s] (not (parses? s))
        "[b-a]" "[^]" "[]-X]" "[&&&]"))
 
