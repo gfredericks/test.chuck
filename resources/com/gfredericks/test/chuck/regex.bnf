@@ -42,7 +42,7 @@ BCCUnionRight = BCCElemLeft BCCElemNonLeft *
 BCCUnionCenter = BCCElemLeft BCCElemNonLeft *
 BCCNegation = '^'
 <BCCEvenAmpersands> = ('&&' + !'&')
-BCCOddAmpersands = '&' <'&&'>+ ! '&'
+BCCOddAmpersands = '&' <'&&'>* ! '&'
 
 (* The optional '&&' here cover some quirky NOOP edge cases *)
 BCCElemHardLeft = !'&&&' <'&&'> ? BCCElemBase | (']' ! ('-' BCCRangeRightable)) | BCCRangeWithBracket
