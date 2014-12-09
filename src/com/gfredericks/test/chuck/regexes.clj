@@ -23,6 +23,7 @@
     :BCCDash first
     :BCCPlainChar first
     :BCCOddAmpersands first
+    :EscapedChar identity
     :BasicEscapedChar first}
 
    parsed-regex))
