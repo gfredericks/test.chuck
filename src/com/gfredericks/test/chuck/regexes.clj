@@ -14,6 +14,28 @@
                      :character-class-range [begin end]})))
   {:type :range, :begin begin, :end end})
 
+(defn ^:private remove-QE
+  [^String s]
+  (if (.contains s "\\Q")
+    (letfn [(remove-QE-not-quoting [chars]
+              (lazy-seq
+               (when-let [[c1 & [c2 :as cs]] (seq chars)]
+                 (if (= \\ c1)
+                   (if (= \Q c2)
+                     (remove-QE-quoting (rest cs))
+                     (list* c1 c2 (remove-QE-not-quoting (rest cs))))
+                   (cons c1 (remove-QE-not-quoting cs))))))
+            (remove-QE-quoting [chars]
+              (lazy-seq
+               (when-let [[c1 & [c2 :as cs]] (seq chars)]
+                 (if (and (= c1 \\) (= c2 \E))
+                   (remove-QE-not-quoting (rest cs))
+                   (if (re-matches #"[0-9a-zA-Z]" (str c1))
+                     (cons c1 (remove-QE-quoting cs))
+                     (list* \\ c1 (remove-QE-quoting cs)))))))]
+      (apply str (remove-QE-not-quoting s)))
+    s))
+
 (def normal-slashed-characters
   {\t \tab, \n \newline, \r \return, \f \formfeed, \a \u0007, \e \u001B})
 
@@ -41,7 +63,7 @@
 
 (defn parse
   [s]
-  (let [[the-parse & more :as ret] (insta/parses the-parser s)]
+  (let [[the-parse & more :as ret] (insta/parses the-parser (remove-QE s))]
     (cond (nil? the-parse)
           (throw (ex-info "Parse failure!"
                           {:type ::parse-error

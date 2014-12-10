@@ -1,7 +1,4 @@
-(* I think we need a special AlternationWithAllowedQ *)
-Regex = AlternationWithAllowedQ
-
-AlternationWithAllowedQ = Concatenation ('|' Concatenation) * PartialQE ?
+Regex = Alternation
 
 Alternation = Concatenation ('|' Concatenation) *
 
@@ -14,7 +11,7 @@ SingleExpr = BaseExpr | '(' GroupFlags ? Alternation ')' | UnknownFlag
 Suffix = ('?' | '+' | '*' | CurlyRepetition ) Quantifier ? DanglingCurlyRepetitions
 CurlyRepetition = <'{'> #"\d+" (',' #"\d+" ?) ? <'}'>
 Quantifier = '?' | '+'
-BaseExpr = CharExpr | LiteralChar | Anchor | BackReference | QE
+BaseExpr = CharExpr | LiteralChar | Anchor | BackReference
 Anchor = '^' | '$' | '\\' #"[bBAGZz]"
 LiteralChar = PlainChar | EscapedChar
 
@@ -25,10 +22,6 @@ BackReference = <'\\'> #"[1-9][0-9]*"
 PlainChar = #"[^.|\\+*$^\[(){?]"
 CharExpr = Dot | SpecialCharClass | UnicodeCharacterClass | BCC
 Dot = '.'
-
-PartialQE = '\\Q' AnyCharButSlashE * '\\' ?
-QE = '\\Q' AnyCharButSlashE * '\\E'
-AnyCharButSlashE = #"[^\\]" | #"\\[^E]"
 
 (** BRACKETED CHARACTER CLASSES (AKA BCC) **)
 (** (which are more complicated than you thought they were) **)
