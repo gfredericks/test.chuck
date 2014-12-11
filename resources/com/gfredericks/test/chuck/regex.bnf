@@ -2,14 +2,14 @@ Regex = Alternation
 
 Alternation = Concatenation (<'|'> Concatenation) *
 
-Concatenation = <DanglingCurlyRepetitions> SuffixedExpr *
+Concatenation = DanglingCurlyRepetitions SuffixedExpr *
 
 DanglingCurlyRepetitions = (CurlyRepetition Quantifier ?) *
 
 SuffixedExpr = SingleExpr Suffix ?
 SingleExpr = BaseExpr | ParenthesizedExpr
 ParenthesizedExpr = <'('> GroupFlags ? Alternation <')'>
-Suffix = (Optional | Positive | NonNegative | CurlyRepetition ) Quantifier ? <DanglingCurlyRepetitions>
+Suffix = (Optional | Positive | NonNegative | CurlyRepetition ) Quantifier ? DanglingCurlyRepetitions
 Optional = <'?'>
 Positive = <'+'>
 NonNegative = <'*'>

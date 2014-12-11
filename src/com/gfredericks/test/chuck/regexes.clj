@@ -67,7 +67,8 @@
                     :elements regexes})
     :Concatenation (fn [& regexes]
                      {:type     :concatenation
-                      :elements regexes})
+                      ;; maybe nil because of DanglingCurlyRepetitions
+                      :elements (remove nil? regexes)})
     :SuffixedExpr (fn
                     ([regex] regex)
                     ([regex suffix]
@@ -78,8 +79,13 @@
                           :element regex
                           :bounds (:bounds suffix)})))
     :Suffix (fn
-              ([bounds] {:bounds bounds})
-              ([bounds quantifier] {:bounds bounds, :quantifier quantifier}))
+              ;; this function can get a nil 2nd or 3rd arg because of
+              ;; DanglingCurlyRepetitions, which we don't hide so we
+              ;; get more parse error coverage, e.g. for #"{1,0}"
+              [bounds & [quantifier]]
+              (cond-> {:bounds bounds}
+                      quantifier
+                      (assoc :quantifier quantifier)))
     :Optional (constantly [0 1])
     :Positive (constantly [1 nil])
     :NonNegative (constantly [0 nil])
@@ -94,6 +100,10 @@
                                               {:type ::parse-error
                                                :range [lower upper]})))
                             [lower upper])))
+    ;; the only reason we don't hide this in the parser is to force
+    ;; the "Bad reptition range" check above, so that our "parses
+    ;; exactly what re-pattern does" spec will pass.
+    :DanglingCurlyRepetitions (constantly nil)
     :ParenthesizedExpr (fn
                          ([alternation] alternation)
                          ([group-flags aternation] (unsupported "flags")))
