@@ -7,10 +7,12 @@
 ;; Before releasing:
 ;;  - read through the Pattern docs and make sure every syntactic
 ;;    construct mentioned is represented in the generators
+;;    - unicode block names?
 ;;  - add a character set concept for negated character classes and DOT
 ;;  - add a check for that CANON_EQ flag (which I can't imagine supporting)
 ;;    - actually we should probably check ALL the flags since I think they
 ;;      can be given that way
+;;  - those unicode block names are actually a lot more than listed
 ;;
 
 (def grammar-path "com/gfredericks/test/chuck/regex.bnf")
@@ -132,7 +134,7 @@
     :BackReference (constantly (unsupported "backreferences"))
 
     :BCCRange analyze-range
-    :BCCRangeWithBracket #(analyze-range \] %)
+    :BCCRangeWithBracket #(analyze-range {:type :character, :character \]} %)
     :BCCChar identity
     :BCCDash (constantly {:type :character, :character \-})
     :BCCPlainChar (fn [[c]] {:type :character, :character c})
