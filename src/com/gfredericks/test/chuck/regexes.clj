@@ -87,8 +87,13 @@
                        ([s] (let [n (parse-bigint s)] [n n]))
                        ([s _comma] [(parse-bigint s) nil])
                        ([s1 _comma s2]
-                          {:post [(<= (first %) (second %))]}
-                          [(parse-bigint s1) (parse-bigint s2)]))
+                          (let [lower (parse-bigint s1)
+                                upper (parse-bigint s2)]
+                            (when (< upper lower)
+                              (throw (ex-info "Bad repetition range"
+                                              {:type ::parse-error
+                                               :range [lower upper]})))
+                            [lower upper])))
     :ParenthesizedExpr (fn
                          ([alternation] alternation)
                          ([group-flags aternation] (unsupported "flags")))
