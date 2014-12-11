@@ -130,7 +130,17 @@
     :BasicEscapedChar (fn [[c]] {:type :character
                                  :character c})
 
-    :HexChar (constantly (unsupported "hex characters"))
+    :HexChar (fn [hex-string]
+               (let [n (BigInteger. hex-string 16)]
+                 (when (> n Character/MAX_CODE_POINT)
+                   (throw (ex-info "Bad hex character!"
+                                   {:type ::parse-error
+                                    :hex-string hex-string})))
+                 {:type :character
+                  :character (char (int n))}))
+    :ShortHexChar identity
+    :MediumHexChar identity
+    :LongHexChar identity
 
     :OctalChar (fn [strs]
                  {:type :character
@@ -138,6 +148,21 @@
     :OctalDigits1 list
     :OctalDigits2 list
     :OctalDigits3 list
+
+    :UnicodeCharacterClass (fn [p name]
+                             (if (#{"C" "L" "M" "N" "P" "S" "Z"
+                                    "{Lower}" "{Upper}" "{ASCII}"
+                                    "{Alpha}" "{Digit}" "{Alnum}"
+                                    "{Punct}" "{Graph}" "{Print}"
+                                    "{Blank}" "{Cntrl}" "{XDigit}"
+                                    "{Space}" "{javaLowerCase}"
+                                    "{javaUpperCase}" "{javaWhitespace}"
+                                    "{javaMirrored}" "{IsLatin}" "{InGreek}"
+                                    "{Lu}" "{IsAlphabetic}" "{Sc}"} name)
+                               (unsupported "unicode character classes")
+                               (throw (ex-info "Bad unicode character class!"
+                                               {:type ::parse-error
+                                                :class-name name}))))
 
     :UnknownFlag (constantly (unsupported "What does \"(?)\" even mean?"))}
 

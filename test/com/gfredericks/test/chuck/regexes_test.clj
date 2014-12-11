@@ -86,7 +86,8 @@
        "{0}?" "[\\c\n]" "[\\e- ]" "\\Q\\E" "[\\Q][\\E]"
        "(?:)")
   (are [s] (not (parses? s))
-       "[b-a]" "[^]" "[]-X]" "[&&&]" "[\\Q\\E]" "(??)"))
+       "[b-a]" "[^]" "[]-X]" "[&&&]" "[\\Q\\E]" "(??)"
+       "\\x{110000}"))
 
 (defspec parser-spec 1000
   (prop/for-all [[flag s] gen-regex-parsing-attempt]
