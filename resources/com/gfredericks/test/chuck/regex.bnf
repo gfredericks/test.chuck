@@ -80,9 +80,8 @@ ControlChar = #"(?s)\\c."
 
 (** FLAGS **)
 GroupFlags = NamedCapturingGroup
-           | NonCapturingFlag
            | MutatingMatchFlags
-           | MatchFlags
+           | NonCapturingMatchFlags
            | PositiveLookAheadFlag
            | NegativeLookAheadFlag
            | PositiveLookBehindFlag
@@ -90,15 +89,14 @@ GroupFlags = NamedCapturingGroup
            | IndependentNonCapturingFlag
 
 NamedCapturingGroup = <'?<'> GroupName <'>'>
-NonCapturingFlag = <'?:'>
-MutatingMatchFlags = <'?'> MatchFlagsExpr & ')'
-MatchFlags = <'?'> MatchFlagsExpr <':'>
+MutatingMatchFlags = <'?'> !')' MatchFlagsExpr & ')'
+NonCapturingMatchFlags = <'?'> !')' MatchFlagsExpr <':'>
 PositiveLookAheadFlag = <'?='>
 NegativeLookAheadFlag = <'?!'>
 PositiveLookBehindFlag = <'?<='>
 PositiveLookBehindFlag = <'?<!'>
 IndependentNonCapturingFlag = <'?>'>
-MatchFlagsExpr = '?' #"[idmsuxU]" * ('-' #"[idmsuxU]" *) ?
+MatchFlagsExpr = #"[idmsuxU]" * ('-' #"[idmsuxU]" *) ?
 
 (* no idea what this is; seems a NOOP *)
 UnknownFlag = '(?)'
