@@ -7,16 +7,34 @@
             [com.gfredericks.test.chuck.generators :as gen']
             [instaparse.core :as insta]))
 
+;; Difficult to generate: parsable references to named capturing groups
 (def gen-regexy-fragment
   (gen/frequency
-   [[10 (gen/elements (concat "?*+!()[]{}^$\\:-&"
-                              ["\\Q" "\\E"]))]
+   [[10 (gen/elements (concat "?*+!|()[]{}<>=^$.\\:-&"
+                              ["\\Q" "\\E" "\\c" "&&" "\\p"]))]
+    [1 (gen'/for [chars (gen/list (gen/choose 0 7))]
+         (apply str "\\0" chars))]
+    [1 (gen'/for [:parallel [p (gen/elements "pP")
+                             class-name (gen/elements
+                                         ["Lower" "Upper" "ASCII" "Alpha" "Digit"
+                                          "Alnum" "Punct" "Graph" "Print" "Blank"
+                                          "Cntrl" "XDigit" "Space" "javaLowerCase"
+                                          "javaUpperCase" "javaWhitespace"
+                                          "javaMirrored" "IsLatin" "InGreek" "Lu"
+                                          "IsAlphabetic" "Sc"])]]
+         (format "\\%s{%s}" p class-name))]
+    [1 (gen'/for [:parallel
+                  [ux (gen/elements "ux")
+                   chars (gen/list (gen/elements "0123456789abcdef"))]]
+         (apply str "\\" ux chars))]
+    [1 (gen'/for [chars (gen/list (gen/elements "0123456789abcdef"))]
+         (format "\\x{%s}" (apply str chars)))]
     [1 (gen'/for [d gen/nat
                   s (gen/elements ["{%d}" "{%d,}"])]
          (format s d))]
     [1 (gen'/for [:parallel [d1 gen/nat
                              d2 gen/nat]]
-         (format "{%d,%d}" d1 (+ d1 d2)))]]))
+         (format "{%d,%d}" d1 d2))]]))
 
 (def gen-regexy-string
   (gen/fmap

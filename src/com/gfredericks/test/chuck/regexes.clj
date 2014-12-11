@@ -9,6 +9,8 @@
 ;;    construct mentioned is represented in the generators
 ;;  - add a character set concept for negated character classes and DOT
 ;;  - add a check for that CANON_EQ flag (which I can't imagine supporting)
+;;    - actually we should probably check ALL the flags since I think they
+;;      can be given that way
 ;;
 
 (def grammar-path "com/gfredericks/test/chuck/regex.bnf")
