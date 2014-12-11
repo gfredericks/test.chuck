@@ -1,14 +1,18 @@
 Regex = Alternation
 
-Alternation = Concatenation ('|' Concatenation) *
+Alternation = Concatenation (<'|'> Concatenation) *
 
-Concatenation = DanglingCurlyRepetitions SuffixedExpr *
+Concatenation = <DanglingCurlyRepetitions> SuffixedExpr *
 
 DanglingCurlyRepetitions = (CurlyRepetition Quantifier ?) *
 
 SuffixedExpr = SingleExpr Suffix ?
-SingleExpr = BaseExpr | '(' GroupFlags ? Alternation ')' | UnknownFlag
-Suffix = ('?' | '+' | '*' | CurlyRepetition ) Quantifier ? DanglingCurlyRepetitions
+SingleExpr = BaseExpr | ParenthesizedExpr | UnknownFlag
+ParenthesizedExpr = <'('> GroupFlags ? Alternation <')'>
+Suffix = (Optional | Positive | NonNegative | CurlyRepetition ) Quantifier ? <DanglingCurlyRepetitions>
+Optional = <'?'>
+Positive = <'+'>
+NonNegative = <'*'>
 CurlyRepetition = <'{'> #"\d+" (',' #"\d+" ?) ? <'}'>
 Quantifier = '?' | '+'
 BaseExpr = CharExpr | LiteralChar | Anchor | BackReference
@@ -58,7 +62,7 @@ BCCDash = '-'
 (** BASE CHARACTER STUFFS **)
 
 EscapedChar = OctalChar | HexChar | BasicEscapedChar | NormalSlashedCharacters | ControlChar
-OctalChar = '\\0' (OctalDigits1 | OctalDigits2 | OctalDigits3)
+OctalChar = <'\\0'> (OctalDigits1 | OctalDigits2 | OctalDigits3)
 OctalDigits1 = #"[0-7]" ! #"[0-7]"
 OctalDigits2 = (#"[0-3][0-7]" ! #"[0-7]") | #"[4-7][0-7]"
 OctalDigits3 = #"[0-3][0-7]{2}"

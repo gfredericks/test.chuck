@@ -5,6 +5,8 @@
 
 (def grammar-path "com/gfredericks/test/chuck/regex.bnf")
 
+(defn ^:private parse-bigint [^String s] (clojure.lang.BigInt/fromBigInteger (java.math.BigInteger. s)))
+
 (defn ^:private analyze-range
   [begin end]
   {:pre [(char? begin) (char? end)]}
@@ -42,16 +44,79 @@
 (defn analyze
   [parsed-regex]
   (insta/transform
-   {:BCCRange analyze-range
+   {:Regex identity
+    :Alternation (fn [& regexes]
+                   {:type     :alternation
+                    :elements regexes})
+    :Concatenation (fn [& regexes]
+                     {:type     :concatenation
+                      :elements regexes})
+    :SuffixedExpr (fn
+                    ([regex] regex)
+                    ([regex suffix]
+                       (if (:quantifier suffix)
+                         {:type :unsupported
+                          :feature "quantifiers"}
+                         {:type :repetition
+                          :element regex
+                          :bounds (:bounds suffix)})))
+    :Suffix (fn
+              ([bounds] {:bounds bounds})
+              ([bounds quantifier] {:bounds bounds, :quantifier quantifier}))
+    :Optional (constantly [0 1])
+    :Positive (constantly [1 nil])
+    :NonNegative (constantly [0 nil])
+    :CurlyRepetition (fn
+                       ([s] (let [n (parse-bigint s)] [n n]))
+                       ([s _comma] [(parse-bigint s) nil])
+                       ([s1 _comma s2]
+                          {:post [(<= (first %) (second %))]}
+                          [(parse-bigint s1) (parse-bigint s2)]))
+    :ParenthesizedExpr (fn
+                         ([alternation] alternation)
+                         ([group-flags aternation]
+                            {:type :unsupported
+                             :feature "flags"}))
+    :SingleExpr identity
+    :BaseExpr identity
+    :CharExpr identity
+    :LiteralChar identity
+    :PlainChar (fn [s] {:pre [(= 1 (count s))]}
+                 {:type :character, :character (first s)})
+
+    :Anchor (constantly {:type :unsupported
+                         :feature "anchors"})
+
+    :Dot (constantly {:type :unsupported
+                      :feature "character classes"})
+    :SpecialCharClass (constantly {:type :unsupported
+                                   :feature "character classes"})
+
+    :BCC (constantly {:type :unsupported
+                      :feature "character classes"})
+
+    :BackReference (constantly {:type :unsupported
+                                :feature "Backreference"})
+
+    :BCCRange analyze-range
     :BCCRangeWithBracket #(analyze-range \] %)
     :BCCChar identity
     :BCCDash first
     :BCCPlainChar first
     :BCCOddAmpersands first
+
     :EscapedChar identity
     :NormalSlashedCharacters (fn [[_slash c]]
-                               (normal-slashed-characters c))
-    :BasicEscapedChar first}
+                               {:type :character
+                                :character (normal-slashed-characters c)})
+    :BasicEscapedChar (fn [[c]] {:type :character
+                                 :character c})
+    :OctalChar (fn [& strs]
+                 {:type :character
+                  :character (char (read-string (apply str "8r" strs)))})
+    :OctalDigits1 list
+    :OctalDigits2 list
+    :OctalDigits3 list}
 
    parsed-regex))
 
@@ -95,3 +160,31 @@
   (->> elements
        (map analyzed->generator)
        (gen/one-of)))
+
+(defmethod analyzed->generator :character
+  [{:keys [character]}]
+  (gen/return (str character)))
+
+(defmethod analyzed->generator :repetition
+  [{:keys [element bounds]}]
+  (let [[lower upper] bounds]
+    (assert lower)
+    (let [g (analyzed->generator element)]
+      (gen/fmap #(apply str %)
+                (if (= lower upper)
+                  (gen/vector g lower)
+                  (if upper
+                    (gen/vector g lower upper)
+                    ;; what about the lower!
+                    (if (zero? lower)
+                      (gen/vector g)
+                      (gen/fmap #(apply concat %)
+                                (gen/tuple (gen/vector g lower)
+                                           (gen/vector g))))))))))
+
+(defmethod analyzed->generator :unsupported
+  [{:keys [feature]}]
+  (throw (ex-info "Unsupported regex feature!"
+                  {:type ::unsupported-feature
+                   :feature feature
+                   :patches? "welcome."})))

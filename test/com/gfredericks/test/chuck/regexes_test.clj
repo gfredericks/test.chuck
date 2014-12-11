@@ -47,7 +47,7 @@
 
 (defn parses?
   [s]
-  (try (regexes/parse s)
+  (try (pr-str (regexes/parse s)) ;; something lazy going on here
        true
        (catch clojure.lang.ExceptionInfo e
          (if (= ::regexes/parse-error (:type (ex-data e)))
@@ -77,7 +77,12 @@
 
 (def gen-generator-scenario
   (gen'/for [regex gen-regex
-             s (-> regex regexes/parse regexes/analyzed->generator)]
+             :let [gen (try (-> regex str regexes/parse regexes/analyzed->generator)
+                            (catch clojure.lang.ExceptionInfo e
+                              (when (not= (:type (ex-data e)) ::regexes/unsupported-feature)
+                                (throw e))))]
+             :when gen
+             s gen]
     {:regex regex, :s s}))
 
 (defspec generator-spec 1000
