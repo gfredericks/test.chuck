@@ -27,9 +27,16 @@
           (apply str)))
    (gen/recursive-gen
     (fn [g]
-      (gen'/for [:parallel [[open closed] (gen/elements ["[]" "{}" "()"])
+      (gen'/for [:parallel [[open closed] (gen/elements [["[" "]"]
+                                                         ["[^" "]"]
+                                                         ["{" "}"]
+                                                         ["(" ")"]
+                                                         ["(?" ")"]
+                                                         [nil nil]])
                             els (gen/list g)]]
-        [open els closed]))
+        (if open
+          [open els closed]
+          els)))
     (gen/one-of [gen/string gen-regexy-fragment]))))
 
 (def gen-strings-that-might-be-regex-like
