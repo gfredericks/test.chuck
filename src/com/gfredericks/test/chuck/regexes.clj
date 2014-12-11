@@ -162,9 +162,7 @@
                                (unsupported "unicode character classes")
                                (throw (ex-info "Bad unicode character class!"
                                                {:type ::parse-error
-                                                :class-name name}))))
-
-    :UnknownFlag (constantly (unsupported "What does \"(?)\" even mean?"))}
+                                                :class-name name}))))}
 
    parsed-regex))
 

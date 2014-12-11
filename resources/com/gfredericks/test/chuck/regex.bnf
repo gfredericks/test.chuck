@@ -7,7 +7,7 @@ Concatenation = <DanglingCurlyRepetitions> SuffixedExpr *
 DanglingCurlyRepetitions = (CurlyRepetition Quantifier ?) *
 
 SuffixedExpr = SingleExpr Suffix ?
-SingleExpr = BaseExpr | ParenthesizedExpr | UnknownFlag
+SingleExpr = BaseExpr | ParenthesizedExpr
 ParenthesizedExpr = <'('> GroupFlags ? Alternation <')'>
 Suffix = (Optional | Positive | NonNegative | CurlyRepetition ) Quantifier ? <DanglingCurlyRepetitions>
 Optional = <'?'>
@@ -93,7 +93,7 @@ GroupFlags = NamedCapturingGroup
            | IndependentNonCapturingFlag
 
 NamedCapturingGroup = <'?<'> GroupName <'>'>
-MutatingMatchFlags = <'?'> !')' MatchFlagsExpr & ')'
+MutatingMatchFlags = <'?'> MatchFlagsExpr & ')'
 NonCapturingMatchFlags = <'?'> !')' MatchFlagsExpr <':'>
 PositiveLookAheadFlag = <'?='>
 NegativeLookAheadFlag = <'?!'>
@@ -101,8 +101,5 @@ PositiveLookBehindFlag = <'?<='>
 PositiveLookBehindFlag = <'?<!'>
 IndependentNonCapturingFlag = <'?>'>
 MatchFlagsExpr = #"[idmsuxU]" * ('-' #"[idmsuxU]" *) ?
-
-(* no idea what this is; seems a NOOP *)
-UnknownFlag = '(?)'
 
 GroupName = #"[a-zA-Z][a-zA-Z0-9]*"
