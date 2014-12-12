@@ -61,7 +61,7 @@ BCCDash = '-'
 
 (** BASE CHARACTER STUFFS **)
 
-EscapedChar = OctalChar | HexChar | BasicEscapedChar | NormalSlashedCharacters | ControlChar
+EscapedChar = OctalChar | HexChar | BasicEscapedChar | NormalSlashedCharacters | ControlChar | WhatDoesThisMean
 OctalChar = <'\\0'> (OctalDigits1 | OctalDigits2 | OctalDigits3)
 OctalDigits1 = #"[0-7]" ! #"[0-7]"
 OctalDigits2 = (#"[0-3][0-7]" ! #"[0-7]") | #"[4-7][0-7]"
@@ -77,7 +77,7 @@ SpecialCharClass = #"\\[wWsSdD]"
 (* Gotta figure out what these mean *)
 UnicodeCharacterClass = <'\\'> #'[pP]' (#"[CLMNPSZ]" | #"\{[a-zA-Z]+\}")
 
-NormalSlashedCharacters = #"\\[tnrfae]" | WhatDoesThisMean
+NormalSlashedCharacters = #"\\[tnrfae]"
 WhatDoesThisMean = '\\v'
 (* What are these? *)
 ControlChar = #"(?s)\\c."

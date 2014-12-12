@@ -144,6 +144,7 @@
     :NormalSlashedCharacters (fn [[_slash c]]
                                {:type :character
                                 :character (normal-slashed-characters c)})
+    :WhatDoesThisMean (constantly (unsupported "what is \\v?"))
     :BasicEscapedChar (fn [[c]] {:type :character
                                  :character c})
 
@@ -226,6 +227,7 @@
 
 (defmethod analyzed->generator :character
   [{:keys [character]}]
+  {:pre [character]}
   (gen/return (str character)))
 
 (defmethod analyzed->generator :repetition
