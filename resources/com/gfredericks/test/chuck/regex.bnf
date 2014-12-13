@@ -49,10 +49,11 @@ BCCElemNonLeft = BCCElemBase
 
 BCCElemBase = BCCCharNonRange | SpecialCharClass | UnicodeCharacterClass | BCCRange | BCC
 BCCRangeRightable = BCCChar | SpecialCharClass | UnicodeCharacterClass | '&'
-BCCRange = BCCChar <'-'> BCCChar
-BCCRangeWithBracket = <']-'> BCCChar
+BCCRange = BCCChar <'-'> BCCCharEndRange
+BCCRangeWithBracket = <']-'> BCCCharEndRange
 BCCCharNonRange = BCCChar ! ('-' BCCRangeRightable)
 BCCChar = BCCPlainChar | EscapedChar | BCCOddAmpersands
+BCCCharEndRange = BCCPlainChar | EscapedChar | BCCEvenAmpersands
 BCCPlainChar = #"[^\]\[&\\]"
 (* only match an odd number of ampersands whatever *)
 (* This is problematic because re-pattern won't take repeated ampersands in the HardLeft position *)
