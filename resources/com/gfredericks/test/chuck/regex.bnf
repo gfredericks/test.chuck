@@ -1,8 +1,6 @@
-Regex = BCCIntersection
+Regex = BCCUnionLeft
 
-BCCIntersection = BCCUnionLeft (<BCCEvenAmpersands> BCCUnionNonLeft ) *
 BCCUnionLeft = (BCCNegation BCCElemHardLeft | !'^' BCCElemHardLeft) BCCElemNonLeft *
-BCCUnionNonLeft = BCCElemLeft BCCElemNonLeft *
 BCCNegation = '^'
 BCCEvenAmpersands = ('&&' + !'&')
 BCCOddAmpersands = '&' <'&&'>* ! '&'
