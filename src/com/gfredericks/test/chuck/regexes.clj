@@ -149,7 +149,7 @@
     :BCCDash (constantly {:type :character, :character \-})
     :BCCPlainChar (fn [[c]] {:type :character, :character c})
     :BCCOddAmpersands (constantly {:type :character, :character \&})
-    :BCCAmpersandsEndRange (constantly {:type :character, :character \&})
+    :BCCAmpersandEndRange (constantly {:type :character, :character \&})
 
     :EscapedChar identity
     :NormalSlashedCharacters (fn [[_slash c]]
