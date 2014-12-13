@@ -165,8 +165,10 @@
                    (throw (ex-info "Bad hex character!"
                                    {:type ::parse-error
                                     :hex-string hex-string})))
-                 {:type :character
-                  :character (char (int n))}))
+                 (if (> n 16rFFFF)
+                   (unsupported "large unicode characters")
+                   {:type :character
+                    :character (char (int n))})))
     :ShortHexChar identity
     :MediumHexChar identity
     :LongHexChar identity
