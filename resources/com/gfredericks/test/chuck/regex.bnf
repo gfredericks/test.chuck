@@ -16,8 +16,8 @@ BCCElemLeft = BCCElemBase
 BCCElemNonLeft = BCCElemBase
 
 
-BCCElemBase = BCCCharNonRange | SpecialCharClass | UnicodeCharacterClass | BCCRange | BCC
-BCCRangeRightable = BCCCharEndRange | SpecialCharClass | UnicodeCharacterClass | '&'
+BCCElemBase = BCCCharNonRange | BCCRange | BCC
+BCCRangeRightable = BCCCharEndRange | '&'
 BCCRange = BCCChar <'-'> BCCCharEndRange
 BCCRangeWithBracket = <']-'> BCCCharEndRange
 BCCCharNonRange = BCCChar ! ('-' BCCRangeRightable)
@@ -32,22 +32,6 @@ BCCDash = '-'
 
 (** BASE CHARACTER STUFFS **)
 
-EscapedChar = OctalChar | HexChar | BasicEscapedChar | NormalSlashedCharacters | ControlChar | WhatDoesThisMean
-OctalChar = <'\\0'> (OctalDigits1 | OctalDigits2 | OctalDigits3)
-OctalDigits1 = #"[0-7]" ! #"[0-7]"
-OctalDigits2 = (#"[0-3][0-7]" ! #"[0-7]") | #"[4-7][0-7]"
-OctalDigits3 = #"[0-3][0-7]{2}"
-HexChar = ShortHexChar | MediumHexChar | LongHexChar
-ShortHexChar = <'\\x'> #'[0-9a-fA-F]{2}'
-MediumHexChar = <'\\u'> #'[0-9a-fA-F]{4}'
-LongHexChar = <'\\x{'> #'[0-9a-fA-F]+' <'}'>
-BasicEscapedChar = <'\\'> #"[^a-zA-Z0-9]"
+EscapedChar = ControlChar
 
-(* probably missing something here *)
-SpecialCharClass = #"\\[wWsSdD]"
-(* Gotta figure out what these mean *)
-UnicodeCharacterClass = <'\\'> #'[pP]' (#"[CLMNPSZ]" | #"\{[a-zA-Z]+\}")
-
-NormalSlashedCharacters = #"\\[tnrfae]"
-WhatDoesThisMean = '\\v'
 ControlChar = <'\\c'> (<'\\'> #"(?s)." | ! '\\' #"(?s).")

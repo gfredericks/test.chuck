@@ -301,6 +301,6 @@
                    :feature feature
                    :patches? "welcome."})))
 
-(if (< 1 (count (insta/parses the-parser "[{-\\c}]")))
+(if (< 1 (count (insta/parses the-parser "[x-\\cx]")))
   :still-buggy
   :whoops-not-buggy-now)
