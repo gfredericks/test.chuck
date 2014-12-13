@@ -9,4 +9,4 @@ CharNonRange = Char ! ('-' Char)
 Char = PlainChar | ControlChar
 PlainChar = #"[-x]"
 Dash = '-'
-ControlChar = <'\\c'> (<'\\'> #"(?s)." | ! '\\' #"(?s).")
+ControlChar = <'\\c'> ((<'\\'> 'x') | #"(?s)[^\\]")
