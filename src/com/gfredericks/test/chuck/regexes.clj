@@ -21,15 +21,23 @@
 
 (defn ^:private analyze-range
   [begin end]
-  {:pre [(= :character (:type begin))
-         (= :character (:type end))]}
-  (let [begin (:character begin)
-        end (:character end)]
-    (when (< (int end) (int begin))
-      (throw (ex-info "Parse failure!"
-                      {:type ::parse-error
-                       :character-class-range [begin end]})))
-    {:type :range, :begin begin, :end end}))
+  (let [{btype :type} begin
+        {etype :type} end]
+    (cond (= :unsupported btype) begin
+          (= :unsupported etype) end
+
+          (not (and (= :character btype etype)))
+          (throw (ex-info "Unexpected error parsing range."
+                          {:begin begin :end end}))
+
+          :else
+          (let [begin (:character begin)
+                end (:character end)]
+            (when (< (int end) (int begin))
+              (throw (ex-info "Parse failure!"
+                              {:type ::parse-error
+                               :character-class-range [begin end]})))
+            {:type :range, :begin begin, :end end}))))
 
 (defn ^:private remove-QE
   [^String s]
