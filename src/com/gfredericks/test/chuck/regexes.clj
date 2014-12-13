@@ -124,9 +124,10 @@
     :PlainChar (fn [s] {:pre [(= 1 (count s))]}
                  {:type :character, :character (first s)})
 
-    ;; unsupported because I have to figure out what the meaning of
-    ;; edge case expressions like \cx and \c$ is
-    :ControlChar (constantly (unsupported "control characters"))
+    :ControlChar (fn [[c]]
+                   ;; this is the same calculation openjdk performs so
+                   ;; it must be right.
+                   {:type :character, :character (-> c int (bit-xor 64) char)})
 
     ;; sounds super tricky. looking forward to investigating
     :Anchor (constantly (unsupported "anchors"))
@@ -144,9 +145,11 @@
     :BCCRange analyze-range
     :BCCRangeWithBracket #(analyze-range {:type :character, :character \]} %)
     :BCCChar identity
+    :BCCCharEndRange identity
     :BCCDash (constantly {:type :character, :character \-})
     :BCCPlainChar (fn [[c]] {:type :character, :character c})
     :BCCOddAmpersands (constantly {:type :character, :character \&})
+    :BCCEvenAmpersands (constantly {:type :character, :character \&})
 
     :EscapedChar identity
     :NormalSlashedCharacters (fn [[_slash c]]
