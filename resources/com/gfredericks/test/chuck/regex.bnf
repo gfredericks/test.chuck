@@ -1,34 +1,4 @@
-Regex = Alternation
-
-Alternation = Concatenation (<'|'> Concatenation) *
-
-Concatenation = DanglingCurlyRepetitions SuffixedExpr *
-
-DanglingCurlyRepetitions = (CurlyRepetition Quantifier ?) *
-
-SuffixedExpr = SingleExpr Suffix ?
-SingleExpr = BaseExpr | ParenthesizedExpr
-ParenthesizedExpr = <'('> GroupFlags ? Alternation <')'>
-Suffix = (Optional | Positive | NonNegative | CurlyRepetition ) Quantifier ? DanglingCurlyRepetitions
-Optional = <'?'>
-Positive = <'+'>
-NonNegative = <'*'>
-CurlyRepetition = <'{'> #"\d+" (',' #"\d+" ?) ? <'}'>
-Quantifier = '?' | '+'
-BaseExpr = CharExpr | LiteralChar | Anchor | BackReference
-Anchor = '^' | '$' | '\\' #"[bBAGZz]"
-LiteralChar = PlainChar | EscapedChar
-
-(* this will be hard -- will require counting in the analyzer to figure
-   out where the number stops and numberic literals begin *)
-BackReference = <'\\'> #"[1-9][0-9]*"
-
-PlainChar = #"[^.|\\+*$^\[(){?]"
-CharExpr = Dot | SpecialCharClass | UnicodeCharacterClass | BCC
-Dot = '.'
-
-(** BRACKETED CHARACTER CLASSES (AKA BCC) **)
-(** (which are more complicated than you thought they were) **)
+Regex = BCC
 
 BCC = <'['> BCCIntersection <'&&'>? <']'>
 (* using + with '&&' allows arbitrary even numbers of ampersands, which
@@ -81,25 +51,3 @@ UnicodeCharacterClass = <'\\'> #'[pP]' (#"[CLMNPSZ]" | #"\{[a-zA-Z]+\}")
 NormalSlashedCharacters = #"\\[tnrfae]"
 WhatDoesThisMean = '\\v'
 ControlChar = <'\\c'> (<'\\'> #"(?s)." | ! '\\' #"(?s).")
-
-(** FLAGS **)
-GroupFlags = NamedCapturingGroup
-           | MutatingMatchFlags
-           | NonCapturingMatchFlags
-           | PositiveLookAheadFlag
-           | NegativeLookAheadFlag
-           | PositiveLookBehindFlag
-           | PositiveLookBehindFlag
-           | IndependentNonCapturingFlag
-
-NamedCapturingGroup = <'?<'> GroupName <'>'>
-MutatingMatchFlags = <'?'> MatchFlagsExpr & ')'
-NonCapturingMatchFlags = <'?'> !')' MatchFlagsExpr <':'>
-PositiveLookAheadFlag = <'?='>
-NegativeLookAheadFlag = <'?!'>
-PositiveLookBehindFlag = <'?<='>
-PositiveLookBehindFlag = <'?<!'>
-IndependentNonCapturingFlag = <'?>'>
-MatchFlagsExpr = #"[idmsuxU]" * ('-' #"[idmsuxU]" *) ?
-
-GroupName = #"[a-zA-Z][a-zA-Z0-9]*"
