@@ -1,12 +1,4 @@
-Regex = BCCUnionLeft
-
-BCCUnionLeft = (BCCNegation BCCElemHardLeft | !'^' BCCElemHardLeft) BCCElemNonLeft *
-BCCNegation = '^'
-
-BCCElemHardLeft = BCCElemBase | (']' ! ('-' BCCRangeRightable))
-BCCElemLeft = BCCElemBase
-BCCElemNonLeft = BCCElemBase
-
+Regex = BCCElemBase *
 
 BCCElemBase = BCCCharNonRange | BCCRange
 BCCRangeRightable = BCCCharEndRange
