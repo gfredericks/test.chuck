@@ -3,7 +3,7 @@ Regex = BCCUnionLeft
 BCCUnionLeft = (BCCNegation BCCElemHardLeft | !'^' BCCElemHardLeft) BCCElemNonLeft *
 BCCNegation = '^'
 
-BCCElemHardLeft = BCCElemBase | (']' ! ('-' BCCRangeRightable)) | BCCRangeWithBracket
+BCCElemHardLeft = BCCElemBase | (']' ! ('-' BCCRangeRightable))
 BCCElemLeft = BCCElemBase
 BCCElemNonLeft = BCCElemBase
 
@@ -11,7 +11,6 @@ BCCElemNonLeft = BCCElemBase
 BCCElemBase = BCCCharNonRange | BCCRange
 BCCRangeRightable = BCCCharEndRange
 BCCRange = BCCChar <'-'> BCCCharEndRange
-BCCRangeWithBracket = <']-'> BCCCharEndRange
 BCCCharNonRange = BCCChar ! ('-' BCCRangeRightable)
 BCCChar = BCCPlainChar | EscapedChar
 BCCCharEndRange = BCCPlainChar | EscapedChar
