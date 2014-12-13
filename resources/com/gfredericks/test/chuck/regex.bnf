@@ -1,17 +1,9 @@
 Regex = ElemBase *
 
 ElemBase = CharNonRange | Range
-RangeRightable = CharEndRange
-Range = Char <'-'> CharEndRange
-CharNonRange = Char ! ('-' RangeRightable)
-Char = PlainChar | EscapedChar
-CharEndRange = PlainChar | EscapedChar
+Range = Char <'-'> Char
+CharNonRange = Char ! ('-' Char)
+Char = PlainChar | ControlChar
 PlainChar = #"[-x]"
 Dash = '-'
-
-
-(** BASE CHARACTER STUFFS **)
-
-EscapedChar = ControlChar
-
 ControlChar = <'\\c'> (<'\\'> #"(?s)." | ! '\\' #"(?s).")
