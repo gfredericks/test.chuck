@@ -33,10 +33,9 @@ Dot = '.'
 BCC = <'['> BCCIntersection <'&&'>? <']'>
 (* using + with '&&' allows arbitrary even numbers of ampersands, which
    is how the jvm parses it *)
-BCCIntersection = BCCUnionLeft ((<BCCEvenAmpersands> BCCUnionCenter ) * <BCCEvenAmpersands> BCCUnionRight) ?
+BCCIntersection = BCCUnionLeft (<BCCEvenAmpersands> BCCUnionNonLeft ) *
 BCCUnionLeft = (BCCNegation BCCElemHardLeft | !'^' BCCElemHardLeft) BCCElemNonLeft *
-BCCUnionRight = BCCElemLeft BCCElemNonLeft *
-BCCUnionCenter = BCCElemLeft BCCElemNonLeft *
+BCCUnionNonLeft = BCCElemLeft BCCElemNonLeft *
 BCCNegation = '^'
 BCCEvenAmpersands = ('&&' + !'&')
 BCCOddAmpersands = '&' <'&&'>* ! '&'
@@ -48,7 +47,7 @@ BCCElemNonLeft = BCCElemBase
 
 
 BCCElemBase = BCCCharNonRange | SpecialCharClass | UnicodeCharacterClass | BCCRange | BCC
-BCCRangeRightable = BCCChar | SpecialCharClass | UnicodeCharacterClass | '&'
+BCCRangeRightable = BCCCharEndRange | SpecialCharClass | UnicodeCharacterClass | '&'
 BCCRange = BCCChar <'-'> BCCCharEndRange
 BCCRangeWithBracket = <']-'> BCCCharEndRange
 BCCCharNonRange = BCCChar ! ('-' BCCRangeRightable)

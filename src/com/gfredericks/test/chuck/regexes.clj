@@ -1,6 +1,7 @@
 (ns com.gfredericks.test.chuck.regexes
   "Generic regex analysis code, not test.check specific."
-  (:require [clojure.test.check.generators :as gen]
+  (:require [clojure.set :as set]
+            [clojure.test.check.generators :as gen]
             [instaparse.core :as insta]))
 
 ;;
@@ -32,12 +33,14 @@
 
           :else
           (let [begin (:character begin)
-                end (:character end)]
-            (when (< (int end) (int begin))
+                end (:character end)
+                i-begin (int begin)
+                i-end (int end)]
+            (when (< i-end i-begin)
               (throw (ex-info "Parse failure!"
                               {:type ::parse-error
                                :character-class-range [begin end]})))
-            {:type :range, :begin begin, :end end}))))
+            {:type :class, :chars (set (for [i (range i-begin (inc i-end))] (char i)))}))))
 
 (defn ^:private remove-QE
   [^String s]
@@ -67,6 +70,13 @@
 (defn ^:private unsupported
   [feature]
   {:type :unsupported, :feature feature})
+
+(defn ^:private combine-char-classes
+  [set-op class-1 class-2]
+  ;; haha monads
+  (cond (= :unsupported (:type class-1)) class-1
+        (= :unsupported (:type class-2)) class-2
+        :else {:type :class, :chars (set-op (:chars class-1) (:chars class-2))}))
 
 (defn analyze
   [parsed-regex]
@@ -137,14 +147,29 @@
     :Dot (constantly (unsupported "character classes"))
     :SpecialCharClass (constantly (unsupported "character classes"))
 
-    ;; can do these as soon as I come up with some nice range algebra
-    :BCC (constantly (unsupported "character classes"))
-
     :BackReference (constantly (unsupported "backreferences"))
 
+    :BCC identity
+    :BCCIntersection (fn [& unions]
+                       (reduce (partial combine-char-classes set/intersection) unions))
+    :BCCUnionLeft (fn [& els]
+                    (if (= "^" (first els))
+                      ;; unsupported until we figure out the universe of characters
+                      (unsupported "Negated character classes")
+                      (reduce (partial combine-char-classes set/union) els)))
+    :BCCNegation identity
+    :BCCUnionNonLeft (fn [& els]
+                       (reduce (partial combine-char-classes set/union) els))
+    :BCCElemHardLeft identity
+    :BCCElemLeft identity
+    :BCCElemNonLeft identity
+    :BCCElemBase (fn [x] (if (= :character (:type x))
+                           {:type :class, :chars #{(:character x)}}
+                           x))
     :BCCRange analyze-range
     :BCCRangeWithBracket #(analyze-range {:type :character, :character \]} %)
     :BCCChar identity
+    :BCCCharNonRange identity
     :BCCCharEndRange identity
     :BCCDash (constantly {:type :character, :character \-})
     :BCCPlainChar (fn [[c]] {:type :character, :character c})
@@ -261,6 +286,13 @@
                       (gen/fmap #(apply concat %)
                                 (gen/tuple (gen/vector g lower)
                                            (gen/vector g))))))))))
+
+(defmethod analyzed->generator :class
+  [{:keys [chars]}]
+  (if (empty? chars)
+    (throw (ex-info "Cannot generate characters from empty class!"
+                    {:type ::ungeneratable}))
+    (gen/elements chars)))
 
 (defmethod analyzed->generator :unsupported
   [{:keys [feature]}]
