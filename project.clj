@@ -6,4 +6,4 @@
   :dependencies [[org.clojure/clojure "1.6.0"]]
   :profiles {:dev {:dependencies
                    [[org.clojure/test.check "0.6.1"]
-                    [instaparse "1.3.4"]]}})
+                    [instaparse "1.3.5"]]}})
