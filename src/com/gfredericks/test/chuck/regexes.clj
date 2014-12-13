@@ -78,7 +78,7 @@
     :Concatenation (fn [& regexes]
                      {:type     :concatenation
                       ;; maybe nil because of DanglingCurlyRepetitions
-                      :elements (remove nil? regexes)})
+                      :elements (doall (remove nil? regexes))})
     :SuffixedExpr (fn
                     ([regex] regex)
                     ([regex suffix]
