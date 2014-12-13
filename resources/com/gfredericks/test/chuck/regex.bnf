@@ -2,26 +2,20 @@ Regex = BCCUnionLeft
 
 BCCUnionLeft = (BCCNegation BCCElemHardLeft | !'^' BCCElemHardLeft) BCCElemNonLeft *
 BCCNegation = '^'
-BCCEvenAmpersands = ('&&' + !'&')
-BCCOddAmpersands = '&' <'&&'>* ! '&'
 
-(* The optional '&&' here cover some quirky NOOP edge cases *)
-BCCElemHardLeft = !'&&&' <'&&'> ? BCCElemBase | (']' ! ('-' BCCRangeRightable)) | BCCRangeWithBracket
+BCCElemHardLeft = BCCElemBase | (']' ! ('-' BCCRangeRightable)) | BCCRangeWithBracket
 BCCElemLeft = BCCElemBase
 BCCElemNonLeft = BCCElemBase
 
 
 BCCElemBase = BCCCharNonRange | BCCRange
-BCCRangeRightable = BCCCharEndRange | '&'
+BCCRangeRightable = BCCCharEndRange
 BCCRange = BCCChar <'-'> BCCCharEndRange
 BCCRangeWithBracket = <']-'> BCCCharEndRange
 BCCCharNonRange = BCCChar ! ('-' BCCRangeRightable)
-BCCChar = BCCPlainChar | EscapedChar | BCCOddAmpersands
-BCCCharEndRange = BCCPlainChar | EscapedChar | BCCAmpersandEndRange
-BCCAmpersandEndRange = '&' <(!'&' | BCCOddAmpersands)>
-BCCPlainChar = #"[^\]\[&\\]"
-(* only match an odd number of ampersands whatever *)
-(* This is problematic because re-pattern won't take repeated ampersands in the HardLeft position *)
+BCCChar = BCCPlainChar | EscapedChar
+BCCCharEndRange = BCCPlainChar | EscapedChar
+BCCPlainChar = #"[^\]\[\\]"
 BCCDash = '-'
 
 
