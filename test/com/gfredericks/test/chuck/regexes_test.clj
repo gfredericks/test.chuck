@@ -106,8 +106,8 @@
              :let [gen (try (-> regex str regexes/parse regexes/analyzed->generator)
                             (catch clojure.lang.ExceptionInfo e
                               (when (not= (:type (ex-data e)) ::regexes/unsupported-feature)
-                                (throw e))))]
-             :when gen
+                                (throw (ex-info "Craptastic" {:regex regex} e)))))]
+             :when ^{:max-tries 100} gen
              s gen]
     {:regex regex, :s s}))
 
