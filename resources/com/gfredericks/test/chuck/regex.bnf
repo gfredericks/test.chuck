@@ -81,7 +81,7 @@ UnicodeCharacterClass = <'\\'> #'[pP]' (#"[CLMNPSZ]" | #"\{[a-zA-Z]+\}")
 
 NormalSlashedCharacters = #"\\[tnrfae]"
 WhatDoesThisMean = '\\v'
-ControlChar = <'\\c'> #"(?s)."
+ControlChar = <'\\c'> (<'\\'> #"(?s)." | ! '\\' #"(?s).")
 
 (** FLAGS **)
 GroupFlags = NamedCapturingGroup
