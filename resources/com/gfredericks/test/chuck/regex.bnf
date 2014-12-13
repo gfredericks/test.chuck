@@ -1,8 +1,11 @@
 Regex = ElemBase *
 
 ElemBase = CharNonRange | Range
+
+(* these two are supposed to be mutually exclusive *)
 Range = Char <'-'> Char
 CharNonRange = Char ! ('-' Char)
+
 Char = PlainChar | ControlChar
 PlainChar = #"[-x]"
 Dash = '-'
