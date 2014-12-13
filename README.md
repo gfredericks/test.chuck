@@ -85,7 +85,7 @@ of `gen/bind`, `gen/fmap`, `gen/such-that`, and `gen/tuple`:
 ``` clojure
 (gen'/for [:parallel [n1 gen/nat
                       n2 gen/nat]
-           :when (coprime? n1 n2)
+           :when ^{:max-tries 20} (coprime? n1 n2)
            :let [product (* n1 n2)]]
   {:n product, :factors [n1 n2]})
 
