@@ -300,3 +300,7 @@
                   {:type ::unsupported-feature
                    :feature feature
                    :patches? "welcome."})))
+
+(defn gen-string-from-regex
+  [re]
+  (-> re str parse analyzed->generator))
