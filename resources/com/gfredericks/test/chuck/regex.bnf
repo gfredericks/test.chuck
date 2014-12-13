@@ -53,7 +53,8 @@ BCCRange = BCCChar <'-'> BCCCharEndRange
 BCCRangeWithBracket = <']-'> BCCCharEndRange
 BCCCharNonRange = BCCChar ! ('-' BCCRangeRightable)
 BCCChar = BCCPlainChar | EscapedChar | BCCOddAmpersands
-BCCCharEndRange = BCCPlainChar | EscapedChar | BCCEvenAmpersands
+BCCCharEndRange = BCCPlainChar | EscapedChar | BCCAmpersandEndRange
+BCCAmpersandEndRange = '&' <(!'&' | BCCOddAmpersands)>
 BCCPlainChar = #"[^\]\[&\\]"
 (* only match an odd number of ampersands whatever *)
 (* This is problematic because re-pattern won't take repeated ampersands in the HardLeft position *)
