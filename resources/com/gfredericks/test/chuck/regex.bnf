@@ -1,8 +1,5 @@
-Regex = BCC
+Regex = BCCIntersection
 
-BCC = <'['> BCCIntersection <'&&'>? <']'>
-(* using + with '&&' allows arbitrary even numbers of ampersands, which
-   is how the jvm parses it *)
 BCCIntersection = BCCUnionLeft (<BCCEvenAmpersands> BCCUnionNonLeft ) *
 BCCUnionLeft = (BCCNegation BCCElemHardLeft | !'^' BCCElemHardLeft) BCCElemNonLeft *
 BCCUnionNonLeft = BCCElemLeft BCCElemNonLeft *
@@ -16,7 +13,7 @@ BCCElemLeft = BCCElemBase
 BCCElemNonLeft = BCCElemBase
 
 
-BCCElemBase = BCCCharNonRange | BCCRange | BCC
+BCCElemBase = BCCCharNonRange | BCCRange
 BCCRangeRightable = BCCCharEndRange | '&'
 BCCRange = BCCChar <'-'> BCCCharEndRange
 BCCRangeWithBracket = <']-'> BCCCharEndRange
