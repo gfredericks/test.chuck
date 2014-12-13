@@ -1,13 +1,13 @@
-Regex = BCCElemBase *
+Regex = ElemBase *
 
-BCCElemBase = BCCCharNonRange | BCCRange
-BCCRangeRightable = BCCCharEndRange
-BCCRange = BCCChar <'-'> BCCCharEndRange
-BCCCharNonRange = BCCChar ! ('-' BCCRangeRightable)
-BCCChar = BCCPlainChar | EscapedChar
-BCCCharEndRange = BCCPlainChar | EscapedChar
-BCCPlainChar = #"[-x]"
-BCCDash = '-'
+ElemBase = CharNonRange | Range
+RangeRightable = CharEndRange
+Range = Char <'-'> CharEndRange
+CharNonRange = Char ! ('-' RangeRightable)
+Char = PlainChar | EscapedChar
+CharEndRange = PlainChar | EscapedChar
+PlainChar = #"[-x]"
+Dash = '-'
 
 
 (** BASE CHARACTER STUFFS **)
