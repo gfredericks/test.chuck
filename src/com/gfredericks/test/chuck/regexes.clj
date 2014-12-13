@@ -155,7 +155,8 @@
     :BCCUnionLeft (fn [& els]
                     (if (= "^" (first els))
                       ;; unsupported until we figure out the universe of characters
-                      (unsupported "Negated character classes")
+                      (do (dorun els) ; ugh exceptions and laziness
+                          (unsupported "Negated character classes"))
                       (reduce (partial combine-char-classes set/union) els)))
     :BCCNegation identity
     :BCCUnionNonLeft (fn [& els]
