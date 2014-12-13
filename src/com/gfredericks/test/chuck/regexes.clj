@@ -229,6 +229,7 @@
   [{:keys [elements]}]
   (->> elements
        (map analyzed->generator)
+       (doall)
        (apply gen/tuple)
        (gen/fmap #(apply str %))))
 
@@ -236,6 +237,7 @@
   [{:keys [elements]}]
   (->> elements
        (map analyzed->generator)
+       (doall)
        (gen/one-of)))
 
 (defmethod analyzed->generator :character
