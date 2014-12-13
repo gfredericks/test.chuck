@@ -14,7 +14,7 @@ BCCRange = BCCChar <'-'> BCCCharEndRange
 BCCCharNonRange = BCCChar ! ('-' BCCRangeRightable)
 BCCChar = BCCPlainChar | EscapedChar
 BCCCharEndRange = BCCPlainChar | EscapedChar
-BCCPlainChar = #"[^\]\[\\]"
+BCCPlainChar = #"[-x]"
 BCCDash = '-'
 
 
