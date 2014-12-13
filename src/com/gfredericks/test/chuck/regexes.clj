@@ -300,3 +300,7 @@
                   {:type ::unsupported-feature
                    :feature feature
                    :patches? "welcome."})))
+
+(if (< 1 (count (insta/parses the-parser "[{-\\c}]")))
+  :still-buggy
+  :whoops-not-buggy-now)
