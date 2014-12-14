@@ -84,7 +84,7 @@
        "[]-_]" "[-x]" "[x+--y]" "[\\e]" "\\\0" "[[x]-y]" "(?)"
        "[&&x]" "[x&&y]" "[x&]" "[x&&]" "[&]" "[--?]"
        "{0}?" "[\\c\n]" "[\\e- ]" "\\Q\\E" "[\\Q][\\E]"
-       "(?:)" "[!-&&]")
+       "(?:)" "[!-&&]" "\\c\\")
   (are [s] (not (parses? s))
        "[b-a]" "[^]" "[]-X]" "[&&&]" "[\\Q\\E]" "(??)"
        "\\x{110000}" "{1,0}" "[[[[{-\\c}]]]]" "[x-\\cx]"))
@@ -117,3 +117,14 @@
 (defspec generator-spec 1000
   (prop/for-all [{:keys [regex s]} gen-generator-scenario]
     (re-matches regex s)))
+
+(def generator-regression-cases
+  ["[\\c\\u]"])
+
+(defspec generator-regression-spec 1000
+  ;; TODO: make a prop in test.chuck that's like for
+  (prop/for-all [[re s] (gen'/for [re-s (gen/elements generator-regression-cases)
+                                   :let [re (re-pattern re-s)]
+                                   s (regexes/gen-string-from-regex re)]
+                          [re s])]
+    (re-matches re s)))

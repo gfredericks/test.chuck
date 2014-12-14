@@ -80,7 +80,9 @@ UnicodeCharacterClass = <'\\'> #'[pP]' (#"[CLMNPSZ]" | #"\{[a-zA-Z]+\}")
 
 NormalSlashedCharacters = #"\\[tnrfae]"
 WhatDoesThisMean = '\\v'
-ControlChar = <'\\c'> (<'\\'> #"(?s)." | #"(?s)[^\\]")
+
+(* why did I think you could have a backslashed character here?? *)
+ControlChar = <'\\c'> #"(?s)."
 
 (** FLAGS **)
 GroupFlags = NamedCapturingGroup
