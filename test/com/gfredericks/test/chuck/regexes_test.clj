@@ -141,3 +141,16 @@
                     (throw e))))
        "[&&x]" "[x&&]" "[^[x]]" "[^[x]x]" "[a&&&b]" "[x&&&&y]"
        "[^{}&&&]" "[x&&&&]" "[x&&&&&]"))
+
+(defn debug
+  [msg int-array i]
+  (let [s (apply str (map char int-array))
+        s2 (mapv pr-str [(if (pos? i) (subs s (max 0 (- i 20)) i) "")
+                         (subs s i (inc i))
+                         (subs s (inc i) (min (count s) (+ i 20)))])]
+    (apply println "DEBUG: " msg s2)))
+
+(comment
+
+  (com.gfredericks.regex.Pattern/compile "[a-fh]")
+  )

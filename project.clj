@@ -6,4 +6,5 @@
   :dependencies [[org.clojure/clojure "1.6.0"]]
   :profiles {:dev {:dependencies
                    [[org.clojure/test.check "0.6.2"]
-                    [instaparse "1.3.5"]]}})
+                    [instaparse "1.3.5"]]}}
+  :java-source-paths ["src-java"])
