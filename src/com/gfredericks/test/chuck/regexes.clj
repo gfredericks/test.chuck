@@ -23,25 +23,8 @@
 
 (defn ^:private analyze-range
   [begin end]
-  (let [{btype :type} begin
-        {etype :type} end]
-    (cond (= :unsupported btype) begin
-          (= :unsupported etype) end
-
-          (not (and (= :character btype etype)))
-          (throw (ex-info "Unexpected error parsing range."
-                          {:begin begin :end end}))
-
-          :else
-          (let [begin (:character begin)
-                end (:character end)
-                i-begin (int begin)
-                i-end (int end)]
-            (when (< i-end i-begin)
-              (throw (ex-info "Parse failure!"
-                              {:type ::parse-error
-                               :character-class-range [begin end]})))
-            {:type :class, :chars (set (for [i (range i-begin (inc i-end))] (char i)))}))))
+  {:type :range
+   :range [begin end]})
 
 (defn ^:private remove-QE
   "Preprocesses a regex string (the same way that openjdk does) by
@@ -153,15 +136,22 @@
 
     :BackReference (constantly (unsupported "backreferences"))
 
-    :BCC identity
+    :BCC (fn
+           ([intersection] intersection)
+           ([intersection dangling-ampersands]
+              (update-in intersection [:undefined] (fnil conj #{}) :dangling-ampersands)))
     :BCCIntersection (fn [& unions]
-                       (reduce (partial combine-char-classes set/intersection) unions))
+                       {:type :class-intersection
+                        :elements unions})
     :BCCUnionLeft (fn [& els]
-                    (if (= "^" (first els))
-                      ;; unsupported until we figure out the universe of characters
-                      (do (dorun els) ; ugh exceptions and laziness
-                          (unsupported "Negated character classes"))
-                      (reduce (partial combine-char-classes set/union) els)))
+                    (let [[negated? els] (if (= "^" (first els))
+                                           [true (rest els)]
+                                           [false els])]
+                      (cond->
+                       {:type :class-union
+                        :elements els}
+                       negated?
+                       (assoc :unsupported #{:negated-character-classes}))))
     :BCCNegation identity
     :BCCUnionNonLeft (fn [& els]
                        (reduce (partial combine-char-classes set/union) els))
@@ -199,7 +189,9 @@
                                    {:type ::parse-error
                                     :hex-string hex-string})))
                  (if (> n 16rFFFF)
-                   (unsupported "large unicode characters")
+                   {:type :large-unicode-character
+                    :unsupported "large unicode characters"
+                    :n n}
                    {:type :character
                     :character (char (int n))})))
     :ShortHexChar identity
@@ -237,6 +229,22 @@
       (slurp)
       (insta/parser)))
 
+(defn throw-parse-errors
+  "Checks the analyzed tree for any problems that cause exceptions
+  with re-pattern."
+  [analyzed-tree]
+  (doseq [m (tree-seq #(contains? % :elements) :elements analyzed-tree)]
+    (case (:type m)
+      :range
+      (let [[m1 m2] (:range m)
+            c1 (or (:character m1) (:n m1))
+            c2 (or (:character m2) (:n m2))]
+        (when (< (int c2) (int c1))
+          (throw (ex-info "Bad character range"
+                          {:type ::parse-error
+                           :range [c1 c2]}))))
+      nil)))
+
 (defn parse
   [s]
   (let [[the-parse & more :as ret] (insta/parses the-parser (remove-QE s))]
@@ -251,7 +259,8 @@
                            :parses ret}))
 
           :else
-          (analyze the-parse))))
+          (doto (analyze the-parse)
+            (throw-parse-errors)))))
 
 (defmulti analyzed->generator :type)
 
@@ -315,6 +324,17 @@
   ;; this check helps catch flags like CANON_EQ that aren't
   ;; necessarily represented in the text of the regex
   (when (pos? (.flags re))
-    (throw (ex-info {:type ::unsupported-feature
+    (throw (ex-info "Unsupported feature"
+                    {:type ::unsupported-feature
                      :feature "flags"})))
-  (-> re str parse analyzed->generator))
+  (let [analyzed (-> re str parse)]
+    (doseq [m (tree-seq #(contains? % :elements) :elements analyzed)]
+      (when-let [[x] (seq (:unsupported m))]
+        (throw (ex-info "Unsupported-feature"
+                        {:type ::unsupported-feature
+                         :feature x})))
+      (when-let [[x] (seq (:undefined m))]
+        (throw (ex-info "Undefined regex syntax"
+                        {:type ::unsupported-feature
+                         :feature x}))))
+    (analyzed->generator analyzed)))
