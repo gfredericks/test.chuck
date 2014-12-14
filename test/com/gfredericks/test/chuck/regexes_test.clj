@@ -120,7 +120,7 @@
     (re-matches regex s)))
 
 (def generator-regression-cases
-  ["[\\c\\u]" "[a-bx&&]"])
+  ["[\\c\\u]"])
 
 (defspec generator-regression-spec 1000
   ;; TODO: make a prop in test.chuck that's like for

@@ -30,9 +30,10 @@ Dot = '.'
 (** BRACKETED CHARACTER CLASSES (AKA BCC) **)
 (** (which are more complicated than you thought they were) **)
 
-BCC = <'['> BCCIntersection <'&&'>? <']'>
+BCC = <'['> BCCIntersection BCCDanglingAmpersands ? <']'>
 (* using + with '&&' allows arbitrary even numbers of ampersands, which
    is how the jvm parses it *)
+BCCDanglingAmpersands = '&&'
 BCCIntersection = BCCUnionLeft (<BCCEvenAmpersands> BCCUnionNonLeft ) *
 BCCUnionLeft = (BCCNegation BCCElemHardLeft | !'^' BCCElemHardLeft) BCCElemNonLeft *
 BCCUnionNonLeft = BCCElemLeft BCCElemNonLeft *

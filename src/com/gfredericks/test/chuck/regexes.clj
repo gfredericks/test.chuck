@@ -9,6 +9,13 @@
 ;;  - add a character set concept for negated character classes and DOT
 ;;  - those unicode block names are actually a lot more than listed
 ;;
+;; Notes before I go to bed:
+;; - I think this "[{\\x{10000}-}]" problem should be solved by moving
+;;   away from exception-based parse failures. Instead we should keep all
+;;   the information around in the transform, and let a separate walking
+;;   function (tree-seq anybody?) figure out if there are range errors or
+;;   unsupported features or whatever. AMIRITE.
+;;
 
 (def grammar-path "com/gfredericks/test/chuck/regex.bnf")
 
@@ -37,6 +44,9 @@
             {:type :class, :chars (set (for [i (range i-begin (inc i-end))] (char i)))}))))
 
 (defn ^:private remove-QE
+  "Preprocesses a regex string (the same way that openjdk does) by
+  transforming all \\Q...\\E expressions. Returns a string which is
+  an equivalent regex that contains no \\Q...\\E expressions."
   [^String s]
   (if (.contains s "\\Q")
     (letfn [(remove-QE-not-quoting [chars]
