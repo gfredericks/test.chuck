@@ -6,13 +6,7 @@
 
 ;;
 ;; Before releasing:
-;;  - read through the Pattern docs and make sure every syntactic
-;;    construct mentioned is represented in the generators
-;;    - unicode block names?
 ;;  - add a character set concept for negated character classes and DOT
-;;  - add a check for that CANON_EQ flag (which I can't imagine supporting)
-;;    - actually we should probably check ALL the flags since I think they
-;;      can be given that way
 ;;  - those unicode block names are actually a lot more than listed
 ;;
 
@@ -207,6 +201,7 @@
     :OctalDigits3 list
 
     :UnicodeCharacterClass (fn [p name]
+                             ;; TODO: this is not a complete list
                              (if (#{"C" "L" "M" "N" "P" "S" "Z"
                                     "{Lower}" "{Upper}" "{ASCII}"
                                     "{Alpha}" "{Digit}" "{Alnum}"
@@ -303,5 +298,10 @@
                    :patches? "welcome."})))
 
 (defn gen-string-from-regex
-  [re]
+  [^java.util.regex.Pattern re]
+  ;; this check helps catch flags like CANON_EQ that aren't
+  ;; necessarily represented in the text of the regex
+  (when (pos? (.flags re))
+    (throw (ex-info {:type ::unsupported-feature
+                     :feature "flags"})))
   (-> re str parse analyzed->generator))
