@@ -155,7 +155,10 @@
     :BCCNegation identity
     :BCCUnionNonLeft (fn [& els]
                        (reduce (partial combine-char-classes set/union) els))
-    :BCCElemHardLeft identity
+    :BCCElemHardLeft (fn [x]
+                       (if (= x "]")
+                         {:type :character, :character \]}
+                         x))
     :BCCElemLeft identity
     :BCCElemNonLeft identity
     :BCCElemBase (fn [x] (if (= :character (:type x))
