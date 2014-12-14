@@ -83,7 +83,7 @@
                          {:type :unsupported
                           :feature "quantifiers"}
                          {:type :repetition
-                          :element regex
+                          :elements [regex]
                           :bounds (:bounds suffix)})))
     :Suffix (fn
               ;; this function can get a nil 2nd or 3rd arg because of
@@ -154,7 +154,8 @@
                        (assoc :unsupported #{:negated-character-classes}))))
     :BCCNegation identity
     :BCCUnionNonLeft (fn [& els]
-                       (reduce (partial combine-char-classes set/union) els))
+                       {:type :class-union
+                        :elements els})
     :BCCElemHardLeft (fn [x]
                        (if (= x "]")
                          {:type :character, :character \]}
