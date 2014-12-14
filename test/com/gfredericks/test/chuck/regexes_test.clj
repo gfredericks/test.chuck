@@ -87,7 +87,8 @@
        "(?:)" "[!-&&]" "\\c\\")
   (are [s] (not (parses? s))
        "[b-a]" "[^]" "[]-X]" "[&&&]" "[\\Q\\E]" "(??)"
-       "\\x{110000}" "{1,0}" "[[[[{-\\c}]]]]" "[x-\\cx]"))
+       "\\x{110000}" "{1,0}" "[[[[{-\\c}]]]]" "[x-\\cx]"
+       "[{\\x{10000}-}]"))
 
 (defspec parser-spec 1000
   (prop/for-all [[flag s] gen-regex-parsing-attempt]
@@ -119,7 +120,7 @@
     (re-matches regex s)))
 
 (def generator-regression-cases
-  ["[\\c\\u]"])
+  ["[\\c\\u]" "[a-bx&&]"])
 
 (defspec generator-regression-spec 1000
   ;; TODO: make a prop in test.chuck that's like for
