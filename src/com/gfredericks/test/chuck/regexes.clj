@@ -9,17 +9,12 @@
 ;;  - add a character set concept for negated character classes and DOT
 ;;  - those unicode block names are actually a lot more than listed
 ;;
-;; Notes before I go to bed:
-;; - I think this "[{\\x{10000}-}]" problem should be solved by moving
-;;   away from exception-based parse failures. Instead we should keep all
-;;   the information around in the transform, and let a separate walking
-;;   function (tree-seq anybody?) figure out if there are range errors or
-;;   unsupported features or whatever. AMIRITE.
-;;
 
 (def grammar-path "com/gfredericks/test/chuck/regex.bnf")
 
 (defn ^:private parse-bigint [^String s] (clojure.lang.BigInt/fromBigInteger (java.math.BigInteger. s)))
+
+(defn ^:private first! [coll] {:pre [(= 1 (count coll))]} (first coll))
 
 (defn ^:private analyze-range
   [begin end]
@@ -56,14 +51,8 @@
 
 (defn ^:private unsupported
   [feature]
-  {:type :unsupported, :feature feature})
-
-(defn ^:private combine-char-classes
-  [set-op class-1 class-2]
-  ;; haha monads
-  (cond (= :unsupported (:type class-1)) class-1
-        (= :unsupported (:type class-2)) class-2
-        :else {:type :class, :chars (set-op (:chars class-1) (:chars class-2))}))
+  {:type :unsupported,
+   :unsupported #{feature}})
 
 (defn analyze
   [parsed-regex]
@@ -113,7 +102,7 @@
     :DanglingCurlyRepetitions (constantly nil)
     :ParenthesizedExpr (fn
                          ([alternation] alternation)
-                         ([group-flags aternation] (unsupported "flags")))
+                         ([group-flags aternation] (unsupported :flags)))
     :SingleExpr identity
     :BaseExpr identity
     :CharExpr identity
@@ -127,19 +116,20 @@
                    {:type :character, :character (-> c int (bit-xor 64) char)})
 
     ;; sounds super tricky. looking forward to investigating
-    :Anchor (constantly (unsupported "anchors"))
+    :Anchor (constantly (unsupported :anchors))
 
     ;; need to figure out if there's a canonical character set to draw
     ;; from
-    :Dot (constantly (unsupported "character classes"))
-    :SpecialCharClass (constantly (unsupported "character classes"))
+    :Dot (constantly (unsupported :character-classes))
+    :SpecialCharClass (constantly (unsupported :character-classes))
 
-    :BackReference (constantly (unsupported "backreferences"))
+    :BackReference (constantly (unsupported :backreferences))
 
-    :BCC (fn
-           ([intersection] intersection)
-           ([intersection dangling-ampersands]
-              (update-in intersection [:undefined] (fnil conj #{}) :dangling-ampersands)))
+    :BCC (fn [intersection & [dangling-ampersands]]
+           (cond-> {:type :class
+                    :elements [intersection]}
+                   dangling-ampersands
+                   (assoc :undefined #{:dangling-ampersands})))
     :BCCIntersection (fn [& unions]
                        {:type :class-intersection
                         :elements unions})
@@ -163,7 +153,7 @@
     :BCCElemLeft identity
     :BCCElemNonLeft identity
     :BCCElemBase (fn [x] (if (= :character (:type x))
-                           {:type :class, :chars #{(:character x)}}
+                           {:type :class-base, :chars #{(:character x)}}
                            x))
     :BCCRange analyze-range
     :BCCRangeWithBracket #(analyze-range {:type :character, :character \]} %)
@@ -179,7 +169,7 @@
     :NormalSlashedCharacters (fn [[_slash c]]
                                {:type :character
                                 :character (normal-slashed-characters c)})
-    :WhatDoesThisMean (constantly (unsupported "what is \\v?"))
+    :WhatDoesThisMean (constantly (unsupported :backslash-v))
     :BasicEscapedChar (fn [[c]] {:type :character
                                  :character c})
 
@@ -217,7 +207,7 @@
                                     "{javaUpperCase}" "{javaWhitespace}"
                                     "{javaMirrored}" "{IsLatin}" "{InGreek}"
                                     "{Lu}" "{IsAlphabetic}" "{Sc}"} name)
-                               (unsupported "unicode character classes")
+                               (unsupported :unicode-character-classes)
                                (throw (ex-info "Bad unicode character class!"
                                                {:type ::parse-error
                                                 :class-name name}))))}
@@ -263,6 +253,44 @@
           (doto (analyze the-parse)
             (throw-parse-errors)))))
 
+(defmulti ^:private compile-class
+  "Takes a character class from the parser and returns a set of
+  characters."
+  :type)
+
+(defmethod compile-class :class
+  [m]
+  (-> m :elements first! compile-class))
+
+(defmethod compile-class :class-intersection
+  [m]
+
+  (->> (:elements m)
+       (map compile-class)
+       (apply set/intersection)))
+
+(defmethod compile-class :class-union
+  [m]
+  (->> (:elements m)
+       (map compile-class)
+       (apply set/union)))
+
+(defmethod compile-class :range
+  [{[begin end] :range}]
+
+  (->> (range (-> begin :character int)
+              (-> end :character int inc))
+       (map char)
+       (set)))
+
+(defmethod compile-class :class-base
+  [m]
+  (:chars m))
+
+(defmethod compile-class :character
+  [m]
+  #{(:character m)})
+
 (defmulti analyzed->generator :type)
 
 (defmethod analyzed->generator :default
@@ -290,10 +318,10 @@
   (gen/return (str character)))
 
 (defmethod analyzed->generator :repetition
-  [{:keys [element bounds]}]
+  [{:keys [elements bounds]}]
   (let [[lower upper] bounds]
     (assert lower)
-    (let [g (analyzed->generator element)]
+    (let [g (analyzed->generator (first! elements))]
       (gen/fmap #(apply str %)
                 (if (= lower upper)
                   (gen/vector g lower)
@@ -307,11 +335,14 @@
                                            (gen/vector g))))))))))
 
 (defmethod analyzed->generator :class
-  [{:keys [chars]}]
-  (if (empty? chars)
-    (throw (ex-info "Cannot generate characters from empty class!"
-                    {:type ::ungeneratable}))
-    (gen/elements chars)))
+  [class]
+  (let [chars (compile-class class)]
+    (if (empty? chars)
+      (throw (ex-info "Cannot generate characters from empty class!"
+                      {:type ::ungeneratable}))
+      (gen/elements chars))))
+
+
 
 (defmethod analyzed->generator :unsupported
   [{:keys [feature]}]

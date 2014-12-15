@@ -104,8 +104,8 @@
 
 (def gen-generator-scenario
   (gen'/for [regex gen-regex
-             :let [gen (try (-> regex str regexes/parse regexes/analyzed->generator)
-                            (catch clojure.lang.ExceptionInfo e
+             :let [gen (try (regexes/gen-string-from-regex regex)
+                            (catch Throwable e
                               (when (not
                                      (#{::regexes/unsupported-feature
                                         ::regexes/ungeneratable}
