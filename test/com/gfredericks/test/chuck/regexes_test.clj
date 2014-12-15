@@ -84,7 +84,7 @@
        "[]-_]" "[-x]" "[x+--y]" "[\\e]" "\\\0" "[[x]-y]" "(?)"
        "[&&x]" "[x&&y]" "[x&]" "[x&&]" "[&]" "[--?]"
        "{0}?" "[\\c\n]" "[\\e- ]" "\\Q\\E" "[\\Q][\\E]"
-       "(?:)" "[!-&&]" "\\c\\")
+       "(?:)" "[!-&&]" "\\c\\" "[\u0000-\\00]")
   (are [s] (not (parses? s))
        "[b-a]" "[^]" "[]-X]" "[&&&]" "[\\Q\\E]" "(??)"
        "\\x{110000}" "{1,0}" "[[[[{-\\c}]]]]" "[x-\\cx]"
@@ -120,7 +120,7 @@
     (re-matches regex s)))
 
 (def generator-regression-cases
-  ["[\\c\\u]"])
+  ["[\\c\\u]" "[[x]]\\c\\Q\u0080]]"])
 
 (defspec generator-regression-spec 1000
   ;; TODO: make a prop in test.chuck that's like for
