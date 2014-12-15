@@ -78,13 +78,13 @@
                       :elements (doall (remove nil? regexes))})
     :SuffixedExpr (fn
                     ([regex] regex)
-                    ([regex suffix]
-                       (if (:quantifier suffix)
-                         {:type :unsupported
-                          :feature "quantifiers"}
-                         {:type :repetition
-                          :elements [regex]
-                          :bounds (:bounds suffix)})))
+                    ([regex {:keys [bounds quantifier]}]
+                       (cond-> {:type     :repetition
+                                :elements [regex]
+                                :bounds   bounds}
+                               quantifier
+                               (assoc :unsupported
+                                 #{:quantifiers}))))
     :Suffix (fn
               ;; this function can get a nil 2nd or 3rd arg because of
               ;; DanglingCurlyRepetitions, which we don't hide so we
