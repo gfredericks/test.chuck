@@ -102,7 +102,9 @@
     :DanglingCurlyRepetitions (constantly nil)
     :ParenthesizedExpr (fn
                          ([alternation] alternation)
-                         ([group-flags aternation] (unsupported :flags)))
+                         ([group-flags alternation]
+                            (assoc (unsupported :flags)
+                              :elements [alternation])))
     :SingleExpr identity
     :BaseExpr identity
     :CharExpr identity
