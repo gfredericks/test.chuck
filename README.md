@@ -105,6 +105,20 @@ of `gen/bind`, `gen/fmap`, `gen/such-that`, and `gen/tuple`:
 
 #### `string-from-regex`
 
+``` clojure
+user> (gen/sample (gen'/string-from-regex #"([☃-♥]{3})*"))
+(""
+ "☺♓♔"
+ "☍♥☆"
+ ""
+ ""
+ "☭☞♓♃☓♊♟♚☈"
+ "☉♕☟♒☲♗"
+ "☪☎☭♠♇♛☵♞♉☮★♎♜☑♤☸♒☛"
+ "☖☺☶☃☧☕☞☄♙☨♓♥♔♕☍☺☘♔☯♖☈♁★♟"
+ "♂♆♏♃♉♞♄♠♕♝☗☓♝☚♕")
+```
+
 ## Contributing
 
 I welcome pull request for any test.check utility that seems halfway
