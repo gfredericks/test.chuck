@@ -239,7 +239,10 @@
       (let [[m1 m2] (:range m)
             c1 (or (:character m1) (:n m1))
             c2 (or (:character m2) (:n m2))]
-        (when (< (int c2) (int c1))
+        ;; char? might return false here if we're dealing with an
+        ;; unsupported thing
+        (when (and (char? c1) (char? c2)
+                   (< (int c2) (int c1)))
           (throw (ex-info "Bad character range"
                           {:type ::parse-error
                            :range [c1 c2]}))))
