@@ -252,6 +252,7 @@
                           {:type ::parse-error
                            :instaparse-data (meta ret)}))
 
+          #_ #_ ;; disabling this until that instaparse bug is fixed
           (seq more)
           (throw (ex-info "Ambiguous parse!"
                           {:type ::ambiguous-grammar
