@@ -64,9 +64,13 @@
                    {:type     :alternation
                     :elements regexes})
     :Concatenation (fn [& regexes]
-                     {:type     :concatenation
-                      ;; maybe nil because of DanglingCurlyRepetitions
-                      :elements (doall (remove nil? regexes))})
+                     (cond-> {:type     :concatenation
+                              :elements (->> regexes
+                                             (remove nil?)
+                                             (remove #{:flags}))}
+                             (some #{:flags} regexes)
+                             (assoc :unsupported #{:flags})))
+    :MutatingMatchFlags (constantly :flags)
     :SuffixedExpr (fn
                     ([regex] regex)
                     ([regex {:keys [bounds quantifier]}]

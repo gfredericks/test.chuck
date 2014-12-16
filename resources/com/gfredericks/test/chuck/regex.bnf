@@ -2,7 +2,7 @@ Regex = Alternation
 
 Alternation = Concatenation (<'|'> Concatenation) *
 
-Concatenation = DanglingCurlyRepetitions SuffixedExpr *
+Concatenation = DanglingCurlyRepetitions (SuffixedExpr | <'('> MutatingMatchFlags <')'>) *
 
 DanglingCurlyRepetitions = (CurlyRepetition Quantifier ?) *
 
@@ -87,7 +87,6 @@ ControlChar = <'\\c'> #"(?s)."
 
 (** FLAGS **)
 GroupFlags = NamedCapturingGroup
-           | MutatingMatchFlags
            | NonCapturingMatchFlags
            | PositiveLookAheadFlag
            | NegativeLookAheadFlag
