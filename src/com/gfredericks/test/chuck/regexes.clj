@@ -42,7 +42,8 @@
                (when-let [[c1 & [c2 :as cs]] (seq chars)]
                  (if (and (= c1 \\) (= c2 \E))
                    (remove-QE-not-quoting (rest cs))
-                   (if (re-matches #"[0-9a-zA-Z]" (str c1))
+                   (if (or (re-matches #"[0-9a-zA-Z]" (str c1))
+                           (<= 128 (int c1) ))
                      (cons c1 (remove-QE-quoting cs))
                      (list* \\ c1 (remove-QE-quoting cs)))))))]
       (apply str (remove-QE-not-quoting s)))
