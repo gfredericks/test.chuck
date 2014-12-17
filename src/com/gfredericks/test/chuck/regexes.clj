@@ -2,6 +2,7 @@
   "Generic regex analysis code, not test.check specific."
   (:require [clojure.set :as set]
             [clojure.test.check.generators :as gen]
+            [com.gfredericks.test.chuck.regexes.charsets :as charsets]
             [instaparse.core :as insta]))
 
 ;;
@@ -280,29 +281,29 @@
 
   (->> (:elements m)
        (map compile-class)
-       (apply set/intersection)))
+       (reduce charsets/intersection)))
 
 (defmethod compile-class :class-union
   [m]
   (->> (:elements m)
        (map compile-class)
-       (apply set/union)))
+       (reduce charsets/union)))
 
 (defmethod compile-class :range
   [{[begin end] :range}]
-
-  (->> (range (-> begin :character int)
-              (-> end :character int inc))
-       (map char)
-       (set)))
+  (charsets/range (str (:character begin))
+                  (str (:character end))))
 
 (defmethod compile-class :class-base
   [m]
-  (:chars m))
+  (->> (:chars m)
+       (map str)
+       (map charsets/singleton)
+       (reduce charsets/union)))
 
 (defmethod compile-class :character
   [m]
-  #{(:character m)})
+  (charsets/singleton (str (:character m))))
 
 (defmulti analyzed->generator :type)
 
@@ -349,11 +350,13 @@
 
 (defmethod analyzed->generator :class
   [class]
-  (let [chars (compile-class class)]
-    (if (empty? chars)
+  (let [charset (compile-class class)
+        size (charsets/size charset)]
+    (if (zero? size)
       (throw (ex-info "Cannot generate characters from empty class!"
                       {:type ::ungeneratable}))
-      (gen/elements chars))))
+      (gen/fmap (partial charsets/nth charset)
+                (gen/choose 0 (dec size))))))
 
 
 
