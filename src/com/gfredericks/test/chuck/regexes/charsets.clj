@@ -124,3 +124,11 @@
 
 (def all-ascii
   (range "\u0000" "\u007F"))
+
+(def line-terminators
+  (->> ["\n" "\r" "\u0085" "\u2028" "\u2029"]
+       (map singleton)
+       (reduce union)))
+
+(def all-unicode-but-line-terminators
+  (difference all-unicode line-terminators))

@@ -128,9 +128,7 @@
     ;; sounds super tricky. looking forward to investigating
     :Anchor (constantly (unsupported :anchors))
 
-    ;; need to figure out if there's a canonical character set to draw
-    ;; from
-    :Dot (constantly (unsupported :character-classes))
+    :Dot (constantly {:type :class, :simple-class :dot})
     :SpecialCharClass (constantly (unsupported :character-classes))
 
     :BackReference (constantly (unsupported :backreferences))
@@ -274,7 +272,10 @@
 
 (defmethod compile-class :class
   [m]
-  (-> m :elements first! compile-class))
+  (if-let [type (:simple-class m)]
+    (case type
+      :dot charsets/all-unicode-but-line-terminators)
+    (-> m :elements first! compile-class)))
 
 (defmethod compile-class :class-intersection
   [m]
