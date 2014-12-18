@@ -145,11 +145,13 @@
                     (let [[negated? els] (if (= "^" (first els))
                                            [true (rest els)]
                                            [false els])]
-                      (cond->
-                       {:type :class-union
-                        :elements els}
-                       negated?
-                       (assoc :unsupported #{:negated-character-classes}))))
+                      {:type :class-union
+                       :elements
+                       (if negated?
+                         (cons {:type :class-negation
+                                :elements [(first els)]}
+                               (rest els))
+                         els)}))
     :BCCNegation identity
     :BCCUnionNonLeft (fn [& els]
                        {:type :class-union
@@ -289,6 +291,11 @@
   (->> (:elements m)
        (map compile-class)
        (reduce charsets/union)))
+
+(defmethod compile-class :class-negation
+  [m]
+  (let [[class] (:elements m)]
+    (charsets/difference charsets/all-unicode (compile-class class))))
 
 (defmethod compile-class :range
   [{[begin end] :range}]
