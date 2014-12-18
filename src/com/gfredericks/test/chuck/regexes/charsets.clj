@@ -83,12 +83,14 @@
 (defn difference
   [charset-1 charset-2]
   (reduce (fn [cs [x1 x2 :as entry]]
-            (let [overlaps (subseq cs >= entry <= entry)
-                  [x0] (first overlaps)
-                  [_ x3] (last overlaps)]
-              (cond-> (apply disj cs overlaps)
-                      (< x0 x1) (conj [x0 (dec x1)])
-                      (> x3 x2) (conj [(inc x2) x3]))))
+            (let [overlaps (subseq cs >= entry <= entry)]
+              (if (seq overlaps)
+                (let [[x0] (first overlaps)
+                      [_ x3] (last overlaps)]
+                  (cond-> (apply disj cs overlaps)
+                          (< x0 x1) (conj [x0 (dec x1)])
+                          (> x3 x2) (conj [(inc x2) x3])))
+                cs)))
           charset-1
           charset-2))
 
