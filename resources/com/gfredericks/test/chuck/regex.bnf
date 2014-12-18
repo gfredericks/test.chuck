@@ -2,7 +2,7 @@ Regex = Alternation
 
 Alternation = Concatenation (<'|'> Concatenation) *
 
-Concatenation = DanglingCurlyRepetitions (SuffixedExpr | <'('> MutatingMatchFlags <')'>) *
+Concatenation = DanglingCurlyRepetitions (SuffixedExpr | <'('> MutatingMatchFlags <')'> DanglingCurlyRepetitions) *
 
 DanglingCurlyRepetitions = (CurlyRepetition Quantifier ?) *
 
