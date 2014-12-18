@@ -163,10 +163,16 @@
     :BCCUnionNonLeft (fn [& els]
                        {:type :class-union
                         :elements els})
-    :BCCElemHardLeft (fn [x]
-                       (if (= x "]")
-                         {:type :character, :character \]}
-                         x))
+    :BCCElemHardLeft (fn self
+                       ([x]
+                          (if (= x "]")
+                            {:type :character, :character \]}
+                            x))
+                       ([amps x]
+                          (update-in (self x)
+                                     [:undefined]
+                                     (fnil conj #{})
+                                     "Leading double ampersands")))
     :BCCElemLeft identity
     :BCCElemNonLeft identity
     :BCCElemBase (fn [x] (if (= :character (:type x))

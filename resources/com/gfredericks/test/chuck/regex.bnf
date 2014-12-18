@@ -42,7 +42,7 @@ BCCEvenAmpersands = ('&&' + !'&')
 BCCOddAmpersands = '&' <'&&'>* ! '&'
 
 (* The optional '&&' here cover some quirky NOOP edge cases *)
-BCCElemHardLeft = !'&&&' <'&&'> ? BCCElemBase | (']' ! ('-' BCCRangeRightable)) | BCCRangeWithBracket
+BCCElemHardLeft = !'&&&' '&&' ? BCCElemBase | (']' ! ('-' BCCRangeRightable)) | BCCRangeWithBracket
 BCCElemLeft = BCCElemBase
 BCCElemNonLeft = BCCElemBase
 
