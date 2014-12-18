@@ -151,13 +151,13 @@
                        :elements
                        (if negated?
                          [(cond->
-                            {:type :class-negation
-                             :elements [{:type :class-union
-                                         :elements els}]}
-                            ;; the jvm's behavior here seems pretttty weird:
-                            ;; compare #"[^[x]]" and #"[^[x]x]"
-                            (some :brackets? els)
-                            (assoc :undefined #{"Character classes nested in negations"}))]
+                           {:type :class-negation
+                            :elements [{:type :class-union
+                                        :elements els}]}
+                           ;; the jvm's behavior here seems pretttty weird:
+                           ;; compare #"[^[x]]" and #"[^[x]x]"
+                           (some :brackets? els)
+                           (assoc :undefined #{"Character classes nested in negations"}))]
                          els)}))
     :BCCNegation identity
     :BCCUnionNonLeft (fn [& els]
