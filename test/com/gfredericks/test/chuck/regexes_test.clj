@@ -133,3 +133,12 @@
                                    s (regexes/gen-string-from-regex re)]
                           [re s])]
     (re-matches re s)))
+
+(deftest undefined-regression
+  (are [s] (try (-> s re-pattern regexes/gen-string-from-regex)
+                false
+                (catch clojure.lang.ExceptionInfo e
+                  (if (= "Undefined regex syntax" (.getMessage e))
+                    true
+                    (throw e))))
+       "[&&x]" "[x&&]" "[^[x]]" "[^[x]x]" "[a&&&b]" "[x&&&&y]"))

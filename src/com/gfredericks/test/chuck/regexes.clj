@@ -162,9 +162,18 @@
                            (assoc :undefined #{"Character classes nested in negations"}))]
                          els)}))
     :BCCNegation identity
-    :BCCUnionNonLeft (fn [& els]
-                       {:type :class-union
-                        :elements els})
+    :BCCUnionNonLeft (fn self [& els]
+                       (if (and (string? (first els)) (re-matches #"&+" (first els)))
+                         ;; This is undefined because compare:
+                         ;;   - (re-seq #"[a-f&&&&c-h]" "abcdefghijklm")
+                         ;;   - (re-seq #"[^a-f&&&&c-h]" "abcdefghijklm")
+                         ;;   - (re-seq #"[^a-f&&c-h]" "abcdefghijklm")
+                         (update-in (apply self (rest els))
+                                    [:undefined]
+                                    (fnil conj #{})
+                                    "Character set intersections with more than two &'s")
+                         {:type :class-union
+                          :elements els}))
     :BCCElemHardLeft (fn self
                        ([x]
                           (if (= x "]")

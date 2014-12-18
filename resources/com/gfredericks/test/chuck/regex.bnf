@@ -34,11 +34,10 @@ BCC = <'['> BCCIntersection BCCDanglingAmpersands ? <']'>
 (* using + with '&&' allows arbitrary even numbers of ampersands, which
    is how the jvm parses it *)
 BCCDanglingAmpersands = '&&'
-BCCIntersection = BCCUnionLeft (<BCCEvenAmpersands> BCCUnionNonLeft ) *
+BCCIntersection = BCCUnionLeft (<'&&'> BCCUnionNonLeft ) *
 BCCUnionLeft = (BCCNegation BCCElemHardLeft | !'^' BCCElemHardLeft) BCCElemNonLeft *
-BCCUnionNonLeft = BCCElemLeft BCCElemNonLeft *
+BCCUnionNonLeft = #"&+" ? BCCElemLeft BCCElemNonLeft *
 BCCNegation = '^'
-BCCEvenAmpersands = ('&&' + !'&')
 BCCOddAmpersands = '&' <'&&'>* ! '&'
 
 (* The optional '&&' here cover some quirky NOOP edge cases *)
