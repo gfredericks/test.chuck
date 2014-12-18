@@ -203,7 +203,11 @@
     :NormalSlashedCharacters (fn [[_slash c]]
                                {:type :character
                                 :character (normal-slashed-characters c)})
-    :WhatDoesThisMean (constantly (unsupported :backslash-v))
+
+    ;; Apparently \v means \u000B, at least according to my experiments
+    :WhatDoesThisMean (constantly {:type :character
+                                   :character \u000B})
+
     :BasicEscapedChar (fn [[c]] {:type :character
                                  :character c})
 
