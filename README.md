@@ -104,7 +104,7 @@ of `gen/bind`, `gen/fmap`, `gen/such-that`, and `gen/tuple`:
 
 ## Contributing
 
-I welcome pull request for any test.check utility that seems halfway
+I welcome pull requests for any test.check utility that seems halfway
 reasonable.
 
 ## License
