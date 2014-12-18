@@ -126,6 +126,32 @@ It does not work with **every** regular expression, but its goal is to
 correctly recognize (and report) the usage of unsupported features,
 and to handle supported features in a comprehensive way.
 
+##### Shrinking
+
+Generated strings shrink in a natural way:
+
+``` clojure
+(def gen-cool-string
+  (gen'/string-from-regex
+   #"This string has (1 [A-Z]|[2-9]\d* [A-Z]'s)((, (1 [A-Z]|[2-9]\d* [A-Z]'s))*, and (1 [A-Z]|[2-9]\d* [A-Z]'s))?\."))
+
+(def bad-prop
+  (prop/for-all [s gen-cool-string]
+    (not (re-find #"1 F" s))))
+
+(t.c/quick-check 1000 bad-prop)
+=>
+{:fail ["This string has 6309694848500700538 H's, 79102649012623413352 F's, 1 F, 59860 U's, 1 T, 1 W, 1 B, and 1 M."],
+ :failing-size 26,
+ :num-tests 27,
+ :result false,
+ :seed 1418877588316,
+ :shrunk {:depth 8,
+          :result false,
+          :smallest ["This string has 1 A, 1 F, and 1 A."],
+          :total-nodes-visited 27}}
+```
+
 ##### Unsupported regex features
 
 Some of these could be supported with a bit of effort.
@@ -139,7 +165,7 @@ Some of these could be supported with a bit of effort.
     unmatchable expressions
 - `\v` what does that even mean
 - The hex syntax for unicode characters outside the BMP: `\x{10001}`
-- Other named unicode character classes: `\p{IsAlphabetic}`, `\P{ASCII}`, ...
+- Named character classes: `\p{IsAlphabetic}`, `\P{ASCII}`, ...
 
 ## Contributing
 
