@@ -37,7 +37,11 @@
           low (bit-and x' 16r3FF)]
       (str (char (+ high 16rD800)) (char (+ low 16rDC00))))))
 
-(def empty (sorted-set-by (fn [[x1 x2] [x3 x4]] (if (< x2 x3) -1 (if (< x4 x1) 1 0)))))
+(defn ^:private compare-entries
+  [[x1 x2] [x3 x4]]
+  (if (< x2 x3) -1 (if (< x4 x1) 1 0)))
+
+(def empty (sorted-set-by compare-entries))
 
 (defn singleton
   [char-string]
@@ -69,7 +73,12 @@
   (if (< (count charset-1) (count charset-2))
     (recur charset-2 charset-1)
     (reduce (fn [cs [x1 x2 :as entry]]
-              (let [overlaps (subseq cs >= entry <= entry)
+              (let [;; can't easily use subseq for this, since it
+                    ;; assumes at most one element is the cs is
+                    ;; "equal" to the entry
+                    overlaps (->> cs
+                                  (drop-while #(neg? (compare-entries % entry)))
+                                  (take-while #(zero? (compare-entries % entry))))
 
                     merged-with-overlaps
                     [(apply min x1 (map first overlaps))
