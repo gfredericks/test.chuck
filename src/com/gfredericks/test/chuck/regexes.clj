@@ -137,7 +137,8 @@
 
     :BCC (fn [intersection & [dangling-ampersands]]
            (cond-> {:type :class
-                    :elements [intersection]}
+                    :elements [intersection]
+                    :brackets? true}
                    dangling-ampersands
                    (assoc :undefined #{:dangling-ampersands})))
     :BCCIntersection (fn [& unions]
@@ -150,9 +151,15 @@
                       {:type :class-union
                        :elements
                        (if negated?
-                         (cons {:type :class-negation
-                                :elements [(first els)]}
-                               (rest els))
+                         (let [[negated later]
+                               ((juxt take-while drop-while)
+                                (complement :brackets?)
+                                els)]
+                           (cond->> later
+                                    (seq negated)
+                                    (cons {:type :class-negation
+                                           :elements [{:type :class-union
+                                                       :elements negated}]})))
                          els)}))
     :BCCNegation identity
     :BCCUnionNonLeft (fn [& els]
