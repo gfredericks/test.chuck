@@ -134,3 +134,13 @@
 
 (def all-unicode-but-line-terminators
   (difference all-unicode line-terminators))
+
+(def predefined
+  (let [d (range "0" "9")
+        s (reduce union (map singleton [" " "\t" "\n" "\u000B" "\f" "\r"]))
+        w (union d (union (range "a" "z")
+                          (range "A" "Z")))]
+    {\d d, \s s, \w w
+     \D (difference all-unicode d)
+     \S (difference all-unicode s)
+     \W (difference all-unicode w)}))

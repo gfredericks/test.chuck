@@ -128,7 +128,9 @@
     :Anchor (constantly (unsupported :anchors))
 
     :Dot (constantly {:type :class, :simple-class :dot})
-    :SpecialCharClass (constantly (unsupported :character-classes))
+    :SpecialCharClass (fn [[c]]
+                        {:type :class
+                         :simple-class c})
 
     ;; If we want to support these do we need to be able to detect ungenerateable
     ;; expressions such as #"((x)|(y))\2\3"?
@@ -286,7 +288,8 @@
   [m]
   (if-let [type (:simple-class m)]
     (case type
-      :dot charsets/all-unicode-but-line-terminators)
+      :dot charsets/all-unicode-but-line-terminators
+      (\d \D \s \S \w \W) (charsets/predefined type))
     (-> m :elements first! compile-class)))
 
 (defmethod compile-class :class-intersection
