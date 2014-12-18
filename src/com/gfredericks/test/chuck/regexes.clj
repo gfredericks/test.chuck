@@ -7,7 +7,6 @@
 
 ;;
 ;; Before releasing:
-;;  - add a character set concept for negated character classes and DOT
 ;;  - those unicode block names are actually a lot more than listed
 ;;    - and there's different categories of them and several syntaxes for
 ;;      specfifying them

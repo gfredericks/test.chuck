@@ -105,19 +105,43 @@ of `gen/bind`, `gen/fmap`, `gen/such-that`, and `gen/tuple`:
 
 #### `string-from-regex`
 
+`string-from-regex` is a suspiciously robust generator that will
+generate strings matching a regular expression:
+
 ``` clojure
-user> (gen/sample (gen'/string-from-regex #"([☃-♥]{3})*"))
+user> (gen/sample (gen'/string-from-regex #"([☃-♥]{3}|B(A|OO)M)*"))
 (""
- "☺♓♔"
- "☍♥☆"
+ "☍♛☽"
  ""
+ "♂♡☱BAM"
+ "♥☩♏BAMBAM"
  ""
- "☭☞♓♃☓♊♟♚☈"
- "☉♕☟♒☲♗"
- "☪☎☭♠♇♛☵♞♉☮★♎♜☑♤☸♒☛"
- "☖☺☶☃☧☕☞☄♙☨♓♥♔♕☍☺☘♔☯♖☈♁★♟"
- "♂♆♏♃♉♞♄♠♕♝☗☓♝☚♕")
+ "☓☪☤BAMBAMBOOMBOOM☑☔☟"
+ ""
+ "BOOM☻☘☌☏☜♋BAM♑♒♛BAMBAM"
+ "BOOMBAM♅☧♉☎☐♘BOOM☥♜☐")
 ```
+
+It does not work with **every** regular expression, but its goal is to
+correctly recognize (and report) the usage of unsupported features,
+and to handle supported features in a comprehensive way.
+
+##### Unsupported regex features
+
+Some of these could be supported with a bit of effort.
+
+- All flags: `(?i)`, `(?s)`, etc.
+- Reluctant and Possesive quantifiers: `X??`, `X*+`, etc.
+  - I'm not sure what these would mean anyhow
+- Anchors: `\b`, `$`, `\A`, `$`...
+- Predefined character classes: `\w`, `\S`, ...
+  - Though `.` is supported
+- Backreferences
+  - This is tricky at least because it introduces the possibility of
+    unmatchable expressions
+- `\v` what does that even mean
+- The hex syntax for unicode characters outside the BMP: `\x{10001}`
+- Other named unicode character classes: `\p{IsAlphabetic}`, `\P{ASCII}`, ...
 
 ## Contributing
 
