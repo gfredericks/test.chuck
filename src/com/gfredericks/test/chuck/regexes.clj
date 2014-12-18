@@ -131,6 +131,8 @@
     :Dot (constantly {:type :class, :simple-class :dot})
     :SpecialCharClass (constantly (unsupported :character-classes))
 
+    ;; If we want to support these do we need to be able to detect ungenerateable
+    ;; expressions such as #"((x)|(y))\2\3"?
     :BackReference (constantly (unsupported :backreferences))
 
     :BCC (fn [intersection & [dangling-ampersands]]
