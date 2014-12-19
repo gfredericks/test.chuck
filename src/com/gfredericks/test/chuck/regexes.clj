@@ -260,26 +260,27 @@
 (defn throw-parse-errors
   "Checks the analyzed tree for any problems that cause exceptions
   with re-pattern."
-  [analyzed-tree input-string]
-  (doseq [m (tree-seq #(contains? % :elements) :elements analyzed-tree)]
-    (case (:type m)
-      :range
-      (let [[m1 m2] (:range m)
-            c1 (or (some-> m1 :character int) (:n m1))
-            c2 (or (some-> m2 :character int) (:n m2))]
-        (when (and (integer? c1) (integer? c2) (< c2 c1))
-          (throw (ex-info "Bad character range"
-                          {:type ::parse-error
-                           :range [c1 c2]}))))
-      :class
-      (when (:brackets? m)
-        (let [[begin end] (insta/span m)
-              s (subs input-string begin end)]
-          (when (re-find #"^\[^?&&[\]&]" s)
-            (throw (ex-info "Bad character class syntax!"
+  [analyzed-tree]
+  (let [input-string (::instaparse-input (meta analyzed-tree))]
+    (doseq [m (tree-seq #(contains? % :elements) :elements analyzed-tree)]
+      (case (:type m)
+        :range
+        (let [[m1 m2] (:range m)
+              c1 (or (some-> m1 :character int) (:n m1))
+              c2 (or (some-> m2 :character int) (:n m2))]
+          (when (and (integer? c1) (integer? c2) (< c2 c1))
+            (throw (ex-info "Bad character range"
                             {:type ::parse-error
-                             :text s})))))
-      nil)))
+                             :range [c1 c2]}))))
+        :class
+        (when (:brackets? m)
+          (let [[begin end] (insta/span m)
+                s (subs input-string begin end)]
+            (when (re-find #"^\[^?&&[\]&]" s)
+              (throw (ex-info "Bad character class syntax!"
+                              {:type ::parse-error
+                               :text s})))))
+        nil))))
 
 (defn parse
   [s]
@@ -297,8 +298,10 @@
                            :parses ret}))
 
           :else
-          (doto (analyze the-parse)
-            (throw-parse-errors preprocessed)))))
+          (-> the-parse
+              (analyze)
+              (vary-meta assoc ::instaparse-input preprocessed)
+              (doto (throw-parse-errors))))))
 
 (defmulti ^:private compile-class
   "Takes a character class from the parser and returns a set of
@@ -417,8 +420,8 @@
     (throw (ex-info "Unsupported feature"
                     {:type ::unsupported-feature
                      :feature "flags"})))
-  (let [s (str re)
-        analyzed (parse s)]
+  (let [analyzed (-> re str parse)
+        parser-input (::instaparse-input (meta analyzed))]
     (doseq [m (tree-seq #(contains? % :elements) :elements analyzed)]
       (when-let [[x] (seq (:unsupported m))]
         (throw (ex-info "Unsupported-feature"
@@ -430,7 +433,7 @@
                          :feature x})))
       (when (:brackets? m)
         (let [[begin end] (insta/span m)
-              s (subs s begin end)]
+              s (subs parser-input begin end)]
           (when (re-find #"\[&&|&&&|&&]" s)
             (throw (ex-info "Undefined regex syntax"
                             {:type ::unsupported-feature
