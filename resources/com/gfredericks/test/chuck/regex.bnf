@@ -30,15 +30,12 @@ Dot = '.'
 (** BRACKETED CHARACTER CLASSES (AKA BCC) **)
 (** (which are more complicated than you thought they were) **)
 
-BCC = <'['> BCCIntersection BCCDanglingAmpersands ? <']'>
-(* using + with '&&' allows arbitrary even numbers of ampersands, which
-   is how the jvm parses it *)
-BCCDanglingAmpersands = '&&'
-BCCIntersection = BCCUnionLeft (<'&&'> BCCUnionNonLeft ) *
+
+BCC = <'['> <'&&'> ? BCCIntersection <#"&{2,}"> ? <']'>
+BCCIntersection =  BCCUnionLeft (<#"&{2,}"> BCCUnionNonLeft ) *
 BCCUnionLeft = (BCCNegation BCCElemHardLeft | !'^' BCCElemHardLeft) BCCElemNonLeft *
-BCCUnionNonLeft = #"&+" ? BCCElemLeft BCCElemNonLeft *
+BCCUnionNonLeft = BCCElemLeft BCCElemNonLeft *
 BCCNegation = '^'
-BCCOddAmpersands = '&' <'&&'>* ! '&'
 
 (* The optional '&&' here cover some quirky NOOP edge cases *)
 BCCElemHardLeft = !'&&&' '&&' ? BCCElemBase | (']' ! ('-' BCCRangeRightable)) | BCCRangeWithBracket
@@ -51,9 +48,9 @@ BCCRangeRightable = BCCCharEndRange | SpecialCharClass | UnicodeCharacterClass |
 BCCRange = BCCChar <'-'> BCCCharEndRange
 BCCRangeWithBracket = <']-'> BCCCharEndRange
 BCCCharNonRange = BCCChar ! ('-' BCCRangeRightable)
-BCCChar = BCCPlainChar | EscapedChar | BCCOddAmpersands
-BCCCharEndRange = BCCPlainChar | EscapedChar | BCCAmpersandEndRange
-BCCAmpersandEndRange = '&'
+BCCChar = BCCPlainChar | EscapedChar | (BCCPlainAmpersand ! '&')
+BCCCharEndRange = BCCPlainChar | EscapedChar | BCCPlainAmpersand
+BCCPlainAmpersand = '&'
 BCCPlainChar = #"[^\]\[&\\]"
 (* only match an odd number of ampersands whatever *)
 (* This is problematic because re-pattern won't take repeated ampersands in the HardLeft position *)

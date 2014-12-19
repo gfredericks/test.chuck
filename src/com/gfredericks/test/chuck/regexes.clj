@@ -261,7 +261,7 @@
 (defn throw-parse-errors
   "Checks the analyzed tree for any problems that cause exceptions
   with re-pattern."
-  [analyzed-tree]
+  [analyzed-tree input-string]
   (doseq [m (tree-seq #(contains? % :elements) :elements analyzed-tree)]
     (case (:type m)
       :range
@@ -272,6 +272,14 @@
           (throw (ex-info "Bad character range"
                           {:type ::parse-error
                            :range [c1 c2]}))))
+      :class
+      (when (:brackets? m)
+        (let [[begin end] (insta/span m)
+              s (subs input-string begin end)]
+          (when (re-find #"^\[^?&&[\]&]" s)
+            (throw (ex-info "Bad character class syntax!"
+                            {:type ::parse-error
+                             :text s})))))
       nil)))
 
 (defn parse
@@ -290,7 +298,7 @@
 
           :else
           (doto (analyze the-parse)
-            (throw-parse-errors)))))
+            (throw-parse-errors s)))))
 
 (defmulti ^:private compile-class
   "Takes a character class from the parser and returns a set of
@@ -409,7 +417,8 @@
     (throw (ex-info "Unsupported feature"
                     {:type ::unsupported-feature
                      :feature "flags"})))
-  (let [analyzed (-> re str parse)]
+  (let [s (str re)
+        analyzed (parse s)]
     (doseq [m (tree-seq #(contains? % :elements) :elements analyzed)]
       (when-let [[x] (seq (:unsupported m))]
         (throw (ex-info "Unsupported-feature"
@@ -418,5 +427,12 @@
       (when-let [[x] (seq (:undefined m))]
         (throw (ex-info "Undefined regex syntax"
                         {:type ::unsupported-feature
-                         :feature x}))))
+                         :feature x})))
+      (when (:brackets? m)
+        (let [[begin end] (insta/span m)
+              s (subs s begin end)]
+          (when (re-find #"\[&&|&&&|&&]" s)
+            (throw (ex-info "Undefined regex syntax"
+                            {:type ::unsupported-feature
+                             :feature "Ambiguous use of & in a character class"}))))))
     (analyzed->generator analyzed)))
