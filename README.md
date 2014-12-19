@@ -157,6 +157,7 @@ Generated strings shrink in a natural way:
 Some of these could be supported with a bit of effort.
 
 - All flags: `(?i)`, `(?s)`, etc.
+- Lookahead and lookbehind
 - Reluctant and Possesive quantifiers: `X??`, `X*+`, etc.
   - I'm not sure what these would mean anyhow
 - Anchors: `\b`, `$`, `\A`, `$`...
