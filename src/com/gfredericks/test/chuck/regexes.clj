@@ -283,7 +283,8 @@
 
 (defn parse
   [s]
-  (let [[the-parse & more :as ret] (insta/parses the-parser (remove-QE s))]
+  (let [preprocessed (remove-QE s)
+        [the-parse & more :as ret] (insta/parses the-parser preprocessed)]
     (cond (nil? the-parse)
           (throw (ex-info "Parse failure!"
                           {:type ::parse-error
@@ -297,7 +298,7 @@
 
           :else
           (doto (analyze the-parse)
-            (throw-parse-errors s)))))
+            (throw-parse-errors preprocessed)))))
 
 (defmulti ^:private compile-class
   "Takes a character class from the parser and returns a set of
