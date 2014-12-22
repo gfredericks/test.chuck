@@ -141,11 +141,7 @@
   "Generates a subset of the given elements, which may be
   empty or include all of the elements."
   [elements]
-  (for [bools (apply gen/tuple (repeat (count elements) gen/boolean))]
-    (->> (map list bools elements)
-         (filter first)
-         (map second)
-         (set))))
+  (gen/vector (gen/elements elements)))
 
 (defn cap-size
   "Wraps the given generator so that it is never called with a size
