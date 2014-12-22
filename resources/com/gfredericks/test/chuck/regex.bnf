@@ -87,7 +87,7 @@ GroupFlags = NamedCapturingGroup
            | PositiveLookAheadFlag
            | NegativeLookAheadFlag
            | PositiveLookBehindFlag
-           | PositiveLookBehindFlag
+           | NegativeLookBehindFlag
            | IndependentNonCapturingFlag
 
 NamedCapturingGroup = <'?<'> GroupName <'>'>
@@ -96,7 +96,7 @@ NonCapturingMatchFlags = <'?'> !')' MatchFlagsExpr <':'>
 PositiveLookAheadFlag = <'?='>
 NegativeLookAheadFlag = <'?!'>
 PositiveLookBehindFlag = <'?<='>
-PositiveLookBehindFlag = <'?<!'>
+NegativeLookBehindFlag = <'?<!'>
 IndependentNonCapturingFlag = <'?>'>
 MatchFlagsExpr = #"[idmsuxU]" * ('-' #"[idmsuxU]" *) ?
 
