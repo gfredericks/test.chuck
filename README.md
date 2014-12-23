@@ -19,7 +19,9 @@ _test.chuck_ is a utility library for
 
 Leiningen dependency coordinates:
 
-[![version](https://clojars.org/com.gfredericks/test.chuck/latest-version.svg)](https://clojars.org/com.gfredericks/test.chuck)
+```
+[com.gfredericks/test.chuck "0.1.5"]
+```
 
 ### General Helpers
 
