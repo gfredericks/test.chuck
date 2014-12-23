@@ -161,8 +161,14 @@
                    dangling-ampersands
                    (assoc :undefined #{:dangling-ampersands})))
     :BCCIntersection (fn [& unions]
-                       {:type :class-intersection
-                        :elements unions})
+                       (cond-> {:type :class-intersection
+                                :elements unions}
+                               ;; This could be supported, but it's
+                               ;; pretty weird so I'm giving up for
+                               ;; now.
+                               (> (count unions) 1)
+                               (assoc :unsupported
+                                 #{"Character class intersections"})))
     :BCCUnionLeft (fn [& els]
                     (let [[negated? els] (if (= "^" (first els))
                                            [true (rest els)]

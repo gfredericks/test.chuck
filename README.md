@@ -166,6 +166,7 @@ Some of these could be supported with a bit of effort.
 - Backreferences
   - This is tricky at least because it introduces the possibility of
     unmatchable expressions
+- Character class [intersections](http://www.regular-expressions.info/charclassintersect.html)
 - The hex syntax for unicode characters outside the BMP: `\x{10001}`
 - Named character classes: `\p{IsAlphabetic}`, `\P{ASCII}`, ...
 
