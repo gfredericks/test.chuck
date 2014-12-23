@@ -1,20 +1,38 @@
 (ns com.gfredericks.test.chuck.regexes
-  "Generic regex analysis code, not test.check specific."
+  "Internals of the string-from-regex generator."
   (:require [clojure.set :as set]
             [clojure.test.check.generators :as gen]
             [com.gfredericks.test.chuck.regexes.charsets :as charsets]
             [instaparse.core :as insta]))
 
 ;;
-;; Before releasing:
-;;  - those unicode block names are actually a lot more than listed
-;;    - and there's different categories of them and several syntaxes for
-;;      specfifying them
+;; This code is a bit circumlocutious for what it currently does,
+;; because it was written with the following goals:
+;;
+;; - Be able to parse an arbitrary regular expression and identify
+;;   which features are being used
+;;   - If we can't do this we run the risk of e.g. treating special
+;;     things as literals
+;; - Report a parse error for any input string that cannot be successfully
+;;   passed to re-pattern
+;;   - This isn't strictly necessary for the API since users only pass in
+;;     preexisting regexes, but it makes it easy to write a test.check
+;;     test of the parser that takes an arbitrary string and expects
+;;     re-pattern and our parser to accept/crash in unison
+;; - Throw an exception if the regex uses a feature that we don't support,
+;;   or uses ill-defined syntax that the JVM doesn't handle well
+;;
+;; So e.g. one of the results of these requirements is a lot of effort
+;; in the grammar to correctly parse regex features that we don't
+;; actually support (but are now in a good position to support in the
+;; future if someone wants to put the effort in).
 ;;
 
 (def grammar-path "com/gfredericks/test/chuck/regex.bnf")
 
-(defn ^:private parse-bigint [^String s] (clojure.lang.BigInt/fromBigInteger (java.math.BigInteger. s)))
+(defn ^:private parse-bigint
+  [^String s]
+  (clojure.lang.BigInt/fromBigInteger (java.math.BigInteger. s)))
 
 (defn ^:private first! [coll] {:pre [(= 1 (count coll))]} (first coll))
 
@@ -258,6 +276,7 @@
    parsed-regex))
 
 (def the-parser
+  "The instaparse parser. See the grammar file for details."
   (-> grammar-path
       (clojure.java.io/resource)
       (slurp)
@@ -289,6 +308,8 @@
         nil))))
 
 (defn parse
+  "Takes a regex string and returns an analyzed parse tree that can be
+  passed to analyzed->generator."
   [s]
   (let [preprocessed (remove-QE s)
         [the-parse & more :as ret] (insta/parses the-parser preprocessed)]
@@ -297,7 +318,9 @@
                           {:type ::parse-error
                            :instaparse-data (meta ret)}))
 
-          #_ #_ ;; disabling this until that instaparse bug is fixed
+          ;; disabling this until the relevant instaparse bug is
+          ;; fixed: https://github.com/Engelberg/instaparse/issues/87
+          #_ #_
           (seq more)
           (throw (ex-info "Ambiguous parse!"
                           {:type ::ambiguous-grammar
@@ -319,7 +342,7 @@
   (if-let [type (:simple-class m)]
     (case type
       :dot charsets/all-unicode-but-line-terminators
-      (\d \D \s \S \w \W) (charsets/predefined type))
+      (\d \D \s \S \w \W) (charsets/predefined-regex-classes type))
     (-> m :elements first! compile-class)))
 
 (defmethod compile-class :class-intersection
@@ -388,16 +411,19 @@
     (assert lower)
     (let [g (analyzed->generator (first! elements))]
       (gen/fmap #(apply str %)
-                (if (= lower upper)
-                  (gen/vector g lower)
-                  (if upper
-                    (gen/vector g lower upper)
-                    ;; what about the lower!
-                    (if (zero? lower)
+                (cond (= lower upper)
+                      (gen/vector g lower)
+
+                      upper
+                      (gen/vector g lower upper)
+
+                      (zero? lower)
                       (gen/vector g)
+
+                      :else
                       (gen/fmap #(apply concat %)
                                 (gen/tuple (gen/vector g lower)
-                                           (gen/vector g))))))))))
+                                           (gen/vector g))))))))
 
 (defmethod analyzed->generator :class
   [class]
@@ -419,6 +445,7 @@
                    :patches? "welcome."})))
 
 (defn gen-string-from-regex
+  "Takes a regex and returns a generator for strings that match it."
   [^java.util.regex.Pattern re]
   ;; this check helps catch flags like CANON_EQ that aren't
   ;; necessarily represented in the text of the regex

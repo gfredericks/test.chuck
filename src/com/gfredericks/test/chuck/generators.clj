@@ -213,10 +213,11 @@
   "Given a regular expression, returns a generator that generates
   strings matching that regular expression.
 
-  As jvm regular expressions are quite complex, this function does
-  not support all of their features. However, it endeavors to at
-  least accurately recognize features that it doesn't support and
-  throw helpful exceptions if it is called with a regular expression
-  using any of those features."
+  As jvm regular expressions are quite complex, and certain features
+  are quite challenging to implement as generators, this function does
+  not support all of their features. However, it tries to at least
+  accurately recognize features that it doesn't support and throw
+  helpful exceptions if it is called with a regular expression using
+  any of those features."
   [regex]
   (regexes/gen-string-from-regex regex))

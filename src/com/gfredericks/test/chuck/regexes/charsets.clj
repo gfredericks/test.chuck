@@ -1,5 +1,10 @@
 (ns com.gfredericks.test.chuck.regexes.charsets
-  "Sets of characters with efficient range representations."
+  "Sets of characters with efficient range representations.
+
+  Includes large unicode characters, and so we can't use the
+  Character class directly. Instead the API uses strings of
+  one character (for small unicode characters) or two surrogates
+  (for large unicode characters)."
   (:refer-clojure :exclude [empty nth range])
   (:import [clojure.lang IPersistentVector]))
 
@@ -41,14 +46,19 @@
   [[x1 x2] [x3 x4]]
   (if (< x2 x3) -1 (if (< x4 x1) 1 0)))
 
-(def empty (sorted-set-by compare-entries))
+(def empty
+  "The empty charset."
+  (sorted-set-by compare-entries))
 
 (defn singleton
+  "Creates a charset from a single character string."
   [char-string]
   (let [x (char-string->long char-string)]
     (conj empty [x x])))
 
 (defn range
+  "Creates a charset from a range with an lower and upper bound, both
+  inclusive."
   [char-string-1 char-string-2]
   (conj empty [(char-string->long char-string-1)
                (char-string->long char-string-2)]))
@@ -69,6 +79,7 @@
             (or merge-left? merge-right?) (-> (disj entry) (conj merged)))))
 
 (defn union
+  "Returns the union of the two charsets."
   [charset-1 charset-2]
   (if (< (count charset-1) (count charset-2))
     (recur charset-2 charset-1)
@@ -90,6 +101,8 @@
             charset-2)))
 
 (defn difference
+  "Returns a variant of the first charset without any of the
+  characters in the second charset."
   [charset-1 charset-2]
   (reduce (fn [cs [x1 x2 :as entry]]
             (let [overlaps (subseq cs >= entry <= entry)]
@@ -104,8 +117,9 @@
           charset-2))
 
 (defn intersection
+  "Returns the intersection of the two charsets."
   [charset-1 charset-2]
-  ;; TODO: embetter?
+  ;; TODO: make a real implementation? meh probably not.
   (let [everything (union charset-1 charset-2)
         left (difference everything charset-2)
         right (difference everything charset-1)]
@@ -113,7 +127,14 @@
         (difference left)
         (difference right))))
 
+(defn size
+  "Returns the size of the charset."
+  [charset]
+  (->> charset (map entry-size) (reduce +)))
+
 (defn nth
+  "Returns the character string from the charset at the given
+  index, which must be (<= 0 idx (dec (size charset)))."
   [charset idx]
   (if (empty? charset)
     (throw (IndexOutOfBoundsException.))
@@ -126,7 +147,6 @@
             (recur xs (- idx es))
             (throw (IndexOutOfBoundsException.))))))))
 
-(defn size [charset] (->> charset (map entry-size) (reduce +)))
 
 (def all-unicode
   "All unicode characters except (invalid) unpaired surrogates."
@@ -144,7 +164,7 @@
 (def all-unicode-but-line-terminators
   (difference all-unicode line-terminators))
 
-(def predefined
+(def predefined-regex-classes
   (let [d (range "0" "9")
         s (reduce union (map singleton [" " "\t" "\n" "\u000B" "\f" "\r"]))
         w (union d (union (range "a" "z")
