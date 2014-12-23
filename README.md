@@ -2,7 +2,7 @@
 
 <img src="http://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Groundhog2.jpg/320px-Groundhog2.jpg" title="Chuck" align="right" />
 
-_test.chuck_ is a dumping ground of utilities for use with
+_test.chuck_ is a utility library for
 [test.check](https://github.com/clojure/test.check).
 
 ```
