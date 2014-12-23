@@ -11,7 +11,7 @@
                    charsets/line-terminators
                    charsets/all-unicode
                    charsets/all-unicode-but-line-terminators])
-    (gen/elements (vals charsets/predefined))
+    (gen/elements (vals charsets/predefined-regex-classes))
     (gen'/for [i (gen/choose 0 (dec (charsets/size charsets/all-unicode)))]
       (charsets/singleton (charsets/nth charsets/all-unicode i)))]))
 
