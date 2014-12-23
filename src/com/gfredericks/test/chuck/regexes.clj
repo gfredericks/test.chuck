@@ -30,7 +30,9 @@
 
 (def grammar-path "com/gfredericks/test/chuck/regex.bnf")
 
-(defn ^:private parse-bigint [^String s] (clojure.lang.BigInt/fromBigInteger (java.math.BigInteger. s)))
+(defn ^:private parse-bigint
+  [^String s]
+  (clojure.lang.BigInt/fromBigInteger (java.math.BigInteger. s)))
 
 (defn ^:private first! [coll] {:pre [(= 1 (count coll))]} (first coll))
 
