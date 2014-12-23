@@ -162,7 +162,7 @@ Some of these could be supported with a bit of effort.
 - Lookahead and lookbehind
 - Reluctant and Possesive quantifiers: `X??`, `X*+`, etc.
   - I'm not sure what these would mean anyhow
-- Anchors: `\b`, `$`, `\A`, `$`...
+- Anchors: `\b`, `^`, `\A`, `$`...
 - Backreferences
   - This is tricky at least because it introduces the possibility of
     unmatchable expressions
