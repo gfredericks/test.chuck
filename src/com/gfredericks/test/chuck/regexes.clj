@@ -5,13 +5,6 @@
             [com.gfredericks.test.chuck.regexes.charsets :as charsets]
             [instaparse.core :as insta]))
 
-;;
-;; Before releasing:
-;;  - those unicode block names are actually a lot more than listed
-;;    - and there's different categories of them and several syntaxes for
-;;      specfifying them
-;;
-
 (def grammar-path "com/gfredericks/test/chuck/regex.bnf")
 
 (defn ^:private parse-bigint [^String s] (clojure.lang.BigInt/fromBigInteger (java.math.BigInteger. s)))
