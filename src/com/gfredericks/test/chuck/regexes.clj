@@ -284,7 +284,9 @@
                           {:type ::parse-error
                            :instaparse-data (meta ret)}))
 
-          #_ #_ ;; disabling this until that instaparse bug is fixed
+          ;; disabling this until the relevant instaparse bug is
+          ;; fixed: https://github.com/Engelberg/instaparse/issues/87
+          #_ #_
           (seq more)
           (throw (ex-info "Ambiguous parse!"
                           {:type ::ambiguous-grammar
@@ -375,16 +377,19 @@
     (assert lower)
     (let [g (analyzed->generator (first! elements))]
       (gen/fmap #(apply str %)
-                (if (= lower upper)
-                  (gen/vector g lower)
-                  (if upper
-                    (gen/vector g lower upper)
-                    ;; what about the lower!
-                    (if (zero? lower)
+                (cond (= lower upper)
+                      (gen/vector g lower)
+
+                      upper
+                      (gen/vector g lower upper)
+
+                      (zero? lower)
                       (gen/vector g)
+
+                      :else
                       (gen/fmap #(apply concat %)
                                 (gen/tuple (gen/vector g lower)
-                                           (gen/vector g))))))))))
+                                           (gen/vector g))))))))
 
 (defmethod analyzed->generator :class
   [class]
