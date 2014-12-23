@@ -63,3 +63,7 @@
 (defspec double-generates-doubles 100
   (prop/for-all [x gen'/double]
     (instance? Double x)))
+
+(defspec subset-in-set 100
+  (prop/for-all [s (gen'/subset (range 10))]
+    (every? (set (range 10)) s)))
