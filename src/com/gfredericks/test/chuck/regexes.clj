@@ -308,7 +308,7 @@
   (if-let [type (:simple-class m)]
     (case type
       :dot charsets/all-unicode-but-line-terminators
-      (\d \D \s \S \w \W) (charsets/predefined type))
+      (\d \D \s \S \w \W) (charsets/predefined-regex-classes type))
     (-> m :elements first! compile-class)))
 
 (defmethod compile-class :class-intersection
