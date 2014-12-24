@@ -39,7 +39,7 @@
 (defn ^:private analyze-range
   [begin end]
   {:type :range
-   :range [begin end]})
+   :elements [begin end]})
 
 (defn ^:private remove-QE
   "Preprocesses a regex string (the same way that openjdk does) by
@@ -242,7 +242,7 @@
                                     :hex-string hex-string})))
                  (if (> n 16rFFFF)
                    {:type :large-unicode-character
-                    :unsupported "large unicode characters"
+                    :unsupported #{"large unicode hex literals"}
                     :n n}
                    {:type :character
                     :character (char (int n))})))
@@ -290,7 +290,7 @@
     (doseq [m (tree-seq #(contains? % :elements) :elements analyzed-tree)]
       (case (:type m)
         :range
-        (let [[m1 m2] (:range m)
+        (let [[m1 m2] (:elements m)
               c1 (or (some-> m1 :character int) (:n m1))
               c2 (or (some-> m2 :character int) (:n m2))]
           (when (and (integer? c1) (integer? c2) (< c2 c1))
@@ -364,7 +364,7 @@
     (charsets/difference charsets/all-unicode (compile-class class))))
 
 (defmethod compile-class :range
-  [{[begin end] :range}]
+  [{[begin end] :elements}]
   (charsets/range (str (:character begin))
                   (str (:character end))))
 
