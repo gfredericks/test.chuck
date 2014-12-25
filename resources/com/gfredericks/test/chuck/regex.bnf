@@ -98,6 +98,7 @@ NegativeLookAheadFlag = <'?!'>
 PositiveLookBehindFlag = <'?<='>
 NegativeLookBehindFlag = <'?<!'>
 IndependentNonCapturingFlag = <'?>'>
-MatchFlagsExpr = #"[idmsuxU]" * ('-' #"[idmsuxU]" *) ?
+(* the java 7 docs don't include 'c' here but openjdk accepts it for CANON_EQ *)
+MatchFlagsExpr = #"[idmsuxcU]" * ('-' #"[idmsuxcU]" *) ?
 
 GroupName = #"[a-zA-Z][a-zA-Z0-9]*"
