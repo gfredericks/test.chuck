@@ -35,6 +35,9 @@
   (clojure.lang.BigInt/fromBigInteger (java.math.BigInteger. s)))
 
 (defn ^:private first! [coll] {:pre [(= 1 (count coll))]} (first coll))
+(defn ^:private analysis-tree-seq
+  [tree]
+  (tree-seq #(contains? % :elements) :elements tree))
 
 (defn ^:private analyze-range
   [begin end]
@@ -287,7 +290,7 @@
   with re-pattern."
   [analyzed-tree]
   (let [input-string (::instaparse-input (meta analyzed-tree))]
-    (doseq [m (tree-seq #(contains? % :elements) :elements analyzed-tree)]
+    (doseq [m (analysis-tree-seq analyzed-tree)]
       (case (:type m)
         :range
         (let [[m1 m2] (:elements m)
@@ -455,7 +458,7 @@
                      :feature "flags"})))
   (let [analyzed (-> re str parse)
         parser-input (::instaparse-input (meta analyzed))]
-    (doseq [m (tree-seq #(contains? % :elements) :elements analyzed)]
+    (doseq [m (analysis-tree-seq analyzed)]
       (when-let [[x] (seq (:unsupported m))]
         (throw (ex-info "Unsupported-feature"
                         {:type ::unsupported-feature
