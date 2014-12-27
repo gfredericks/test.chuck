@@ -129,10 +129,14 @@
     ;; exactly what re-pattern does" spec will pass.
     :DanglingCurlyRepetitions (constantly nil)
     :ParenthesizedExpr (fn
-                         ([alternation] alternation)
+                         ([alternation]
+                            {:type :group
+                             :elements [alternation]})
                          ([group-flags alternation]
-                            (assoc (unsupported :flags)
-                              :elements [alternation])))
+                            {:type :group
+                             :unsupported #{:flags}
+                             :elements [alternation]
+                             :flag group-flags}))
     :SingleExpr identity
     :BaseExpr identity
     :CharExpr identity
@@ -402,6 +406,10 @@
        (map analyzed->generator)
        (doall)
        (gen/one-of)))
+
+(defmethod analyzed->generator :group
+  [{:keys [elements]}]
+  (-> elements first! analyzed->generator))
 
 (defmethod analyzed->generator :character
   [{:keys [character]}]
