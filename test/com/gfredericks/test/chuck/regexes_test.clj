@@ -45,12 +45,16 @@
           (apply str)))
    (gen/recursive-gen
     (fn [g]
-      (gen'/for [:parallel [[open closed] (gen/elements [["[" "]"]
+      (gen'/for [:parallel [[open closed] (gen/elements [[nil nil]
+                                                         ["(" ")"]
+                                                         ["[" "]"]
                                                          ["[^" "]"]
                                                          ["{" "}"]
-                                                         ["(" ")"]
                                                          ["(?" ")"]
-                                                         [nil nil]])
+                                                         ["(?=" ")"]
+                                                         ["(?!" ")"]
+                                                         ["(?<=" ")"]
+                                                         ["(?<!" ")"]])
                             els (gen/list g)]]
         (if open
           [open els closed]
