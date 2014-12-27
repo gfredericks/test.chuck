@@ -68,7 +68,7 @@
            (re-pattern s)
            [:parsed s])
          (catch java.util.regex.PatternSyntaxException e
-           [:not-parsed s]))))
+           [:not-parsed s (.getMessage e)]))))
 
 (defn parses?
   [s]
@@ -91,11 +91,25 @@
        "\\x{110000}" "{1,0}" "[[[[{-\\c}]]]]" "[x-\\cx]"
        "[{\\x{10000}-}]" "[b-a]??" "(?)?"))
 
+(def regex-parse-error-exceptions
+  "Parse error messages thrown by java.util.regex.Pattern that we
+  don't mind the parser not catching, usually because it involves an
+  unsupported feature."
+  [;; it's too difficult to try to reproduce the exception-throwing
+   ;; behavior of re-pattern for repetetive-lookbehind, especially
+   ;; since lookbehind isn't a supported feature anyways.  E.g.,
+   ;; #"(?<=xx*)" is a parse error but #"(?<=x*)" is okay for some
+   ;; reason. Gets even more complicated if you nest lookahead inside
+   ;; your lookbehind.
+   #"Look-behind group does not have an obvious maximum length"])
+
 (defspec parser-spec 1000
-  (prop/for-all [[flag s] gen-regex-parsing-attempt]
+  (prop/for-all [[flag s err-msg] gen-regex-parsing-attempt]
     (let [parsed? (parses? s)]
       (or (= [flag parsed?] [:parsed true])
-          (= [flag parsed?] [:not-parsed false])))))
+          (= [flag parsed?] [:not-parsed false])
+          (and (= :not-parsed flag)
+               (some #(re-find % err-msg) regex-parse-error-exceptions))))))
 
 (def gen-regex
   (let [maybes (gen/fmap #(try (re-pattern %)
