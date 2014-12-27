@@ -349,7 +349,12 @@
   (if-let [type (:simple-class m)]
     (case type
       :dot charsets/all-unicode-but-line-terminators
-      (\d \D \s \S \w \W) (charsets/predefined-regex-classes type))
+      (\d \D \s \S \w \W \v \V \h \H \R) (charsets/predefined-regex-classes type)
+      ;; unsupported
+      (throw (ex-info (str "Unsupported charset: " type)
+                      {:type ::unsupported-charset
+                       :charset type
+                       :patches? "welcome."})))
     (-> m :elements first! compile-class)))
 
 (defmethod compile-class :class-intersection

@@ -167,9 +167,18 @@
 (def predefined-regex-classes
   (let [d (range "0" "9")
         s (reduce union (map singleton [" " "\t" "\n" "\u000B" "\f" "\r"]))
+        v (reduce union (map singleton ["\n" "\u000B" "\f" "\r" "\u0085" "\u2028"
+                                        "\u2029"]))
+        h (union (range "\u2000" "\u200a")
+                 (reduce union (map singleton [" " "\t" "\u00A0" "\u1680" "\u180e" "\u202f"
+                                               "\u205f" "\u3000"])))
+        R (reduce union (map singleton ["\u000D\u000A" "\u000A" "\u000B" "\u000C"
+                                        "\u000D" "\u0085" "\u2028" "\u2029"]))
         w (union d (union (range "a" "z")
                           (range "A" "Z")))]
-    {\d d, \s s, \w w
+    {\d d, \s s, \w w, \v v, \R R
+     \V (difference all-unicode v)
+     \H (difference all-unicode h)
      \D (difference all-unicode d)
      \S (difference all-unicode s)
      \W (difference all-unicode w)}))
