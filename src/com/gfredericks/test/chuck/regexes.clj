@@ -330,14 +330,27 @@
       (case (-> m :flag :type)
         ;; Lookbehind doesn't allow unbounded repetition, mostly.
         (:positive-lookbehind :negative-lookbehind)
-        (doseq [m2 (mapcat analysis-tree-seq (:elements m))
-                :when (= :repetition (:type m2))
-                :when (-> m2 :bounds second nil?)
-                :let [[begin end] (insta/span m2)
-                      s (subs input-string begin end)]]
-          (throw (ex-info "Illegal unbounded repetition in lookbehind"
-                          {:type ::parse-error
-                           :text s})))
+        ;; But if the whole lookbehind group consists of a single
+        ;; repeated character, it's okay (apparently)
+        (when-not (and (= 1 (count (:elements m)))
+                       ((fn single-character? [m2]
+                          (case (:type m2)
+                            (:character :class) true
+
+                            (:alternation :concatenation :repetition)
+                            (and (= 1 (count (:elements m2)))
+                                 (-> m2 :elements first single-character?))
+
+                            false))
+                        (-> m :elements first)))
+          (doseq [m2 (mapcat analysis-tree-seq (:elements m))
+                  :when (= :repetition (:type m2))
+                  :when (-> m2 :bounds second nil?)
+                  :let [[begin end] (insta/span m2)
+                        s (subs input-string begin end)]]
+            (throw (ex-info "Illegal unbounded repetition in lookbehind"
+                            {:type ::parse-error
+                             :text s}))))
         nil))))
 
 (defn parse

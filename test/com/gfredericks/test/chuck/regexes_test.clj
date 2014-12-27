@@ -93,7 +93,7 @@
 
        ;; strange exception in the lookbehind-unbounded-repetition
        ;; prohibition
-       "(?<=x*)")
+       "(?<=x*)" "(?<=[x]*)" "(?<=(x)*)")
   (are [s] (not (parses? s))
        "[b-a]" "[^]" "[]-X]" "[&&&]" "[\\Q\\E]" "(??)"
        "\\x{110000}" "{1,0}" "[[[[{-\\c}]]]]" "[x-\\cx]"
