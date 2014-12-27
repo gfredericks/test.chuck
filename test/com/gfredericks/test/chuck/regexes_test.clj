@@ -85,11 +85,15 @@
        "[&&x]" "[x&&y]" "[x&]" "[x&&]" "[&]" "[--?]"
        "{0}?" "[\\c\n]" "[\\e- ]" "\\Q\\E" "[\\Q][\\E]"
        "(?:)" "[!-&&]" "\\c\\" "[\u0000-\\00]" "((?){0,0})"
-       "[%-&&&]" "[x&&&&]" "(?<=)" "(?c:Z)")
+       "[%-&&&]" "[x&&&&]" "(?<=)" "(?c:Z)"
+
+       ;; strange exception in the lookbehind-unbounded-repetition
+       ;; prohibition
+       "(?<=x*)")
   (are [s] (not (parses? s))
        "[b-a]" "[^]" "[]-X]" "[&&&]" "[\\Q\\E]" "(??)"
        "\\x{110000}" "{1,0}" "[[[[{-\\c}]]]]" "[x-\\cx]"
-       "[{\\x{10000}-}]" "[b-a]??" "(?)?"))
+       "[{\\x{10000}-}]" "[b-a]??" "(?)?" "(?<=xx*)"))
 
 (defspec parser-spec 1000
   (prop/for-all [[flag s] gen-regex-parsing-attempt]

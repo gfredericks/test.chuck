@@ -86,13 +86,13 @@
                    {:type     :alternation
                     :elements regexes})
     :Concatenation (fn [& regexes]
-                     (cond-> {:type     :concatenation
-                              :elements (->> regexes
-                                             (remove nil?)
-                                             (remove #{:flags}))}
-                             (some #{:flags} regexes)
-                             (assoc :unsupported #{:flags})))
-    :MutatingMatchFlags (constantly :flags)
+                     (let [mmf? #(= :mutating-match-flags (:type %))]
+                       (cond-> {:type     :concatenation
+                                :elements (->> regexes
+                                               (remove nil?)
+                                               (remove mmf?))}
+                               (some mmf? regexes)
+                               (assoc :unsupported #{:flags}))))
     :SuffixedExpr (fn
                     ([regex] regex)
                     ([regex {:keys [bounds quantifier]}]
@@ -132,7 +132,24 @@
                          ([alternation] alternation)
                          ([group-flags alternation]
                             (assoc (unsupported :flags)
-                              :elements [alternation])))
+                              :elements [alternation]
+                              :flag group-flags)))
+    :GroupFlags identity
+    :NamedCapturingGroup (fn [name]
+                           {:type :named-capturing-group
+                            :name name})
+    :MutatingMatchFlags (fn [expr]
+                          {:type :mutating-match-flags
+                           :elements [expr]})
+    :NonCapturingMatchFlags (fn [expr]
+                              {:type :non-capturing-match-flags
+                               :elements [expr]})
+    :PositiveLookAheadFlag (constantly {:type :positive-lookahead})
+    :NegativeLookAheadFlag (constantly {:type :negative-lookahead})
+    :PositiveLookBehindFlag (constantly {:type :positive-lookbehind})
+    :NegativeLookBehindFlag (constantly {:type :negative-lookbehind})
+    :IndependentNonCapturingFlag (constantly {:type :independent-non-capturing})
+
     :SingleExpr identity
     :BaseExpr identity
     :CharExpr identity
@@ -308,6 +325,19 @@
               (throw (ex-info "Bad character class syntax!"
                               {:type ::parse-error
                                :text s})))))
+
+        nil)
+      (case (-> m :flag :type)
+        ;; Lookbehind doesn't allow unbounded repetition, mostly.
+        (:positive-lookbehind :negative-lookbehind)
+        (doseq [m2 (mapcat analysis-tree-seq (:elements m))
+                :when (= :repetition (:type m2))
+                :when (-> m2 :bounds second nil?)
+                :let [[begin end] (insta/span m2)
+                      s (subs input-string begin end)]]
+          (throw (ex-info "Illegal unbounded repetition in lookbehind"
+                          {:type ::parse-error
+                           :text s})))
         nil))))
 
 (defn parse
