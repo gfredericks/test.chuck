@@ -78,7 +78,7 @@
             merge-right? (disj entry-right)
             (or merge-left? merge-right?) (-> (disj entry) (conj merged)))))
 
-(defn union
+(defn union*
   "Returns the union of the two charsets."
   [charset-1 charset-2]
   (if (< (count charset-1) (count charset-2))
@@ -99,6 +99,11 @@
                     (merge-at merged-with-overlaps))))
             charset-1
             charset-2)))
+
+(defn union
+  "Returns the union of the given character sets."
+  [charset-1 & more]
+  (reduce union* charset-1 more))
 
 (defn difference
   "Returns a variant of the first charset without any of the
@@ -167,8 +172,7 @@
 (def predefined-regex-classes
   (let [d (range "0" "9")
         s (reduce union (map singleton [" " "\t" "\n" "\u000B" "\f" "\r"]))
-        w (union d (union (range "a" "z")
-                          (range "A" "Z")))]
+        w (union d (range "a" "z") (range "A" "Z"))]
     {\d d, \s s, \w w
      \D (difference all-unicode d)
      \S (difference all-unicode s)
