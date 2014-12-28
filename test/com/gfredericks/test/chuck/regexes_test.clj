@@ -62,38 +62,11 @@
     (gen/one-of [gen/string gen-regexy-fragment]))))
 
 (def gen-strings-that-might-be-regex-like
+  "Generator for strings that are weighted toward special regex
+  syntax."
   (gen/one-of [gen-regexy-string
                gen/string-ascii
                gen/string]))
-
-(def gen-regex-parsing-attempt
-  (gen'/for [s gen-strings-that-might-be-regex-like]
-    (try (do
-           (re-pattern s)
-           [:parsed s])
-         (catch java.util.regex.PatternSyntaxException e
-           [:not-parsed s (.getMessage e)]))))
-
-(defn parses?
-  [s]
-  (try (pr-str (regexes/parse s)) ;; something lazy going on here
-       true
-       (catch clojure.lang.ExceptionInfo e
-         (if (= ::regexes/parse-error (:type (ex-data e)))
-           false
-           (throw e)))))
-
-(deftest parser-regression
-  (are [s] (parses? s)
-       "[]-_]" "[-x]" "[x+--y]" "[\\e]" "\\\0" "[[x]-y]" "(?)"
-       "[&&x]" "[x&&y]" "[x&]" "[x&&]" "[&]" "[--?]"
-       "{0}?" "[\\c\n]" "[\\e- ]" "\\Q\\E" "[\\Q][\\E]"
-       "(?:)" "[!-&&]" "\\c\\" "[\u0000-\\00]" "((?){0,0})"
-       "[%-&&&]" "[x&&&&]" "(?<=)" "(?c:Z)")
-  (are [s] (not (parses? s))
-       "[b-a]" "[^]" "[]-X]" "[&&&]" "[\\Q\\E]" "(??)"
-       "\\x{110000}" "{1,0}" "[[[[{-\\c}]]]]" "[x-\\cx]"
-       "[{\\x{10000}-}]" "[b-a]??" "(?)?"))
 
 (def regex-parse-error-exceptions
   "Parse error messages thrown by java.util.regex.Pattern that we
@@ -107,13 +80,40 @@
    ;; your lookbehind.
    #"Look-behind group does not have an obvious maximum length"])
 
+(defn correct-parse-behavior?
+  "Checks that our parser and re-pattern will either both successfully
+  parse the string or will both throw an exception."
+  [s]
+  (let [[jvm-result err-msg] (try (re-pattern s)
+                                  [:parses]
+                                  (catch java.util.regex.PatternSyntaxException e
+                                    [:throws (.getMessage e)]))
+        [our-result] (try (regexes/parse s)
+                          [:parses]
+                          (catch clojure.lang.ExceptionInfo e
+                            (if (= ::regexes/parse-error (:type (ex-data e)))
+                              [:throws]
+                              (throw e))))]
+    (or (= jvm-result our-result)
+        (and (= :throws jvm-result)
+             (some #(re-find % err-msg) regex-parse-error-exceptions)))))
+
+(deftest parser-regression
+  (are [s] (correct-parse-behavior? s)
+       ;; should always parse
+       "[]-_]" "[-x]" "[x+--y]" "[\\e]" "\\\0" "[[x]-y]" "(?)"
+       "[&&x]" "[x&&y]" "[x&]" "[x&&]" "[&]" "[--?]"
+       "{0}?" "[\\c\n]" "[\\e- ]" "\\Q\\E" "[\\Q][\\E]"
+       "(?:)" "[!-&&]" "\\c\\" "[\u0000-\\00]" "((?){0,0})"
+       "[%-&&&]" "[x&&&&]" "(?<=)" "(?c:Z)"
+       ;; should never parse
+       "[b-a]" "[^]" "[]-X]" "[&&&]" "[\\Q\\E]" "(??)"
+       "\\x{110000}" "{1,0}" "[[[[{-\\c}]]]]" "[x-\\cx]"
+       "[{\\x{10000}-}]" "[b-a]??" "(?)?"))
+
 (defspec parser-spec 1000
-  (prop/for-all [[flag s err-msg] gen-regex-parsing-attempt]
-    (let [parsed? (parses? s)]
-      (or (= [flag parsed?] [:parsed true])
-          (= [flag parsed?] [:not-parsed false])
-          (and (= :not-parsed flag)
-               (some #(re-find % err-msg) regex-parse-error-exceptions))))))
+  (prop/for-all [s gen-strings-that-might-be-regex-like]
+    (correct-parse-behavior? s)))
 
 (def gen-regex
   (let [maybes (gen/fmap #(try (re-pattern %)
