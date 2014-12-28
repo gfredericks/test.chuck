@@ -15,7 +15,8 @@ Positive = <'+'>
 NonNegative = <'*'>
 CurlyRepetition = <'{'> #"\d+" (',' #"\d+" ?) ? <'}'>
 Quantifier = '?' | '+'
-BaseExpr = CharExpr | LiteralChar | Anchor | BackReference
+BaseExpr = CharExpr | LiteralChar | LinebreakMatcher | Anchor | BackReference
+LinebreakMatcher = '\\R'
 Anchor = '^' | '$' | '\\' #"[bBAGZz]"
 LiteralChar = PlainChar | EscapedChar
 
@@ -59,7 +60,7 @@ BCCDash = '-'
 
 (** BASE CHARACTER STUFFS **)
 
-EscapedChar = OctalChar | HexChar | BasicEscapedChar | NormalSlashedCharacters | ControlChar | WhatDoesThisMean
+EscapedChar = OctalChar | HexChar | BasicEscapedChar | NormalSlashedCharacters | ControlChar
 OctalChar = <'\\0'> (OctalDigits1 | OctalDigits2 | OctalDigits3)
 OctalDigits1 = #"[0-7]" ! #"[0-7]"
 OctalDigits2 = (#"[0-3][0-7]" ! #"[0-7]") | #"[4-7][0-7]"
@@ -71,12 +72,11 @@ LongHexChar = <'\\x{'> #'[0-9a-fA-F]+' <'}'>
 BasicEscapedChar = <'\\'> #"[^a-zA-Z0-9]"
 
 (* probably missing something here *)
-SpecialCharClass = <'\\'> #"[wWsSdD]"
+SpecialCharClass = <'\\'> #"[wWsSdDhHvV]"
 (* Gotta figure out what these mean *)
 UnicodeCharacterClass = <'\\'> #'[pP]' (#"[CLMNPSZ]" | #"\{[a-zA-Z]+\}")
 
 NormalSlashedCharacters = #"\\[tnrfae]"
-WhatDoesThisMean = '\\v'
 
 (* why did I think you could have a backslashed character here?? *)
 ControlChar = <'\\c'> #"(?s)."

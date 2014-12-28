@@ -39,6 +39,30 @@
   [tree]
   (tree-seq #(contains? % :elements) :elements tree))
 
+(defmacro ^:private re?
+  "Checks if the string compiles with re-pattern."
+  [s]
+  `(try (re-pattern ~s)
+        true
+        (catch java.util.regex.PatternSyntaxException _#
+          false)))
+
+(def ^:private features
+  "Features that vary between versions of the JVM. We use the Pattern
+  class itself to detect what features it supports on the JVM
+  currently being used."
+  {:backslash-R (re? "\\R")
+   ;; not checking \v here because it means something different in
+   ;; Java 7
+   :HV-classes (let [b1 (re? "\\h")
+                     b2 (re? "\\H")
+                     b3 (re? "\\V")]
+                 (if (= b1 b2 b3)
+                   b1
+                   (binding [*out* *err*]
+                     (println "Warning: test.chuck is confused.")
+                     false)))})
+
 (defn ^:private analyze-range
   [begin end]
   {:type :range
@@ -138,6 +162,16 @@
                              :elements [alternation]
                              :flag group-flags}))
     :SingleExpr identity
+    :LinebreakMatcher (constantly
+                       {:type :alternation
+                        :elements [{:type :concatenation
+                                    :elements [{:type :character
+                                                :character \return}
+                                               {:type :character
+                                                :character \newline}]}
+                                   {:type :class
+                                    :simple-class :R}]
+                        :feature :backslash-R})
     :BaseExpr identity
     :CharExpr identity
     :LiteralChar identity
@@ -154,8 +188,10 @@
 
     :Dot (constantly {:type :class, :simple-class :dot})
     :SpecialCharClass (fn [[c]]
-                        {:type :class
-                         :simple-class c})
+                        (cond-> {:type :class
+                                 :simple-class c}
+                                (#{\V \h \H} c)
+                                (assoc :feature :HV-classes)))
 
     ;; If we want to support these do we need to be able to detect ungenerateable
     ;; expressions such as #"((x)|(y))\2\3"?
@@ -234,10 +270,6 @@
                                {:type :character
                                 :character (normal-slashed-characters c)})
 
-    ;; Apparently \v means \u000B, at least according to my experiments
-    :WhatDoesThisMean (constantly {:type :character
-                                   :character \u000B})
-
     :BasicEscapedChar (fn [[c]] {:type :character
                                  :character c})
 
@@ -312,7 +344,12 @@
               (throw (ex-info "Bad character class syntax!"
                               {:type ::parse-error
                                :text s})))))
-        nil))))
+        nil)
+      (if-let [f (:feature m)]
+        (when-not (features f)
+          (throw (ex-info "Regex feature not supported on this jvm!"
+                          {:type ::parse-error
+                           :feature f})))))))
 
 (defn parse
   "Takes a regex string and returns an analyzed parse tree that can be
@@ -349,7 +386,13 @@
   (if-let [type (:simple-class m)]
     (case type
       :dot charsets/all-unicode-but-line-terminators
-      (\d \D \s \S \w \W) (charsets/predefined-regex-classes type))
+      :R charsets/single-character-line-breaks
+      \v (if (features :HV-classes)
+           ;; java 8
+           (charsets/predefined-regex-classes \v)
+           ;; java 7
+           (charsets/singleton "\u000B"))
+      (\d \D \s \S \w \W \V \h \H) (charsets/predefined-regex-classes type))
     (-> m :elements first! compile-class)))
 
 (defmethod compile-class :class-intersection

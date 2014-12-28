@@ -175,6 +175,13 @@ Some of these could be supported with a bit of effort.
 I welcome pull requests for any test.check utility that seems halfway
 reasonable.
 
+## Acknowledgments
+
+- [@weavejester](https://github.com/weavejester) for creating the original
+  regex->string [code](https://github.com/weavejester/re-rand)
+- [@miner](https://github.com/miner) for various help with the
+  `string-from-regex` generator
+
 ## License
 
 Copyright © 2014 Gary Fredericks

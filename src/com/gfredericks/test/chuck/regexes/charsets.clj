@@ -166,14 +166,28 @@
        (map singleton)
        (reduce union)))
 
+(def single-character-line-breaks
+  "This is everything that \\R matches, excepting the two character
+  string \"\\r\\n\"."
+  (union (range "\u000A" "\u000D")
+         (singleton "\u0085")
+         (singleton "\u2028")
+         (singleton "\u2029")))
+
 (def all-unicode-but-line-terminators
   (difference all-unicode line-terminators))
 
 (def predefined-regex-classes
   (let [d (range "0" "9")
         s (reduce union (map singleton [" " "\t" "\n" "\u000B" "\f" "\r"]))
-        w (union d (range "a" "z") (range "A" "Z"))]
-    {\d d, \s s, \w w
+        w (union d (range "a" "z") (range "A" "Z"))
+        h (union (range "\u2000" "\u200a")
+                 (reduce union (map singleton [" " "\t" "\u00A0" "\u1680" "\u180e" "\u202f"
+                                               "\u205f" "\u3000"])))
+        v (reduce union (map singleton ["\n" "\u000B" "\f" "\r" "\u0085" "\u2028" "\u2029"]))]
+    {\d d, \s s, \w w, \h h, \v v
      \D (difference all-unicode d)
      \S (difference all-unicode s)
-     \W (difference all-unicode w)}))
+     \W (difference all-unicode w)
+     \H (difference all-unicode h)
+     \V (difference all-unicode v)}))
