@@ -3,6 +3,7 @@
             [clojure.test.check.generators :as gen]
             [clojure.test.check.properties :as prop]
             [clojure.test.check.clojure-test :refer [defspec]]
+            [com.gfredericks.test.chuck :refer [times]]
             [com.gfredericks.test.chuck.regexes :as regexes]
             [com.gfredericks.test.chuck.generators :as gen']
             [instaparse.core :as insta]))
@@ -113,7 +114,7 @@
        ;; parses in java 8 but not java 7
        "\\R" "\\H" "\\h" "\\V"))
 
-(defspec parser-spec 1000
+(defspec parser-spec (times 1000)
   (prop/for-all [s gen-strings-that-might-be-regex-like]
     (correct-parse-behavior? s)))
 
@@ -136,7 +137,7 @@
              s gen]
     {:regex regex, :s s}))
 
-(defspec generator-spec 1000
+(defspec generator-spec (times 1000)
   (prop/for-all [{:keys [regex s]} gen-generator-scenario]
     (re-matches regex s)))
 
@@ -147,7 +148,7 @@
    ;; intersection unsupported for now
    #_"[{&&[}{]}]"])
 
-(defspec generator-regression-spec 1000
+(defspec generator-regression-spec (times 1000)
   ;; TODO: make a prop in test.chuck that's like for
   (prop/for-all [[re s] (gen'/for [re-s (gen/elements generator-regression-cases)
                                    :let [re (re-pattern re-s)]
