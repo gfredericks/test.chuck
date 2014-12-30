@@ -7,4 +7,12 @@
                  [instaparse "1.3.5"]]
   :deploy-repositories [["releases" :clojars]]
   :profiles {:dev {:dependencies
-                   [[org.clojure/test.check "0.6.2"]]}})
+                   [[org.clojure/test.check "0.6.2"]]}}
+  :aliases {"test-all"
+            ^{:doc "Runs tests on multiple JVMs; profiles java-7
+                    and java-8 should be defined outside this project."}
+            ["do"
+             "clean,"
+             "with-profile" "+java-7" "test,"
+             "clean,"
+             "with-profile" "+java-8" "test"]})
