@@ -39,13 +39,13 @@
   [tree]
   (tree-seq #(contains? % :elements) :elements tree))
 
-(defmacro ^:private re?
+(defn ^:private re?
   "Checks if the string compiles with re-pattern."
   [s]
-  `(try (re-pattern ~s)
-        true
-        (catch java.util.regex.PatternSyntaxException _#
-          false)))
+  (try (re-pattern s)
+       true
+       (catch java.util.regex.PatternSyntaxException e
+         false)))
 
 (def ^:private features
   "Features that vary between versions of the JVM. We use the Pattern
