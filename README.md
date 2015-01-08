@@ -55,7 +55,7 @@ for details:
 
 - `for` (described below)
 - `string-from-regex`
-- `subset`
+- `subsequence` (for subsets and similar)
 - `cap-size`
 - `partition`
 - `map->hash-map`

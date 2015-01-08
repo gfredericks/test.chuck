@@ -67,3 +67,22 @@
 (defspec subset-in-set 100
   (prop/for-all [s (gen'/subset (range 10))]
     (every? (set (range 10)) s)))
+
+(defn subsequence?
+  "Checks if xs is a subsequence of ys."
+  [xs ys]
+  (or (empty? xs)
+      (and (seq ys)
+           (= (first xs) (first ys))
+           (subsequence? (rest xs) (rest ys)))
+      (and (seq ys)
+           (subsequence? xs (rest ys)))))
+
+(def subsequence-gen
+  (gen'/for [ys (gen/list gen/nat)
+             xs (gen'/subsequence ys)]
+    [xs ys]))
+
+(defspec subsequence-spec 100
+  (prop/for-all [[xs ys] subsequence-gen]
+    (subsequence? xs ys)))

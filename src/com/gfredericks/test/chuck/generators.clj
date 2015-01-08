@@ -138,15 +138,21 @@
           :else
           (throw (ex-info "Unsupported binding form in gen/for!" {:form k2})))))
 
-(defn subset
-  "Generates a subset of the given elements, which may be
-  empty or include all of the elements."
+(defn subsequence
+  "Given a collection, generates \"subsequences\" which are sequences
+  of (not necessarily contiguous) elements from the original
+  collection, in the same order. For collections of distinct elements
+  this is effectively a subset generator, with an ordering guarantee."
   [elements]
   (for [bools (apply gen/tuple (repeat (count elements) gen/boolean))]
     (->> (map list bools elements)
          (filter first)
-         (map second)
-         (set))))
+         (map second))))
+
+(defn subset
+  "Deprecated variant of subsequence that coerces the result to a set."
+  [elements]
+  (gen/fmap set (subsequence elements)))
 
 (defn cap-size
   "Wraps the given generator so that it is never called with a size
