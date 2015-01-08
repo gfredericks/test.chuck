@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.10
+
+Added `subsequence` to replace `subset`, which is deprecated.
+
 ## 0.1.9
 
 Added `string-from-regex` support for Java 8 features (active only
