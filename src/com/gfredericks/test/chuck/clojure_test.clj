@@ -22,7 +22,14 @@
   (when (report-needed? reports @final-reports)
     (reset! final-reports reports)))
 
-(defmacro checking [name tests bindings & body]
+(defmacro checking
+  "A macro intended to replace the testing macro in clojure.test with a
+  generative form. To make (testing \"doubling\" (is (= (* 2 2) (+ 2 2))))
+  generative, you simply have to change it to
+  (checking \"doubling\" 100 [x gen/int] (is (= (* 2 x) (+ x x)))).
+
+  For more details on this code, see http://blog.colinwilliams.name/blog/2015/01/26/alternative-clojure-dot-test-integration-with-test-dot-check/"
+  [name tests bindings & body]
   `(testing ~name
      (let [final-reports# (atom [])]
        (report-when-failing (tc/quick-check ~tests
