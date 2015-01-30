@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.12
+
+Bugfix in `com.gfredericks.test.chuck.properties/for-all`
+
+## 0.1.11
+
+Added `com.gfredericks.test.chuck.properties`
+
 ## 0.1.10
 
 Added `subsequence` to replace `subset`, which is deprecated.
