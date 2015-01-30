@@ -18,9 +18,10 @@
 (defn report-needed? [reports final-reports]
   (or (not (pass? reports)) (empty? final-reports)))
 
-(defn save-to-final-reports [reports final-reports]
-  (when (report-needed? reports @final-reports)
-    (reset! final-reports reports)))
+(defn save-to-final-reports [final-reports reports]
+  (if (report-needed? reports final-reports)
+    reports
+    final-reports))
 
 (defmacro checking
   "A macro intended to replace the testing macro in clojure.test with a
@@ -31,11 +32,12 @@
   For more details on this code, see http://blog.colinwilliams.name/blog/2015/01/26/alternative-clojure-dot-test-integration-with-test-dot-check/"
   [name tests bindings & body]
   `(testing ~name
-     (let [final-reports# (atom [])]
+     (let [final-reports# (agent [])]
        (report-when-failing (tc/quick-check ~tests
                               (prop/for-all ~bindings
                                 (let [reports# (capture-reports ~body)]
-                                  (save-to-final-reports reports# final-reports#)
+                                  (send final-reports# save-to-final-reports reports#)
                                   (pass? reports#)))))
+       (await final-reports#)
        (doseq [r# @final-reports#]
          (report r#)))))
