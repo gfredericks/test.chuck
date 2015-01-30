@@ -8,7 +8,7 @@
 
 (defmacro capture-reports [body]
   `(let [reports# (atom [])]
-     (with-bindings [report #(swap! reports# conj %)]
+     (binding [report #(swap! reports# conj %)]
        ~@body)
      @reports#))
 
