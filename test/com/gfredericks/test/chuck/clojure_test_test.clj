@@ -16,12 +16,3 @@
       (is (= @c (inc i)))
       (swap! c inc)
       (is (> @c 0)))))
-
-(deftest searched-failure
-  (checking "incorrect" 100 [i gen/pos-int]
-    (is (< i 50))))
-
-(deftest unsearched-failure
-  (checking "incorrect" 100 [i gen/pos-int]
-    (is (< i 50))
-    (is (= i i))))
