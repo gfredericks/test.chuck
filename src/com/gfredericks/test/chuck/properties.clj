@@ -13,6 +13,6 @@
 
     ;; calling a private function because I don't know of a cleaner
     ;; way to do this :/
-    (comp (#'prop/apply-gen identity) list)
+    (comp (#'prop/apply-gen #(%)) list)
 
-    (gen'/for ~bindings ~expr)))
+    (gen'/for ~bindings (fn [] ~expr))))
