@@ -170,6 +170,23 @@ Some of these could be supported with a bit of effort.
 - The hex syntax for unicode characters outside the BMP: `\x{10001}`
 - Named character classes: `\p{IsAlphabetic}`, `\P{ASCII}`, ...
 
+### Properties
+
+`com.gfredericks.test.chuck.properties/for-all` is an alternative to
+`clojure.test.check.properties/for-all` that uses the [`for`](#for)
+macro to interpret the binding clauses:
+
+``` clojure
+(require [com.gfredericks.test.chuck.properties :as prop'])
+
+(prop'/for-all [a gen/pos-int
+                :when (even? a)
+                :let [b (/ a 2)]
+                xs (gen/vector gen/int b)]
+  (= (count xs) b))
+```
+
+
 ## Contributing
 
 I welcome pull requests for any test.check utility that seems halfway
