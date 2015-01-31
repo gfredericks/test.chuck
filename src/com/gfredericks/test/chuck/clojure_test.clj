@@ -4,7 +4,7 @@
             [clojure.test.check.properties :as prop]))
 
 (defn report-when-failing [result]
-  (is (:result result) result))
+  (is (tc/not-falsey-or-exception? (:result result)) result))
 
 (defmacro capture-reports [body]
   `(let [reports# (atom [])]
