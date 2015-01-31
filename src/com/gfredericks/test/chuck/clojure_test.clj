@@ -32,12 +32,11 @@
   For more details on this code, see http://blog.colinwilliams.name/blog/2015/01/26/alternative-clojure-dot-test-integration-with-test-dot-check/"
   [name tests bindings & body]
   `(testing ~name
-     (let [final-reports# (agent [])]
+     (let [final-reports# (atom [])]
        (report-when-failing (tc/quick-check ~tests
                               (prop/for-all ~bindings
                                 (let [reports# (capture-reports ~body)]
-                                  (send final-reports# save-to-final-reports reports#)
+                                  (swap! final-reports# save-to-final-reports reports#)
                                   (pass? reports#)))))
-       (await final-reports#)
        (doseq [r# @final-reports#]
          (report r#)))))
