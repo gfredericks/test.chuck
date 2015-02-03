@@ -15,13 +15,16 @@ _test.chuck_ is a utility library for
 
 ```
 
-## Usage
+## Obtention
 
 Leiningen dependency coordinates:
 
 ```
 [com.gfredericks/test.chuck "0.1.13"]
 ```
+
+## Usage
+
 
 ### General Helpers
 
