@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.14
+
+Fix issue #5, making `com.gfredericks.test.chuck.properties/for-all`
+report failing args less uselessly.
+
 ## 0.1.12
 
 Bugfix in `com.gfredericks.test.chuck.properties/for-all`
