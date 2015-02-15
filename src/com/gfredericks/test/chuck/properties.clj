@@ -47,5 +47,7 @@
         quoted-names (map #(list 'quote %) bound-names)]
     `(prop/for-all [{:syms [~@bound-names]}
                     (gen'/for ~bindings
-                      ~(zipmap quoted-names bound-names))]
+                      (with-meta
+                        ~(zipmap quoted-names bound-names)
+                        {::for-all-bindings-map true}))]
        ~expr)))
