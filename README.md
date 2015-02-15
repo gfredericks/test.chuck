@@ -20,7 +20,7 @@ _test.chuck_ is a utility library for
 Leiningen dependency coordinates:
 
 ```
-[com.gfredericks/test.chuck "0.1.13"]
+[com.gfredericks/test.chuck "0.1.14"]
 ```
 
 ## Usage
