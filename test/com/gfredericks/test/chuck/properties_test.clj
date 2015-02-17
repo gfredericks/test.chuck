@@ -2,6 +2,7 @@
   (:require [clojure.test :refer :all]
             [clojure.test.check :as t.c]
             [clojure.test.check.generators :as gen]
+            [clojure.test.check.clojure-test :refer [defspec]]
             [com.gfredericks.test.chuck.properties :as prop']))
 
 (deftest it-handles-exceptions-correctly
@@ -19,3 +20,7 @@
     (let [[m] fail]
       (is (= ['x] (keys m)))
       (is (<= 0 (get m 'x) 10)))))
+
+(defspec for-all-destructured-args-work-correctly 10
+  (prop'/for-all [[a b] (gen/tuple gen/int gen/int)]
+                 (+ a b)))
