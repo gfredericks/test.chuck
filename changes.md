@@ -11,6 +11,10 @@ Even more bugfixes for
 Fix issue #5, making `com.gfredericks.test.chuck.properties/for-all`
 report failing args less uselessly.
 
+## 0.1.13
+
+Added `com.gfredericks.test.chuck.clojure-test`.
+
 ## 0.1.12
 
 Bugfix in `com.gfredericks.test.chuck.properties/for-all`

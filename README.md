@@ -189,6 +189,14 @@ macro to interpret the binding clauses:
   (= (count xs) b))
 ```
 
+### Alternate `clojure.test` integration
+
+A macro that allows you to use `clojure.test/is` and
+`clojure.test/are` with test.check, letting you keep the
+side-effecting style that is often used with `clojure.test`.
+
+More details in [this blog post](http://blog.colinwilliams.name/blog/2015/01/26/alternative-clojure-dot-test-integration-with-test-dot-check/).
+
 
 ## Contributing
 
@@ -197,6 +205,8 @@ reasonable.
 
 ## Acknowledgments
 
+- [@lackita](https://github.com/lackita) for creating
+  `com.gfredericks.test.chuck.clojure-test`
 - [@weavejester](https://github.com/weavejester) for creating the original
   regex->string [code](https://github.com/weavejester/re-rand)
 - [@miner](https://github.com/miner) for various help with the
