@@ -13,12 +13,17 @@
 ;; property
 ;;
 
+(defn ^:private probably-gen-sym? [sym]
+  (let [s (name sym)]
+    (or (.startsWith s "vec__")
+        (.startsWith s "map__"))))
+
 (defn ^:private for-bindings-in-binding-expr
   [expr]
-  ;; this'll get gensyms o_O
   (->> (clojure.core/destructure [expr :dummy])
        (partition 2)
-       (map first)))
+       (map first)
+       (filter (complement probably-gen-sym?))))
 
 (defn ^:private for-bindings-in-clause
   [left right]
