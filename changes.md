@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.15
+
+Even more bugfixes for
+`com.gfredericks.test.chuck.properties/for-all`, issue #7 this time
+(wherewithrespectintowhich destructuring was completely broken).
+
 ## 0.1.14
 
 Fix issue #5, making `com.gfredericks.test.chuck.properties/for-all`
