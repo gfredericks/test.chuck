@@ -1,4 +1,4 @@
-(defproject com.gfredericks/test.chuck "0.1.16"
+(defproject com.gfredericks/test.chuck "0.1.17-SNAPSHOT"
   :description "A dumping ground of test.check utilities"
   :url "https://github.com/fredericksgary/test.chuck"
   :license {:name "Eclipse Public License"
