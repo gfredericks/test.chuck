@@ -3,8 +3,18 @@
             [clojure.test :refer :all]
             [clojure.test.check.properties :as prop]))
 
+;; copied from clojure.test.check, which privatized the function in
+;; recent versions.
+;;
+;; I think there might be plans for test.check to abstract this logic
+;; into a protocol or something, so I'm not too bothered by the
+;; copypasta for now.
+(defn ^:private not-falsey-or-exception?
+  [value]
+  (and value (not (instance? Throwable value))))
+
 (defn report-when-failing [result]
-  (is (tc/not-falsey-or-exception? (:result result)) result))
+  (is (not-falsey-or-exception? (:result result)) result))
 
 (defmacro capture-reports [body]
   `(let [reports# (atom [])]
