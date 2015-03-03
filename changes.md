@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.16
+
+Bugfix for `com.gfredericks.test.chuck.clojure-test` which was broken
+when using `test.check` version `0.7.0`.
+
 ## 0.1.15
 
 Even more bugfixes for
