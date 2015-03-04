@@ -41,6 +41,9 @@
 
   For more details on this code, see http://blog.colinwilliams.name/blog/2015/01/26/alternative-clojure-dot-test-integration-with-test-dot-check/"
   [name tests bindings & body]
+  (assert (string? name) "name should be a string")
+  (assert (vector? bindings) "bindings should be a vector")
+  (assert (seq body) "body shouldn't be empty - it means you aren't testing anything")
   `(testing ~name
      (let [final-reports# (atom [])]
        (report-when-failing (tc/quick-check ~tests
