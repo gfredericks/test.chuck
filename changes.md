@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.17
+
+Upgraded instaparse lib for compatibility with clojure 1.7.
+
 ## 0.1.16
 
 Bugfix for `com.gfredericks.test.chuck.clojure-test` which was broken
