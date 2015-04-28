@@ -3,6 +3,7 @@
   (:refer-clojure :exclude [double for partition])
   (:require [clojure.core :as core]
             [clojure.test.check.generators :as gen]
+            [clojure.test.check.rose-tree :as rose]
             [com.gfredericks.test.chuck.regexes :as regexes]))
 
 ;; Hoping this will be in test.check proper:
@@ -227,3 +228,85 @@
   any of those features."
   [regex]
   (regexes/gen-string-from-regex regex))
+
+(let [split (or (some-> 'clojure.test.check.random/split resolve deref)
+                ;; backwards compatibility with pre-immutable test.check
+                #(vector % %))]
+  (defn ^:private vector-distinct*
+    "Returns a collection of rose trees."
+    [gen rng gen-size vec-size max-tries]
+    (loop [v (transient [])
+           ^clojure.lang.ITransientSet s (transient #{})
+           rng rng
+           gen-size gen-size
+           tries 0]
+      (cond (= max-tries tries)
+            (throw (Exception. (format "Couldn't generate enough distinct elements after %d tries." max-tries)))
+
+            (= (count v) vec-size)
+            (persistent! v)
+
+            :else
+            (let [[rng1 rng2] (split rng)
+                  rose (gen/call-gen gen rng1 gen-size)
+                  root (rose/root rose)]
+              (if (.contains s root)
+                (recur v s rng2 (inc gen-size) (inc tries))
+                (recur (conj! v rose)
+                       (conj! s root)
+                       rng2
+                       gen-size
+                       0)))))))
+
+(defn ^:private no-duplicates?
+  [coll]
+  (or (empty? coll)
+      (apply distinct? coll)))
+
+(defn vector-distinct
+  "Generates a vector of elements from the given generator, with the
+  guarantee that the elements will be distinct.
+
+  If the generator cannot or is unlikely to produce enough distinct
+  elements, this generator will fail in the same spirit as
+  clojure.test.check.generators/such-that.
+
+  Available options:
+
+    :size      the fixed size of generated vectors
+    :min-size  the min size of generated vectors
+    :max-size  the max size of generated vectors
+    :max-tries the number of times the generator will be tried before
+               failing when it does not produce distinct elements
+               (default 10)"
+  ;; downside with current code: in smaller elements, the smaller elements
+  ;; come earlier. If you get my drift.
+  ([gen] (vector-distinct gen {}))
+  ([gen {:keys [size min-size max-size max-tries] :or {max-tries 10}}]
+   (let [vec-size size]
+     (if vec-size
+       (do
+         (assert (and (nil? min-size) (nil? max-size)))
+         (gen/->Generator
+          (fn [rng gen-size]
+            (->> (vector-distinct* gen rng gen-size vec-size max-tries)
+                 (rose/zip core/vector)
+                 ;; is there a smarter way to do the shrinking than checking
+                 ;; the distinctness of the entire collection at each
+                 ;; step?
+                 (rose/filter no-duplicates?)))))
+
+       (gen/gen-bind
+        (if max-size
+          (gen/choose (or min-size 0) max-size)
+          (gen/sized #(gen/choose min-size (+ min-size %))))
+        (fn [num-elements-rose]
+          (gen/->Generator
+           (fn [rng gen-size]
+             (->> (vector-distinct* gen rng gen-size (rose/root num-elements-rose) max-tries)
+                  (rose/zip core/vector)
+                  (rose/filter #(<= (or min-size 0)
+                                    (count %)
+                                    max-size))
+                  ;; same comment as above
+                  (rose/filter no-duplicates?))))))))))
