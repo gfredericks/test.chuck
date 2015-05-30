@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.18
+
+Removed reflection.
+
 ## 0.1.17
 
 Upgraded instaparse lib for compatibility with clojure 1.7.
