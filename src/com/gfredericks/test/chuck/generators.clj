@@ -209,7 +209,7 @@
   but not NaN."
   (gen/fmap
    (fn [[signed-significand exp]]
-     (Math/scalb (core/double signed-significand) exp))
+     (Math/scalb (core/double signed-significand) (core/int exp)))
    (gen/tuple
     (let [bignumber (apply * (repeat 52 2))]
       (bounded-int (- bignumber) bignumber))

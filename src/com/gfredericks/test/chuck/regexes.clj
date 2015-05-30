@@ -273,7 +273,7 @@
     :BasicEscapedChar (fn [[c]] {:type :character
                                  :character c})
 
-    :HexChar (fn [hex-string]
+    :HexChar (fn [^String hex-string]
                (let [n (BigInteger. hex-string 16)]
                  (when (> n Character/MAX_CODE_POINT)
                    (throw (ex-info "Bad hex character!"
