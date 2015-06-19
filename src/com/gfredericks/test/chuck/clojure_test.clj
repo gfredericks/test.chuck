@@ -16,7 +16,7 @@
 (defn report-when-failing [result]
   (is (not-falsey-or-exception? (:result result)) result))
 
-(defmacro capture-reports [body]
+(defmacro capture-reports [& body]
   `(let [reports# (atom [])]
      (binding [report #(swap! reports# conj %)]
        ~@body)
@@ -45,7 +45,7 @@
      (let [final-reports# (atom [])]
        (report-when-failing (tc/quick-check ~tests
                               (prop/for-all ~bindings
-                                (let [reports# (capture-reports ~body)]
+                                (let [reports# (capture-reports ~@body)]
                                   (swap! final-reports# save-to-final-reports reports#)
                                   (pass? reports#)))))
        (doseq [r# @final-reports#]
