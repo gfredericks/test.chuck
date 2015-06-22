@@ -1,5 +1,6 @@
 (ns com.gfredericks.test.chuck.clojure-test-test
   (:require [clojure.test :refer :all]
+            [clojure.test.check :refer [quick-check]]
             [clojure.test.check.generators :as gen]
             [com.gfredericks.test.chuck.clojure-test :refer :all]))
 
@@ -34,3 +35,15 @@
     (is (= 1 (+ (:error test-results)
                 (:fail test-results)))))
   (remove-ns 'fake.test.namespace))
+
+(deftest for-all-test
+  (let [passing-prop (for-all [x gen/s-pos-int]
+                       (is (< x (+ x x))))]
+    (is (true? (:result (quick-check 20 passing-prop)))))
+  (let [failing-prop (for-all [x gen/s-pos-int]
+                       (is true)
+                       ;; sticking a failing assertion in between two
+                       ;; passing ones
+                       (is (zero? x))
+                       (is (= x x)))]
+    (is (not (:result (quick-check 20 failing-prop))))))

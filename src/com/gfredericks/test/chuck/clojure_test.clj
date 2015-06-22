@@ -50,3 +50,11 @@
                                   (pass? reports#)))))
        (doseq [r# @final-reports#]
          (report r#)))))
+
+(defmacro for-all
+  "An alternative to clojure.test.check.properties/for-all that uses
+  clojure.test-style assertions (i.e., clojure.test/is) rather than
+  the truthiness of the body expression."
+  [bindings & body]
+  `(prop/for-all ~bindings
+     (pass? (capture-reports ~@body))))
