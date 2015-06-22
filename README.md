@@ -191,9 +191,37 @@ macro to interpret the binding clauses:
 
 ### Alternate `clojure.test` integration
 
-A macro that allows you to use `clojure.test/is` and
-`clojure.test/are` with test.check, letting you keep the
-side-effecting style that is often used with `clojure.test`.
+The `com.gfredericks.test.chuck.clojure-test` namespace contains a
+couple macros that let you write property-based tests using the
+side-effecting `(is ...)` assertions normally used with
+`clojure.test`.
+
+The `checking` macro is intended to be used with
+`clojure.test/deftest`:
+
+``` clojure
+(require '[clojure.test :refer [deftest is]]
+         '[com.gfredericks.test.chuck.clojure-test :refer [checking]])
+
+(deftest my-test
+  (checking "that positive numbers are positive" 100
+    [x gen/s-pos-int]
+    (is (pos? x))
+    (is (> x 0))))
+```
+
+The `for-all` macro is intended to be used with
+`clojure.test.check.clojure-test/defspec`:
+
+``` clojure
+(require '[clojure.test.check.clojure-test :refer [defspec]]
+         '[com.gfredericks.test.chuck.clojure-test :refer [for-all]])
+
+(defspec positive-number-positivity-spec 100
+  (for-all [x gen/s-pos-int]
+    (is (pos? x))
+    (is (> x 0))))
+```
 
 More details in [this blog post](http://blog.colinwilliams.name/blog/2015/01/26/alternative-clojure-dot-test-integration-with-test-dot-check/).
 
