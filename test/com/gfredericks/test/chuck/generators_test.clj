@@ -86,3 +86,14 @@
 (defspec subsequence-spec 100
   (prop/for-all [[xs ys] subsequence-gen]
     (subsequence? xs ys)))
+
+(def sub-map-gen
+  (gen'/for [m (gen/map gen/string-alphanumeric gen/nat)
+             sm (gen'/sub-map m)]
+    [m sm]))
+
+(defspec sub-map-spec 100
+  (prop/for-all [[m sm] sub-map-gen]
+    (every? #(= (find m (key %))
+                %)
+            sm)))
