@@ -57,7 +57,7 @@ There are a few minor generators and helpers, see the docstrings
 for details:
 
 - `for` (described below)
-- `string-from-regex`
+- `string-from-regex` (described below)
 - `subsequence` (for subsets and similar)
 - `cap-size`
 - `partition`
