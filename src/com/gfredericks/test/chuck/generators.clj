@@ -197,12 +197,24 @@
   smallish numbers for small sizes.
 
   Both bounds are inclusive."
-  [min max]
+  [low high]
   (gen/sized (fn [size]
                (let [exp (apply * (repeat size 2N))
-                     min' (clojure.core/max min (- exp))
-                     max' (clojure.core/min max exp)]
-                 (gen/choose min' max')))))
+                     -high-low (- high low)
+                     range-size (min (* 2 exp) -high-low)
+                     low' (- exp)
+                     high' exp]
+                 (cond (<= -high-low range-size)
+                       (gen/choose low high)
+
+                       (<= low low' high' high)
+                       (gen/choose low' high')
+
+                       (< low' low)
+                       (gen/choose low (+ low range-size))
+
+                       (< high high')
+                       (gen/choose (- high range-size) high))))))
 
 (def double
   "Generates a Double, which can include Infinity and -Infinity

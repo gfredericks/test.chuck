@@ -60,6 +60,17 @@
   (prop/for-all [[n v] parallel-as-second-clause]
     (= (* 2 n) (count v))))
 
+(defspec bounded-int-generates-bounded-ints 500
+  (let [large-int (gen/choose -200000000 200000000)
+        g (gen/bind (gen/tuple large-int large-int)
+                    (fn [pair]
+                      (let [[low high] (sort pair)]
+                        (gen/tuple (gen/return low)
+                                   (gen/return high)
+                                   (gen'/bounded-int low high)))))]
+    (prop/for-all [[low high n] g]
+      (<= low n high))))
+
 (defspec double-generates-doubles 100
   (prop/for-all [x gen'/double]
     (instance? Double x)))
