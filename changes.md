@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.20
+
+Fix bug in `bounded-int`.
+
 ## 0.1.19
 
 Added `com.gfredericks.test.chuck.clojure-test/for-all`.
