@@ -62,6 +62,7 @@ for details:
 - `cap-size`
 - `partition`
 - `map->hash-map`
+- `sub-map`
 - `bounded-int`
 - `double`
 

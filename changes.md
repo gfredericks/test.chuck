@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.21
+
+Added `sub-map` generator.
+
 ## 0.1.20
 
 Fix bug in `bounded-int`.
