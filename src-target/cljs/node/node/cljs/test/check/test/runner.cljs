@@ -1,6 +1,7 @@
 (ns cljs.test.check.test.runner
   (:require [cljs.nodejs :as nodejs]
             [cljs.test :as test :refer-macros [run-tests]]
+            [com.gfredericks.test.chuck.cljs-test-test]
             [com.gfredericks.test.chuck.properties-test]
             [com.gfredericks.test.chuck.generators-test]))
 
