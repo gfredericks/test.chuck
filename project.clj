@@ -25,6 +25,15 @@
                 :output-to "target/cljs/node_dev/tests.js"
                 :output-dir "target/cljs/node_dev/out"
                 :source-map true}}
+    {:id "browser-dev"
+     :source-paths ["test-cljs"
+                    "src-cljs"
+                    "src-target/cljs/browser"]
+     :compiler {:optimizations :none
+                :static-fns true
+                :output-to "target/cljs/browser_dev/tests.js"
+                :output-dir "target/cljs/browser_dev/out"
+                :source-map true}}
     {:id "node-adv"
      :source-paths ["test-cljs"
                     "src-cljs"
@@ -34,7 +43,15 @@
                 :target :nodejs
                 :pretty-print false
                 :output-to "target/cljs/node_adv/tests.js"
-                :output-dir "target/cljs/node_adv/out"}}]}
+                :output-dir "target/cljs/node_adv/out"}}
+    {:id "browser-adv"
+     :source-paths ["test-cljs"
+                    "src-cljs"
+                    "src-target/cljs/browser"]
+     :compiler {:optimizations :advanced
+                :pretty-print false
+                :output-to "target/cljs/browser_adv/tests.js"
+                :output-dir "target/cljs/browser_adv/out"}}]}
   :aliases {"test-all"
             ^{:doc "Runs tests on multiple JVMs; profiles java-7
                     and java-8 should be defined outside this project."}
