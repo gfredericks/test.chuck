@@ -127,7 +127,9 @@
           (let [max-tries-meta (-> v2 meta :max-tries)
                 max-tries-arg (if max-tries-meta
                                 [max-tries-meta])
-                v1' `(cljs.test.check.generators/such-that (fn [~k1] ~v2) ~v1 ~@max-tries-arg)]
+                v1' `(cljs.test.check.generators/such-that (fn [~k1] ~v2)
+                                                           ~v1
+                                                           ~@max-tries-arg)]
             `(for [~k1 ~v1' ~@even-more] ~expr))
 
           ((some-fn symbol? vector? map? #{:parallel}) k2)

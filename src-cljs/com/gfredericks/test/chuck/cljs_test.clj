@@ -24,11 +24,12 @@
   `(cljs.test/testing ~name
      (let [final-reports# (atom [])]
        (com.gfredericks.test.chuck.cljs-test/report-when-failing
-         (cljs.test.check/quick-check ~tests
-                              (cljs.test.check.properties/for-all ~bindings
-                                (let [reports# (capture-reports ~@body)]
-                                  (swap! final-reports# com.gfredericks.test.chuck.cljs-test/save-to-final-reports reports#)
-                                  (com.gfredericks.test.chuck.cljs-test/pass? reports#)))))
+         (cljs.test.check/quick-check
+           ~tests
+           (cljs.test.check.properties/for-all ~bindings
+             (let [reports# (capture-reports ~@body)]
+               (swap! final-reports# com.gfredericks.test.chuck.cljs-test/save-to-final-reports reports#)
+               (com.gfredericks.test.chuck.cljs-test/pass? reports#)))))
        (doseq [r# @final-reports#]
          (cljs.test/report r#)))))
 
@@ -37,5 +38,6 @@
   clojure.test-style assertions (i.e., clojure.test/is) rather than
   the truthiness of the body expression."
   [bindings & body]
-  `(cljs.test.check.properties/for-all ~bindings
+  `(cljs.test.check.properties/for-all
+     ~bindings
      (com.gfredericks.test.chuck.cljs-test/pass? (capture-reports ~@body))))

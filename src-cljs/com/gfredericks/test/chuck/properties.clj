@@ -81,8 +81,8 @@
   (let [bound-names (for-bindings bindings)
         quoted-names (map #(list 'quote %) bound-names)]
     `(cljs.test.check.properties/for-all [{:syms [~@bound-names]}
-                    (gen'/for ~bindings
-                      (with-meta
-                        ~(zipmap quoted-names bound-names)
-                        {::for-all-bindings-map true}))]
+       (gen'/for ~bindings
+         (with-meta
+           ~(zipmap quoted-names bound-names)
+           {::for-all-bindings-map true}))]
        ~expr)))
