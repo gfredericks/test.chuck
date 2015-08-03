@@ -8,7 +8,8 @@
 ;; copypasta for now.
 (defmacro capture-reports [& body]
   `(let [reports# (atom [])]
-     (binding [report #(swap! reports# conj %)]
+     (binding [com.gfredericks.test.chuck.cljs-test/*chuck-captured-reports* reports#
+               cljs.test/*current-env* (cljs.test/empty-env :com.gfredericks.test.chuck.cljs-test/chuck-capture)]
        ~@body)
      @reports#))
 
@@ -29,7 +30,7 @@
                                   (swap! final-reports# com.gfredericks.test.chuck.cljs-test/save-to-final-reports reports#)
                                   (com.gfredericks.test.chuck.cljs-test/pass? reports#)))))
        (doseq [r# @final-reports#]
-         (report r#)))))
+         (cljs.test/report r#)))))
 
 (defmacro for-all
   "An alternative to clojure.test.check.properties/for-all that uses

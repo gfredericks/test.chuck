@@ -11,6 +11,16 @@
   [value]
   (and value (not (instance? js/Error value))))
 
+(def ^:dynamic *chuck-captured-reports*)
+
+(defmethod cljs.test/report [::chuck-capture :fail]
+  [m]
+  (swap! *chuck-captured-reports* conj m))
+
+(defmethod cljs.test/report [::chuck-capture :pass]
+  [m]
+  (swap! *chuck-captured-reports* conj m))
+
 (defn report-when-failing [result]
   (is (not-falsey-or-exception? (:result result)) result))
 
