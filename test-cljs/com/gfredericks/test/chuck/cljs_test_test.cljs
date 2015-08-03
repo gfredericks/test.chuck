@@ -19,7 +19,7 @@
       (swap! c inc)
       (is (> @c 0)))))
 
-(comment "TODO: Implement in cljs"
+(comment "TODO: Implement in cljs, find replacement for cljs.test/*test-out*"
 (deftest exception-detection-test
   (eval '(do (ns fake.test.namespace
                (:require [cljs.test :refer-macros [deftest is]]
