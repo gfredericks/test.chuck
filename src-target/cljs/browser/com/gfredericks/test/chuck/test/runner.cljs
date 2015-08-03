@@ -1,4 +1,4 @@
-(ns cljs.test.check.test.runner
+(ns com.gfredericks.test.chuck.test.runner
   (:require [cljs.test :as test :refer-macros [run-tests]]
             [com.gfredericks.test.chuck.cljs-test-test]
             [com.gfredericks.test.chuck.properties-test]
