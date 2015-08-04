@@ -1,10 +1,12 @@
 (ns com.gfredericks.test.chuck.generators-test
-  (:require [clojure.test.check.clojure-test :refer [defspec]]
+  (:require [clojure.test.check.clojure-test
+             #?(:clj :refer :cljs :refer-macros) [defspec]]
             [clojure.test.check.generators :as gen]
-            [clj-time.core :as ct]
-            [clj-time.coerce :as ctc]
+            [#?(:clj clj-time.core :cljs cljs-time.core) :as ct]
+            [#?(:clj clj-time.coerce :cljs cljs-time.coerce) :as ctc]
             [clojure.test.check.properties :as prop]
-            [com.gfredericks.test.chuck.generators :as gen']))
+            [com.gfredericks.test.chuck.generators :as gen'
+             #?@(:cljs [:include-macros true])]))
 
 (def lists-and-counts
   (gen'/for [nums (gen/vector gen/nat)
@@ -73,9 +75,11 @@
     (prop/for-all [[low high n] g]
       (<= low n high))))
 
+; TODO: improve the cljs tests for gen'/double
 (defspec double-generates-doubles 100
   (prop/for-all [x gen'/double]
-    (instance? Double x)))
+    #?(:clj  (instance? Double x)
+       :cljs (= js/Number (type x)))))
 
 (defspec subset-in-set 100
   (prop/for-all [s (gen'/subset (range 10))]

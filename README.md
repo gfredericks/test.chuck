@@ -234,6 +234,23 @@ More details in [this blog post](http://blog.colinwilliams.name/blog/2015/01/26/
 I welcome pull requests for any test.check utility that seems halfway
 reasonable.
 
+## Development
+
+### Running tests
+
+For clj, be sure to use leiningen 2.5.2. (so it picks up .cljc files) and do as usual:
+
+    $ lein test
+
+For cljs [bensu/doo](https://github.com/bensu/doo) is configured so the tests can be run with:
+
+    $ lein doo node node-test
+
+To run with slimer.js, phantom or rhino:
+
+    # replace {js-env} with phantom, slimer or rhino
+    $ lein doo {js-env} test
+
 ## Acknowledgments
 
 - [@lackita](https://github.com/lackita) for creating

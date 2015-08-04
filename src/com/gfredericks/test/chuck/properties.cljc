@@ -1,9 +1,10 @@
 (ns com.gfredericks.test.chuck.properties
   "Alternative to clojure.test.check.properties."
   (:require [clojure.set :as sets]
-            [clojure.test.check.generators :as gen]
-            [clojure.test.check.properties :as prop]
-            [com.gfredericks.test.chuck.generators :as gen']))
+            [clojure.test.check.properties :as prop
+             #?@(:cljs [:include-macros true])]
+            [com.gfredericks.test.chuck.generators :as gen'
+             #?@(:cljs [:include-macros true])]))
 
 ;; This namespace goes to a heck of a lot of effort just to get sane
 ;; args reported when a property fails. It semiduplicates syntactic

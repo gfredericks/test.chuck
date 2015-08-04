@@ -1,11 +1,12 @@
 (ns com.gfredericks.test.chuck.generators
   "Yes this namespace's name has five components."
   (:refer-clojure :exclude [double for partition])
-  (:require [clojure.core :as core]
-            [clojure.test.check.generators :as gen]
-            [com.gfredericks.test.chuck.regexes :as regexes]
-            [clj-time.core :as ct]
-            [clj-time.coerce :as ctc]))
+  #?(:cljs (:require-macros [com.gfredericks.test.chuck.generators :refer [for]]))
+  (:require [clojure.test.check.generators :as gen]
+            [#?(:clj clojure.core :cljs cljs.core) :as core]
+            [#?(:clj clj-time.core :cljs cljs-time.core) :as ct]
+            [#?(:clj clj-time.coerce :cljs cljs-time.coerce) :as ctc]
+            #?(:clj [com.gfredericks.test.chuck.regexes :as regexes])))
 
 ;; Hoping this will be in test.check proper:
 ;; http://dev.clojure.org/jira/browse/TCHECK-15
@@ -218,17 +219,23 @@
                        (< high high')
                        (gen/choose (- high range-size) high))))))
 
+(defn ^:private scalb
+  [x exp]
+  #?(:clj  (Math/scalb x exp)
+     :cljs (* x (.pow js/Math 2 exp))))
+
 (def double
   "Generates a Double, which can include Infinity and -Infinity
   but not NaN."
   (gen/fmap
    (fn [[signed-significand exp]]
-     (Math/scalb (core/double signed-significand) (core/int exp)))
+     (scalb (core/double signed-significand) (core/int exp)))
    (gen/tuple
     (let [bignumber (apply * (repeat 52 2))]
       (bounded-int (- bignumber) bignumber))
     (bounded-int -1022 1023))))
 
+#?(:clj
 (defn string-from-regex
   "Given a regular expression, returns a generator that generates
   strings matching that regular expression.
@@ -240,7 +247,7 @@
   helpful exceptions if it is called with a regular expression using
   any of those features."
   [regex]
-  (regexes/gen-string-from-regex regex))
+  (regexes/gen-string-from-regex regex)))
 
 (defn sub-map
   "Given a concrete map, it'll randomly select keys
