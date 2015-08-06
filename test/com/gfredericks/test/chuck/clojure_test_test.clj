@@ -31,9 +31,11 @@
   (let [test-results
         (binding [clojure.test/*test-out* (java.io.StringWriter.)]
           (clojure.test/run-tests (the-ns 'fake.test.namespace)))]
-    ;; should this be reported as an error for sure?
-    (is (= 1 (+ (:error test-results)
-                (:fail test-results)))))
+    ;; should be reported as an error, but it's being reported as :fail :/
+    (is (= {:pass 0
+            :fail 1
+            :error 0}
+           (select-keys test-results [:pass :fail :error]))))
   (remove-ns 'fake.test.namespace))
 
 (deftest for-all-test
