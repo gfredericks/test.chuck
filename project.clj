@@ -5,13 +5,12 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.7.0" :scope "provided"]
                  [org.clojure/clojurescript "1.7.48" :scope "provided"]
+                 [org.clojure/test.check "0.8.0"]
                  [clj-time "0.10.0"]
                  [com.andrewmcveigh/cljs-time "0.3.11"]
                  [instaparse "1.3.6"]]
   :deploy-repositories [["releases" :clojars]]
-  :profiles {:dev {:dependencies
-                   [[org.clojure/test.check "0.8.0-RC3"]]}
-             :circle-ci {:jvm-opts ["-Xmx1g" "-server"]}}
+  :profiles {:circle-ci {:jvm-opts ["-Xmx1g" "-server"]}}
   :plugins [[lein-cljsbuild "1.0.6"]
             [lein-doo "0.1.4-SNAPSHOT"]]
 
