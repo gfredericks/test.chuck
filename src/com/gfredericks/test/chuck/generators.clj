@@ -261,7 +261,7 @@
 
 (def ^:private yr-2000 (ct/date-time 2000))
 
-(defn gen-datetime
+(defn datetime
   "Generates datetime within given range and format.
 
    base-datetime => By default it'll calculate the dates from year 2000.
@@ -282,16 +282,16 @@
 
    For example If you would like to generate datetime
    from last 10 months to next 10 months:
-   (gen/sample (gen-datetime {:offset-fns [clj-time.core/months]
-                              :offset-min -10
-                              :offset-max 10}))
+   (gen/sample (datetime {:offset-fns [clj-time.core/months]
+                          :offset-min -10
+                          :offset-max 10}))
    =>
    (#<DateTime 1999-11-01T00:00:00.000Z>
     #<DateTime 1999-12-01T00:00:00.000Z>
     #<DateTime 2000-05-01T00:00:00.000Z>
     ....)"
   ([]
-   (gen-datetime {}))
+   (datetime {}))
   ([{:keys [base-datetime offset-fns offset-min offset-max]
      :or {offset-fns valid-offset-fns
           offset-min -1000
