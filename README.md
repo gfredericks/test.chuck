@@ -1,5 +1,7 @@
 # test.chuck
 
+[![Circle CI](https://circleci.com/gh/gfredericks/test.chuck.svg?style=svg)](https://circleci.com/gh/gfredericks/test.chuck)
+
 <img src="http://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Groundhog2.jpg/320px-Groundhog2.jpg" title="Chuck" align="right" />
 
 _test.chuck_ is a utility library for
