@@ -20,6 +20,13 @@
     reports
     final-reports))
 
+(defn not-exception?
+  [value]
+  (not (instance? Throwable value)))
+
+(defn report-exception [result]
+  (is (not-exception? (:result result)) result))
+
 (defmacro checking
   "A macro intended to replace the testing macro in clojure.test with a
   generative form. To make (testing \"doubling\" (is (= (* 2 2) (+ 2 2))))
@@ -30,11 +37,11 @@
   [name tests bindings & body]
   `(testing ~name
      (let [final-reports# (atom [])]
-       (tc/quick-check ~tests
-		       (prop/for-all ~bindings
-                         (let [reports# (capture-reports ~@body)]
-			   (swap! final-reports# save-to-final-reports reports#)
-			   (pass? reports#))))
+       (report-exception (tc/quick-check ~tests
+                           (prop/for-all ~bindings
+                             (let [reports# (capture-reports ~@body)]
+                               (swap! final-reports# save-to-final-reports reports#)
+                               (pass? reports#)))))
        (doseq [r# @final-reports#]
          (report r#)))))
 
