@@ -1,0 +1,3 @@
+test:
+  override:
+    - lein with-profile +circle-ci test
