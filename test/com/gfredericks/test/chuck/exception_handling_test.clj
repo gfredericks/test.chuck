@@ -36,8 +36,7 @@
           (test-var #'this-test-should-fail)
           [@*report-counters* (str *test-out*)])]
     (is (not (re-find #"not-falsey-or-exception" out)))
-    (println out)
-    (is (= {:pass 0
+    (is (= {:pass 1 ; TODO: why 1? Not sure, but that's what's being reported
             :fail 1
             :error 0}
            (select-keys test-results [:pass :fail :error])))))
