@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.22
+
+Fixed reporting problems in
+`com.gfredericks.test.chuck.clojure-test/checking`, see
+[this issue](https://github.com/gfredericks/test.chuck/issues/17) for
+details.
+
 ## 0.1.21
 
 Added `sub-map` generator.
