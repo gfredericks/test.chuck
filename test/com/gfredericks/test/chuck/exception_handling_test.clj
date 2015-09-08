@@ -23,5 +23,24 @@
             :error 0}
            (select-keys test-results [:pass :fail :error])))))
 
+(deftest this-test-should-fail
+  (checking "int equals 2" 100 [i gen/pos-int]
+    (is (= 2 i))))
+
+(deftest failure-detection-test
+  (let [[test-results out]
+        (binding [; need to keep the failure of this-is-supposed-to-fail from
+                  ; affecting the clojure.test.check test run
+                  *report-counters* (ref *initial-report-counters*)
+                  *test-out* (java.io.StringWriter.)]
+          (test-var #'this-test-should-fail)
+          [@*report-counters* (str *test-out*)])]
+    (is (not (re-find #"not-falsey-or-exception" out)))
+    (is (= {:pass 1 ; TODO: why 1? Not sure, but that's what's being reported
+            :fail 1
+            :error 0}
+           (select-keys test-results [:pass :fail :error])))))
+
 (defn test-ns-hook []
-  (test-var #'exception-detection-test))
+  (test-vars [#'exception-detection-test
+              #'failure-detection-test]))
