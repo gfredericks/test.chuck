@@ -15,19 +15,23 @@
 (defn capture-test-var [v]
   (with-out-str (test-var v)))
 
-(deftest exception-detection-test
-  (let [test-results
-        #?(:clj
-           (binding [; need to keep the failure of this-test-should-crash-and-be-caught
-                     ; from affecting the clojure.test.check test run
-                     *report-counters* (ref *initial-report-counters*)]
-             (capture-test-var #'this-test-should-crash-and-be-caught)
-             @*report-counters*)
+(defn capture-report-counters-and-out [test]
+  #?(:clj
+     (binding [; need to keep the failure of the test
+               ; from affecting the clojure.test.check test run
+               *report-counters* (ref *initial-report-counters*)
+               *test-out* (java.io.StringWriter.)]
+       (capture-test-var test)
+       [@*report-counters* (str *test-out*)])
 
-           :cljs
-           (binding [*current-env* (test/empty-env)]
-             (capture-test-var #'this-test-should-crash-and-be-caught)
-             (:report-counters *current-env*)))]
+     :cljs
+     (binding [*current-env* (test/empty-env)]
+       (let [out (capture-test-var test)]
+         [(:report-counters *current-env*) out]))))
+
+(deftest exception-detection-test
+  (let [[test-results out]
+        (capture-report-counters-and-out #'this-test-should-crash-and-be-caught)]
     ;; should be reported as an error, but it's being reported as :fail :/
     (is (= {:pass 0
             :fail 1
@@ -40,19 +44,8 @@
 
 (deftest failure-detection-test
   (let [[test-results out]
-        #?(:clj
-           (binding [; need to keep the failure of this-test-should-fail from
-                     ; affecting the clojure.test.check test run
-                     *report-counters* (ref *initial-report-counters*)
-                     *test-out* (java.io.StringWriter.)]
-             (test-var #'this-test-should-fail)
-             [@*report-counters* (str *test-out*)])
-
-           :cljs
-           (binding [*current-env* (test/empty-env)]
-             (capture-test-var #'this-test-should-fail)
-             [(:report-counters *current-env*) nil]))]
-    #?(:clj (is (not (re-find #"not-falsey-or-exception" out))))
+        (capture-report-counters-and-out #'this-test-should-fail)]
+    (is (not (re-find #"not-falsey-or-exception" out)))
     (is (= {:pass 1 ; TODO: why 1? Not sure, but that's what's being reported
             :fail 1
             :error 0}
