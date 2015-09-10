@@ -12,7 +12,7 @@
   :deploy-repositories [["releases" :clojars]]
   :profiles {:circle-ci {:jvm-opts ["-Xmx1g" "-server"]}}
   :plugins [[lein-cljsbuild "1.0.6"]
-            [lein-doo "0.1.4-SNAPSHOT"]]
+            [lein-doo "0.1.4"]]
 
   :cljsbuild
   {:builds

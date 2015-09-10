@@ -1,3 +1,8 @@
 test:
   override:
     - lein with-profile +circle-ci test
+    - lein doo node node-test once
+
+machine:
+  node:
+    version: 0.12.7      # for running cljs tests
