@@ -5,12 +5,6 @@
             #?(:clj  [clojure.test :as ct :refer [is]]
                :cljs [cljs.test :as ct :refer-macros [is]])))
 
-;; copied from clojure.test.check, which privatized the function in
-;; recent versions.
-;;
-;; I think there might be plans for test.check to abstract this logic
-;; into a protocol or something, so I'm not too bothered by the
-;; copypasta for now.
 (defn ^:private not-exception?
   [value]
   (not (instance? #?(:clj  Throwable
