@@ -246,6 +246,8 @@ For cljs [bensu/doo](https://github.com/bensu/doo) is configured so the tests ca
 
     $ lein doo node node-test
 
+Minimum required node version for `lein doo` is 0.12. It also works on 4.0.0. [`nvm`](https://github.com/creationix/nvm) might be used to switch node versions
+
 To run with slimer.js, phantom or rhino:
 
     # replace {js-env} with phantom, slimer or rhino
