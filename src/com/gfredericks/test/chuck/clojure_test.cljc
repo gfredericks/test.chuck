@@ -2,8 +2,8 @@
   (:require [clojure.test.check :as tc]
             [clojure.test.check.properties :as prop
              #?@(:cljs [:include-macros true])]
-            #?(:clj  [clojure.test :as ct :refer [is]]
-               :cljs [cljs.test :as ct :refer-macros [is]])))
+            #?(:clj  [clojure.test :as ct :refer [is testing]]
+               :cljs [cljs.test :as ct :refer-macros [is testing]])))
 
 (defn ^:private not-exception?
   [value]
@@ -66,7 +66,7 @@
 
 (defn -testing
   [name func]
-  (#?(:clj clojure.test/testing :cljs cljs.test/testing) name (func)))
+  (testing name (func)))
 
 (defn -report
   [reports]
