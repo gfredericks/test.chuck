@@ -5,7 +5,7 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.7.0" :scope "provided"]
                  [org.clojure/clojurescript "1.7.48" :scope "provided"]
-                 [org.clojure/test.check "0.8.0"]
+                 [org.clojure/test.check "0.8.2"]
                  [clj-time "0.10.0"]
                  [com.andrewmcveigh/cljs-time "0.3.11"]
                  [instaparse "1.3.6"]]
