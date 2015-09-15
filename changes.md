@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.0
+
+Mostly support ClojureScript (lacking most notably
+`string-from-regex`).
+
 ## 0.1.22
 
 Fixed reporting problems in

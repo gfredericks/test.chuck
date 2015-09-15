@@ -19,6 +19,10 @@ _test.chuck_ is a utility library for
 
 ## Obtention
 
+Please note that as of version 0.2.0, test.chuck (mostly) supports
+ClojureScript, and requires a minimum Clojure version of 1.7.0. Using
+ClojureScript requires a minimum test.check version of 0.8.0.
+
 Leiningen dependency coordinates:
 
 ``` clojure
@@ -261,6 +265,8 @@ To run with slimer.js, phantom or rhino:
   regex->string [code](https://github.com/weavejester/re-rand)
 - [@miner](https://github.com/miner) for various help with the
   `string-from-regex` generator
+- [@nberger](https://github.com/nberger) for adapting to cljc format
+  for ClojureScript, and general maintenance help
 
 ## License
 
