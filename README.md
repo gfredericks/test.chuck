@@ -22,7 +22,7 @@ _test.chuck_ is a utility library for
 Leiningen dependency coordinates:
 
 ``` clojure
-[com.gfredericks/test.chuck "0.1.23"]
+[com.gfredericks/test.chuck "0.2.0"]
 ```
 
 ## Usage
