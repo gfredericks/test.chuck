@@ -1,3 +1,6 @@
+dependencies:
+  post:
+    - "echo Y | lein upgrade 2.5.2"
 test:
   override:
     - lein with-profile +circle-ci test
