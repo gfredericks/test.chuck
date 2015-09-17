@@ -1,7 +1,8 @@
 (ns com.gfredericks.test.chuck.exception-handling-test
   (:require #?(:clj  [clojure.test :refer :all]
-               :cljs [cljs.test :as test :refer [test-var test-vars *current-env*]
+               :cljs [cljs.test :as test :refer [test-vars]
                       :refer-macros [is testing deftest]])
+            [com.gfredericks.test.chuck.test-utils :refer [capture-report-counters-and-out]]
             [clojure.test.check.generators :as gen]
             [com.gfredericks.test.chuck.clojure-test #?(:clj :refer :cljs :refer-macros) [checking]]))
 
@@ -11,23 +12,6 @@
     (case i ; will throw when not in #{0 1}
       0 :zero
       1 :one)))
-
-(defn capture-test-var [v]
-  (with-out-str (test-var v)))
-
-(defn capture-report-counters-and-out [test]
-  #?(:clj
-     (binding [; need to keep the failure of the test
-               ; from affecting the clojure.test.check test run
-               *report-counters* (ref *initial-report-counters*)
-               *test-out* (java.io.StringWriter.)]
-       (capture-test-var test)
-       [@*report-counters* (str *test-out*)])
-
-     :cljs
-     (binding [*current-env* (test/empty-env)]
-       (let [out (capture-test-var test)]
-         [(:report-counters *current-env*) out]))))
 
 (deftest exception-detection-test
   (let [[test-results out]
