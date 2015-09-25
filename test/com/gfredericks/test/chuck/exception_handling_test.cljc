@@ -30,7 +30,7 @@
   (let [[test-results out]
         (capture-report-counters-and-out #'this-test-should-fail)]
     (is (not (re-find #"not-falsey-or-exception" out)))
-    (is (= {:pass 1 ; TODO: why 1? Not sure, but that's what's being reported
+    (is (= {:pass 0
             :fail 1
             :error 0}
            (select-keys test-results [:pass :fail :error])))))
