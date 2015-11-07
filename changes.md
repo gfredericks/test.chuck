@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.1
+
+Changed `com.gfredericks.test.chuck.clojure-test/checking` to use
+`com.gfredericks.test.chuck.properties/for-all` instead of
+`clojure.test.check.properties/for-all`. This is a mild breaking
+change that seems unlikely to affect many users.
+
 ## 0.2.0
 
 Mostly support ClojureScript (lacking most notably
