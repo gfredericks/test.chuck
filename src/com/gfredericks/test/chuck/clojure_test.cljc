@@ -1,6 +1,6 @@
 (ns com.gfredericks.test.chuck.clojure-test
   (:require [clojure.test.check :as tc]
-            [clojure.test.check.properties :as prop
+            [com.gfredericks.test.chuck.properties :as prop
              #?@(:cljs [:include-macros true])]
             #?(:clj  [clojure.test :as ct :refer [is testing]]
                :cljs [cljs.test :as ct :refer-macros [is testing]])))
