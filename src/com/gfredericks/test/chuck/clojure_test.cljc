@@ -12,7 +12,12 @@
                   value)))
 
 (defn report-exception [result]
-  (is (not-exception? (:result result)) result))
+  (if (:result result)
+    (is (not-exception? (:result result)) result)
+    (do
+      (newline)
+      #?(:clj  (ct/with-test-out (println result))
+         :cljs (println result)))))
 
 (defn pass? [reports]
   (every? #(= (:type %) :pass) reports))
