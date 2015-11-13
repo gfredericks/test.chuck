@@ -20,7 +20,7 @@
       (is tc-report)
       (when-let [tc-report (and tc-report (read-string tc-report))]
         (is (not (:result tc-report)))
-        (is (= [5] (get-in tc-report [:shrunk :smallest])))))))
+        (is (= [{'i 5}] (get-in tc-report [:shrunk :smallest])))))))
 
 (defn test-ns-hook []
   (test-vars [#'failure-output-test]))
