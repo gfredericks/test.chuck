@@ -33,6 +33,11 @@
 (def ^:dynamic *chuck-captured-reports*)
 
 #?(:cljs
+(defmethod ct/report [::chuck-capture :error]
+  [m]
+  (swap! *chuck-captured-reports* conj m)))
+
+#?(:cljs
 (defmethod ct/report [::chuck-capture :fail]
   [m]
   (swap! *chuck-captured-reports* conj m)))
