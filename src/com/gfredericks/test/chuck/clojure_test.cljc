@@ -1,10 +1,14 @@
 (ns com.gfredericks.test.chuck.clojure-test
   (:require [clojure.test.check :as tc]
-            [clojure.test.check.clojure-test :as tcct]
             [com.gfredericks.test.chuck.properties :as prop
              #?@(:cljs [:include-macros true])]
             #?(:clj  [clojure.test :as ct :refer [is testing]]
                :cljs [cljs.test :as ct :refer-macros [is testing]])))
+
+;; exists in clojure.test.check.clojure-test v0.9.0
+(defn with-test-out* [f]
+  #?(:clj  (ct/with-test-out (f))
+     :cljs (f)))
 
 (defn ^:private not-exception?
   [value]
@@ -24,7 +28,7 @@
   (if (:result result)
     (is (not-exception? (:result result)) result)
     (do
-      (tcct/with-test-out*
+      (with-test-out*
         (fn [] (ct/report (shrunk-report result)))))))
 
 (defn pass? [reports]
