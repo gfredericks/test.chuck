@@ -1,5 +1,6 @@
 (ns com.gfredericks.test.chuck.clojure-test
   (:require [clojure.test.check :as tc]
+            [clojure.test.check.clojure-test :as tcct]
             [com.gfredericks.test.chuck.properties :as prop
              #?@(:cljs [:include-macros true])]
             #?(:clj  [clojure.test :as ct :refer [is testing]]
@@ -11,13 +12,20 @@
                      :cljs js/Error)
                   value)))
 
-(defn report-exception [result]
+(defn shrunk-report [m]
+  (merge (dissoc m :result) {:type ::shrunk}))
+
+(defmethod ct/report #?(:clj ::shrunk :cljs [::ct/default ::shrunk]) [m]
+  (newline)
+  (println "Tests failed, smallest case:" (-> m :shrunk :smallest)
+           "\nSeed" (:seed m)))
+
+(defn report-exception-or-shrunk [result]
   (if (:result result)
     (is (not-exception? (:result result)) result)
     (do
-      (newline)
-      #?(:clj  (ct/with-test-out (println result))
-         :cljs (println result)))))
+      (tcct/with-test-out*
+        (fn [] (ct/report (shrunk-report result)))))))
 
 (defn pass? [reports]
   (every? #(= (:type %) :pass) reports))
@@ -66,7 +74,7 @@
 
 (defmacro qc-and-report-exception
   [final-reports tests bindings & body]
-  `(report-exception
+  `(report-exception-or-shrunk
     (tc/quick-check
       ~tests
       (prop/for-all ~bindings
