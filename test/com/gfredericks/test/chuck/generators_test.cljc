@@ -4,7 +4,8 @@
             [clojure.test.check.generators :as gen]
             [#?(:clj clj-time.core :cljs cljs-time.core) :as ct]
             [#?(:clj clj-time.coerce :cljs cljs-time.coerce) :as ctc]
-            [clojure.test.check.properties :as prop]
+            [clojure.test.check.properties :as prop
+             #?@(:cljs [:include-macros true])]
             [com.gfredericks.test.chuck.generators :as gen'
              #?@(:cljs [:include-macros true])]))
 
