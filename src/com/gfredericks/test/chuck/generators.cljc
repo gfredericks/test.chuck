@@ -254,13 +254,13 @@
   (regexes/gen-string-from-regex regex)))
 
 (defn sub-map
-  "Given a concrete map, it'll randomly select keys
-   from it thus making it a subset of the given map.
-   Note: It can return empty maps as well.
+  "Given a concrete map, randomly selects keys from it to create a
+  subset of the given map. Note: the generated maps may be empty.
 
-   Example:
-   (gen/sample (sub-map {:a 1 :b 2 :c 3}))
-   => ({} {:b 2} {:b 2, :c 3} {:a 1} ...)"
+  Example:
+
+    (gen/sample (sub-map {:a 1 :b 2 :c 3}))
+    => ({} {:b 2} {:b 2, :c 3} {:a 1} ...)"
   [m]
   (gen/fmap (fn [ks]
               (select-keys m ks))
