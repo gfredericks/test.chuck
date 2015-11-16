@@ -195,8 +195,10 @@
 ;; Numbers!
 ;;
 
-(defn bounded-int
-  "Like clojure.test.check.generators/choose, but generates
+(defn ^:deprecated bounded-int
+  "DEPRECATED: see clojure.test.check.generators/large-integer*
+
+  Like clojure.test.check.generators/choose, but generates
   smallish numbers for small sizes.
 
   Both bounds are inclusive."
@@ -224,8 +226,10 @@
   #?(:clj  (Math/scalb x exp)
      :cljs (* x (.pow js/Math 2 exp))))
 
-(def double
-  "Generates a Double, which can include Infinity and -Infinity
+(def ^:deprecated double
+  "DEPRECATED: see clojure.test.check.generators/double
+
+  Generates a Double, which can include Infinity and -Infinity
   but not NaN."
   (gen/fmap
    (fn [[signed-significand exp]]
