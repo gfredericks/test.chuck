@@ -5,19 +5,31 @@
             #?(:clj  [clojure.test :as ct :refer [is testing]]
                :cljs [cljs.test :as ct :refer-macros [is testing]])))
 
+;; exists in clojure.test.check.clojure-test v0.9.0
+(defn with-test-out* [f]
+  #?(:clj  (ct/with-test-out (f))
+     :cljs (f)))
+
 (defn ^:private not-exception?
   [value]
   (not (instance? #?(:clj  Throwable
                      :cljs js/Error)
                   value)))
 
-(defn report-exception [result]
+(defn shrunk-report [m]
+  (merge (dissoc m :result) {:type ::shrunk}))
+
+(defmethod ct/report #?(:clj ::shrunk :cljs [::ct/default ::shrunk]) [m]
+  (newline)
+  (println "Tests failed, smallest case:" (-> m :shrunk :smallest)
+           "\nSeed" (:seed m)))
+
+(defn report-exception-or-shrunk [result]
   (if (:result result)
     (is (not-exception? (:result result)) result)
     (do
-      (newline)
-      #?(:clj  (ct/with-test-out (println result))
-         :cljs (println result)))))
+      (with-test-out*
+        (fn [] (ct/report (shrunk-report result)))))))
 
 (defn pass? [reports]
   (every? #(= (:type %) :pass) reports))
@@ -66,7 +78,7 @@
 
 (defmacro qc-and-report-exception
   [final-reports tests bindings & body]
-  `(report-exception
+  `(report-exception-or-shrunk
     (tc/quick-check
       ~tests
       (prop/for-all ~bindings
