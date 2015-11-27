@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.2
+
+Various bugfixes and enhancements to
+`com.gfredericks.test.chuck.clojure-test`.
+
+`com.gfredericks.test.chuck/times` is now supported in cljs, but
+doesn't do anything currently.
+
 ## 0.2.1
 
 Changed `com.gfredericks.test.chuck.clojure-test/checking` to use
