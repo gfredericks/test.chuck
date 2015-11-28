@@ -33,3 +33,7 @@
 (defspec for-all-destructured-args-work-correctly 10
   (prop'/for-all [[a b] (gen/tuple gen/int gen/int)]
     (+ a b)))
+
+(defspec allows-empty-bindings
+  (prop'/for-all []
+    true))

@@ -73,73 +73,75 @@
   ;; becomes
   ;;
   ;;   (for [[v1 v2] (gen/tuple g1 g2)] (f v1 v2))
-  (let [[k1 v1 & [k2 v2 & even-more :as more]] bindings]
-    (assert (or (= :parallel k1) (not (keyword? k1))))
-    (cond (= :parallel k1)
-          (do (assert (even? (count v1))
-                      ":parallel clause must have an even number of bindings!")
-              (let [pairs (core/partition 2 v1)
-                    names (map first pairs)
-                    gens (map second pairs)]
-                `(for [[~@names] (gen/tuple ~@gens)
-                       ~@more]
-                   ~expr)))
+  (if-let [[k1 v1 & [k2 v2 & even-more :as more]] (seq bindings)]
+    (do
+      (assert (or (= :parallel k1) (not (keyword? k1))))
+      (cond (= :parallel k1)
+            (do (assert (even? (count v1))
+                        ":parallel clause must have an even number of bindings!")
+                (let [pairs (core/partition 2 v1)
+                      names (map first pairs)
+                      gens (map second pairs)]
+                  `(for [[~@names] (gen/tuple ~@gens)
+                         ~@more]
+                     ~expr)))
 
-          (empty? more)
-          ;; special case to avoid extra call to fmap
-          (if (and (symbol? k1) (= k1 expr))
-            v1
-            `(gen/fmap (fn [~k1] ~expr) ~v1))
+            (empty? more)
+            ;; special case to avoid extra call to fmap
+            (if (and (symbol? k1) (= k1 expr))
+              v1
+              `(gen/fmap (fn [~k1] ~expr) ~v1))
 
-          (= k2 :let)
-          ;; This part is complex because we need to watch out for
-          ;; destructuring inside the :let, since the destructuring
-          ;; form can't be used as a value expression.
-          ;;
-          ;; This loop is constructing three collections:
-          ;;
-          ;;   lettings - The kv pairs for the let inside the fmap fn
-          ;;   bindings - The single tuple-destructuring form used
-          ;;              in the outer for expression
-          ;;   values   - The value expressions that go in the vector
-          ;;              that is the return value from the fmap fn
-          (let [[lettings bindings values]
-                (loop [lettings []
-                       bindings []
-                       values   []
-                       xs (core/partition 2 v2)]
-                  (if-let [[[k v] & xs] (seq xs)]
-                    (if (symbol? k)
-                      (recur (conj lettings k v)
-                             (conj bindings k)
-                             (conj values k)
-                             xs)
-                      (let [k' (gensym)]
-                        (recur (conj lettings k' v k k')
+            (= k2 :let)
+            ;; This part is complex because we need to watch out for
+            ;; destructuring inside the :let, since the destructuring
+            ;; form can't be used as a value expression.
+            ;;
+            ;; This loop is constructing three collections:
+            ;;
+            ;;   lettings - The kv pairs for the let inside the fmap fn
+            ;;   bindings - The single tuple-destructuring form used
+            ;;              in the outer for expression
+            ;;   values   - The value expressions that go in the vector
+            ;;              that is the return value from the fmap fn
+            (let [[lettings bindings values]
+                  (loop [lettings []
+                         bindings []
+                         values   []
+                         xs (core/partition 2 v2)]
+                    (if-let [[[k v] & xs] (seq xs)]
+                      (if (symbol? k)
+                        (recur (conj lettings k v)
                                (conj bindings k)
-                               (conj values k')
-                               xs)))
-                    [lettings bindings values]))
-                k1' (apply vector k1 bindings)
-                v1' `(gen/fmap (fn [arg#]
-                                 (let [~k1 arg#
-                                       ~@lettings]
-                                   [arg# ~@values]))
-                               ~v1)]
-            `(for [~k1' ~v1' ~@even-more] ~expr))
+                               (conj values k)
+                               xs)
+                        (let [k' (gensym)]
+                          (recur (conj lettings k' v k k')
+                                 (conj bindings k)
+                                 (conj values k')
+                                 xs)))
+                      [lettings bindings values]))
+                  k1' (apply vector k1 bindings)
+                  v1' `(gen/fmap (fn [arg#]
+                                   (let [~k1 arg#
+                                         ~@lettings]
+                                     [arg# ~@values]))
+                                 ~v1)]
+              `(for [~k1' ~v1' ~@even-more] ~expr))
 
-          (= k2 :when)
-          (let [max-tries-meta (-> v2 meta :max-tries)
-                max-tries-arg (if max-tries-meta
-                                [max-tries-meta])
-                v1' `(gen/such-that (fn [~k1] ~v2) ~v1 ~@max-tries-arg)]
-            `(for [~k1 ~v1' ~@even-more] ~expr))
+            (= k2 :when)
+            (let [max-tries-meta (-> v2 meta :max-tries)
+                  max-tries-arg (if max-tries-meta
+                                  [max-tries-meta])
+                  v1' `(gen/such-that (fn [~k1] ~v2) ~v1 ~@max-tries-arg)]
+              `(for [~k1 ~v1' ~@even-more] ~expr))
 
-          ((some-fn symbol? vector? map? #{:parallel}) k2)
-          `(gen/bind ~v1 (fn [~k1] (for ~more ~expr)))
+            ((some-fn symbol? vector? map? #{:parallel}) k2)
+            `(gen/bind ~v1 (fn [~k1] (for ~more ~expr)))
 
-          :else
-          (throw (ex-info "Unsupported binding form in gen/for!" {:form k2})))))
+            :else
+            (throw (ex-info "Unsupported binding form in gen/for!" {:form k2}))))
+    `(gen/return ~expr)))
 
 (defn subsequence
   "Given a collection, generates \"subsequences\" which are sequences

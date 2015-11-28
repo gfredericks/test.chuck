@@ -18,6 +18,10 @@
   (prop/for-all [[nums cardinality] lists-and-counts]
     (= (count nums) cardinality)))
 
+(defspec for-accepts-empty-bindings 100
+  (prop/for-all [x (gen'/for [] 42)]
+    (= x 42)))
+
 (def lists-with-two-of-their-elements
   (gen'/for [nums (gen/vector gen/nat)
              :let [cardinality (count nums)]
