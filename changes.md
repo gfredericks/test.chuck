@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.3
+
+Bugfix: allow empty binding vector in
+`com.gfredericks.test.chuck.generators/for` and
+`com.gfredericks.test.chuck.properties/for-all` (see
+[Issue #40](https://github.com/gfredericks/test.chuck/issues/40)).u
+
 ## 0.2.2
 
 Various bugfixes and enhancements to
