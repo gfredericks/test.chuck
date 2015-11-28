@@ -5,7 +5,7 @@
 Bugfix: allow empty binding vector in
 `com.gfredericks.test.chuck.generators/for` and
 `com.gfredericks.test.chuck.properties/for-all` (see
-[Issue #40](https://github.com/gfredericks/test.chuck/issues/40)).u
+[Issue #40](https://github.com/gfredericks/test.chuck/issues/40)).
 
 ## 0.2.2
 
