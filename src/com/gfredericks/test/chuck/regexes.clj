@@ -157,10 +157,16 @@
                             {:type :group
                              :elements [alternation]})
                          ([group-flags alternation]
-                            {:type :group
-                             :unsupported #{:flags}
-                             :elements [alternation]
-                             :flag group-flags}))
+                          (cond-> {:type :group
+                                   :elements [alternation]
+                                   :flag group-flags}
+                            ;; If the flags are just an empty
+                            ;; NonCapturingMatchFlags, we can safely
+                            ;; ignore it; this should correspond to
+                            ;; something like #"foo(?:bar)*"
+                            (not= group-flags
+                                  [:GroupFlags [:NonCapturingMatchFlags [:MatchFlagsExpr]]])
+                            (assoc :unsupported #{:flags}))))
     :SingleExpr identity
     :LinebreakMatcher (constantly
                        {:type :alternation
