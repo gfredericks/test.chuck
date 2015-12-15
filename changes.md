@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.4
+
+Support non-capturing groups in `string-from-regex`,
+e.g. `#"foo(?:bar)*"`.
+
 ## 0.2.3
 
 Bugfix: allow empty binding vector in
