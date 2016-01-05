@@ -238,8 +238,8 @@
      (scalb (core/double signed-significand) (core/int exp)))
    (gen/tuple
     (let [bignumber (apply * (repeat 52 2))]
-      (bounded-int (- bignumber) bignumber))
-    (bounded-int -1022 1023))))
+      (gen/large-integer* {:min (- bignumber) :max bignumber}))
+    (gen/large-integer* {:min -1022 :max 1023}))))
 
 #?(:clj
 (defn string-from-regex
@@ -319,5 +319,5 @@
                    offset-fn
                    (ct/plus base-datetime)))
              (gen/tuple (gen/elements offset-fns)
-                        (bounded-int offset-min
-                                     offset-max)))))
+                        (gen/large-integer* {:min offset-min
+                                             :max offset-max})))))
