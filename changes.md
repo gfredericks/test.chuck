@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.5
+
+Stop using deprecated functions internally
+([#42](https://github.com/gfredericks/test.chuck/pull/42)) — fixes
+compiler warnings in clojurescript.
+
 ## 0.2.4
 
 Support non-capturing groups in `string-from-regex`,
