@@ -21,7 +21,7 @@
 
 (defmethod ct/report #?(:clj ::shrunk :cljs [::ct/default ::shrunk]) [m]
   (newline)
-  (println "Tests failed, smallest case:" (-> m :shrunk :smallest)
+  (println "Tests failed, smallest case:" (pr-str (-> m :shrunk :smallest))
            "\nSeed" (:seed m)))
 
 (defn report-exception-or-shrunk [result]
