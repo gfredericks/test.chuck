@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.6
+
+Print failing args better in `com.gfredericks.test.chuck.clojure-test/checking`.
+
 ## 0.2.5
 
 Stop using deprecated functions internally
