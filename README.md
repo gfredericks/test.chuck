@@ -26,7 +26,7 @@ ClojureScript requires a minimum test.check version of 0.8.0.
 Leiningen dependency coordinates:
 
 ``` clojure
-[com.gfredericks/test.chuck "0.2.5"]
+[com.gfredericks/test.chuck "0.2.6"]
 ```
 
 ## Usage
