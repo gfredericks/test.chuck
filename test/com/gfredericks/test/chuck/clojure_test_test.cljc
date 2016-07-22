@@ -11,6 +11,20 @@
   (checking "negative" 100 [i gen/s-neg-int]
     (is (< i 0))))
 
+(deftest options-test
+  ;; empty map is OK, defaults to 100 tests
+  (checking "strings are strings" {} [s gen/string-ascii]
+    (is (string? s)))
+  ;; passes because the number of tests is small
+  (checking "small ints" {:num-tests 5} [i gen/s-pos-int]
+    (is (< i 10)))
+  ;; passes only because of seed
+  (checking "specific values" {:num-tests 5 :seed 12345678} [i gen/int]
+    (is (contains? #{-1 0 1} i)))
+  ;; passes because of max-size
+  (checking "short strings" {:num-tests 100 :max-size 9} [s gen/string-ascii]
+    (is (< (count s) 10))))
+
 (deftest counter
   (checking "increasing" 100 [i gen/s-pos-int]
     (let [c (atom i)]

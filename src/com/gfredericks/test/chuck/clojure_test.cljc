@@ -1,5 +1,6 @@
 (ns com.gfredericks.test.chuck.clojure-test
   (:require [clojure.test.check :as tc]
+            [clojure.test.check.clojure-test :as tc.clojure-test]
             [com.gfredericks.test.chuck.properties :as prop
              #?@(:cljs [:include-macros true])]
             #?(:clj  [clojure.test :as ct :refer [is testing]]
@@ -76,15 +77,25 @@
      (capture-reports* reports# (fn [] ~@body))
      @reports#))
 
+(defn times [options]
+  (cond (map? options)     (:num-tests options tc.clojure-test/*default-test-count*)
+        (integer? options) options))
+
+(defn other-options [options]
+  (cond (map? options)     (dissoc options :num-tests)
+        (integer? options) {}))
+
 (defmacro qc-and-report-exception
-  [final-reports tests bindings & body]
+  [final-reports options bindings & body]
   `(report-exception-or-shrunk
-    (tc/quick-check
-      ~tests
-      (prop/for-all ~bindings
-        (let [reports# (capture-reports ~@body)]
-          (swap! ~final-reports save-to-final-reports reports#)
-          (pass? reports#))))))
+     (let [options# ~options]
+       (apply tc/quick-check
+         (times options#)
+         (prop/for-all ~bindings
+           (let [reports# (capture-reports ~@body)]
+             (swap! ~final-reports save-to-final-reports reports#)
+             (pass? reports#)))
+         (apply concat (other-options options#))))))
 
 (defn -testing
   [name func]
@@ -100,12 +111,15 @@
   generative, you simply have to change it to
   (checking \"doubling\" 100 [x gen/int] (is (= (* 2 x) (+ x x)))).
 
+  You can optionally pass in options instead of the number of tests e.g.
+  (checking \"doubling\" {:num-tests 100 :seed 123 :max-size 10} [x gen/int] (is (= (* 2 x) (+ x x)))).
+
   For more details on this code, see http://blog.colinwilliams.name/blog/2015/01/26/alternative-clojure-dot-test-integration-with-test-dot-check/"
-  [name tests bindings & body]
+  [name options bindings & body]
   `(-testing ~name
     (fn []
       (let [final-reports# (atom [])]
-        (qc-and-report-exception final-reports# ~tests ~bindings ~@body)
+        (qc-and-report-exception final-reports# ~options ~bindings ~@body)
         (doseq [r# @final-reports#]
           (-report r#))))))
 
