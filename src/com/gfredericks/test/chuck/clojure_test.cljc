@@ -77,25 +77,25 @@
      (capture-reports* reports# (fn [] ~@body))
      @reports#))
 
-(defn times [options]
-  (cond (map? options)     (:num-tests options tc.clojure-test/*default-test-count*)
-        (integer? options) options))
+(defn times [num-tests-or-options]
+  (cond (map? num-tests-or-options)     (:num-tests num-tests-or-options tc.clojure-test/*default-test-count*)
+        (integer? num-tests-or-options) num-tests-or-options))
 
-(defn other-options [options]
-  (cond (map? options)     (dissoc options :num-tests)
-        (integer? options) {}))
+(defn other-options [num-tests-or-options]
+  (cond (map? num-tests-or-options)     (dissoc num-tests-or-options :num-tests)
+        (integer? num-tests-or-options) {}))
 
 (defmacro qc-and-report-exception
-  [final-reports options bindings & body]
+  [final-reports num-tests-or-options bindings & body]
   `(report-exception-or-shrunk
-     (let [options# ~options]
+     (let [num-tests-or-options# ~num-tests-or-options]
        (apply tc/quick-check
-         (times options#)
+         (times num-tests-or-options#)
          (prop/for-all ~bindings
            (let [reports# (capture-reports ~@body)]
              (swap! ~final-reports save-to-final-reports reports#)
              (pass? reports#)))
-         (apply concat (other-options options#))))))
+         (apply concat (other-options num-tests-or-options#))))))
 
 (defn -testing
   [name func]
@@ -115,11 +115,11 @@
   (checking \"doubling\" {:num-tests 100 :seed 123 :max-size 10} [x gen/int] (is (= (* 2 x) (+ x x)))).
 
   For more details on this code, see http://blog.colinwilliams.name/blog/2015/01/26/alternative-clojure-dot-test-integration-with-test-dot-check/"
-  [name options bindings & body]
+  [name num-tests-or-options bindings & body]
   `(-testing ~name
     (fn []
       (let [final-reports# (atom [])]
-        (qc-and-report-exception final-reports# ~options ~bindings ~@body)
+        (qc-and-report-exception final-reports# ~num-tests-or-options ~bindings ~@body)
         (doseq [r# @final-reports#]
           (-report r#))))))
 
