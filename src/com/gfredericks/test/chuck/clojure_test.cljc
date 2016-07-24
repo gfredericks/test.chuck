@@ -81,7 +81,7 @@
   (cond (map? num-tests-or-options)     (:num-tests num-tests-or-options tc.clojure-test/*default-test-count*)
         (integer? num-tests-or-options) num-tests-or-options))
 
-(defn other-options [num-tests-or-options]
+(defn options [num-tests-or-options]
   (cond (map? num-tests-or-options)     (dissoc num-tests-or-options :num-tests)
         (integer? num-tests-or-options) {}))
 
@@ -95,7 +95,7 @@
            (let [reports# (capture-reports ~@body)]
              (swap! ~final-reports save-to-final-reports reports#)
              (pass? reports#)))
-         (apply concat (other-options num-tests-or-options#))))))
+         (apply concat (options num-tests-or-options#))))))
 
 (defn -testing
   [name func]
