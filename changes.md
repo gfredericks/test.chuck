@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.7
+
+`com.gfredericks.test.chuck.clojure-test/checking` now can accept a
+map of options in place of the number of tests
+([#49](https://github.com/gfredericks/test.chuck/pull/49)).
+
 ## 0.2.6
 
 Print failing args better in `com.gfredericks.test.chuck.clojure-test/checking`.
