@@ -111,10 +111,15 @@
   generative, you simply have to change it to
   (checking \"doubling\" 100 [x gen/int] (is (= (* 2 x) (+ x x)))).
 
-  You can optionally pass in options instead of the number of tests e.g.
-  (checking \"doubling\" {:num-tests 100 :seed 123 :max-size 10} [x gen/int] (is (= (* 2 x) (+ x x)))).
+  You can optionally pass in a map options instead of the number of tests,
+  which will be passed to `clojure.test.check/quick-check`, e.g.:
 
-  For more details on this code, see http://blog.colinwilliams.name/blog/2015/01/26/alternative-clojure-dot-test-integration-with-test-dot-check/"
+    (checking \"doubling\" {:num-tests 100 :seed 123 :max-size 10}
+      [x gen/int]
+      (is (= (* 2 x) (+ x x))))
+
+  For background, see
+  http://blog.colinwilliams.name/blog/2015/01/26/alternative-clojure-dot-test-integration-with-test-dot-check/"
   [name num-tests-or-options bindings & body]
   `(-testing ~name
     (fn []
