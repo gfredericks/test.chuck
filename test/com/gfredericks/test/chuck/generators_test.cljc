@@ -139,7 +139,7 @@
                                 breadth (dec height))
                                coll)))))
 
-(defspec bounded-recursive-gen-spec 100
+(defspec bounded-recursive-gen-spec 10
   (prop/for-all
    [bounded-rec (gen'/bounded-recursive-gen gen/list
                                             gen/keyword
