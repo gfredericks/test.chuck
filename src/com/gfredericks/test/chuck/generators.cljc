@@ -321,3 +321,63 @@
              (gen/tuple (gen/elements offset-fns)
                         (gen/large-integer* {:min offset-min
                                              :max offset-max})))))
+
+(defn- bounded-recursive-helper
+  [container-gen-fn scalar-gen max-breadth curr-height]
+  (if (zero? curr-height)
+    scalar-gen
+    (gen/resize max-breadth
+                (bounded-recursive-helper container-gen-fn
+                                          (container-gen-fn scalar-gen)
+                                          max-breadth
+                                          (dec curr-height)))))
+
+
+(defn bounded-recursive-gen
+  "Same as gen/recursive-gen but allows control on both breadth and height.
+  Height = Number of levels of nesting.
+  Breadth = Size parameter of the generator at a level.
+
+  Example 1: Breadth=2, Height=10
+  This means that no vector will contain more
+  than 2 elements. Number of recursions=10, so it can contain at most 10 levels
+  of nested vectors.
+  (gen/generate (bounded-recursive-gen gen/vector
+                                       gen/boolean
+                                       2 10))
+  => [[[[]]]
+      [[[]]
+       [[[[] [[] [[[false] []] []]]]]
+        [[[] []]
+         [[[[[] []]]] [[[[]] [[true] []]] [[[true false] [false]]]]]]]]]
+
+  There are atmost 10 nested levels, but none of the vectors at any level
+  contains more than 2 elements.
+
+  Example 2: Breadth=10, Height=2 (Opposite of ex 1)
+  This means that no vector will contain more than 10 elements.
+  of nested vectors.
+  (gen/generate (bounded-recursive-gen gen/vector
+                                       gen/boolean
+                                       10 2))
+  => [[false true true false true false false false]
+      []
+      [true false false false false false false false true]
+      [false false false false true false false true false]
+      [true true false true false true false false false false]]
+  There are atmost 2 nested levels, and no vector contains more than 10
+  elements.
+
+  Note:
+  This uses the size parameter of the scalar-gen to limit the breadth, if
+  the scalar-gen does not support size, then the breadth will not be bounded.
+  The height will still be bounded."
+  [container-gen-fn scalar-gen max-breadth max-height]
+  (assert (gen/generator? scalar-gen)
+          "Second arg to recursive-gen must be a generator")
+  (gen/bind (gen/choose 1 max-height)
+            (fn [rec-level]
+              (bounded-recursive-helper container-gen-fn
+                                        scalar-gen
+                                        max-breadth
+                                        rec-level))))
