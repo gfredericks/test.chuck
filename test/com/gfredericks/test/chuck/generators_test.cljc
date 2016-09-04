@@ -139,10 +139,10 @@
                                         (dec height))
                                coll)))))
 
-(defspec bounded-recursive-gen-spec 10
+(defspec bounded-recursive-gen-spec 100
   (prop/for-all
    [bounded-rec (gen'/bounded-recursive-gen gen/vector
                                             gen/int
-                                            5
-                                            10)]
-   (valid-bounded-rec-struct? 5 10 bounded-rec)))
+                                            10
+                                            5)]
+   (valid-bounded-rec-struct? 10 5 bounded-rec)))

@@ -377,8 +377,12 @@
   (assert (gen/generator? scalar-gen)
           "Second arg to recursive-gen must be a generator")
   (gen/sized
-   (fn [size] (bounded-recursive-helper container-gen-fn
-                                        scalar-gen
-                                        size
-                                        (min max-breadth size)
-                                        (min max-height size)))))
+   (fn [size]
+     (gen/bind
+      (gen/choose 1 5)
+      (fn [decay-factor]
+        (bounded-recursive-helper container-gen-fn
+                                  scalar-gen
+                                  size
+                                  (min max-breadth (Math/pow size (/ 1 decay-factor)))
+                                  (min max-height (Math/pow size (/ 1 (inc decay-factor))))))))))
