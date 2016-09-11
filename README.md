@@ -270,7 +270,7 @@ To run with slimer.js, phantom or rhino:
 
 ## License
 
-Copyright © 2014 Gary Fredericks
+Copyright © 2016 Gary Fredericks
 
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.
