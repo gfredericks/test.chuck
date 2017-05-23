@@ -6,5 +6,7 @@
 (deftest some-test
   (is (= 1 2)))
 
+(def email-regex "[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")
+
 (println (pr-str (gen/sample gen/boolean 10)))
-(println (pr-str (gen/sample (regexes/gen-string-from-regex "[a-z]") 10)))
+(println (pr-str (gen/sample (regexes/gen-string-from-regex email-regex) 10)))

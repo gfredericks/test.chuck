@@ -17,29 +17,12 @@
 
 (defn char-string->long
   [s]
-  (cond (= 1 (count s))
-        (long (first s))
-
-        (= 2 (count s))
-        (let [[c1 c2] s
-              x1 (int c1)
-              x2 (int c2)]
-          (+ 16r10000
-             (bit-shift-left (- x1 16rD800) 10)
-             (- x2 16rDC00)))
-
-        :else
-        (throw (ex-info "Bad char-string!" {:arg s}))))
+  (.charCodeAt s 0))
 
 (defn long->char-string
   [x]
   {:pre [(<= 0 x 16r10FFFF)]}
-  (if (< x 16r10000)
-    (str (char x))
-    (let [x' (- x 16r10000)
-          high (bit-shift-right x' 10)
-          low (bit-and x' 16r3FF)]
-      (str (char (+ high 16rD800)) (char (+ low 16rDC00))))))
+  (js/String.fromCharCode x))
 
 (defn ^:private compare-entries
   [[x1 x2] [x3 x4]]
