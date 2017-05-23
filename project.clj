@@ -8,7 +8,7 @@
                  [org.clojure/test.check "0.9.0"]
                  [clj-time "0.10.0"]
                  [com.andrewmcveigh/cljs-time "0.3.11"]
-                 [instaparse "1.3.6"]]
+                 [instaparse "1.4.5"]]
   :deploy-repositories [["releases" :clojars]]
   :profiles {:circle-ci {:jvm-opts ["-Xmx1g" "-server"]}}
   :plugins [[lein-cljsbuild "1.0.6"]
