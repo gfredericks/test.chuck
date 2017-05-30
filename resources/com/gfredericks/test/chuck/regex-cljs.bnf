@@ -1,15 +1,15 @@
 Regex = Alternation
 
-Alternation = Concatenation (<'|'> Concatenation) *
+Alternation = Concatenation (<'|'> Concatenation)*
 
 Concatenation = DanglingCurlyRepetitions (SuffixedExpr | <'('> MutatingMatchFlags <')'> DanglingCurlyRepetitions) *
 
-DanglingCurlyRepetitions = (CurlyRepetition Quantifier ?) *
+DanglingCurlyRepetitions = (CurlyRepetition Quantifier?)*
 
-SuffixedExpr = SingleExpr Suffix ?
+SuffixedExpr = SingleExpr Suffix?
 SingleExpr = BaseExpr | ParenthesizedExpr
-ParenthesizedExpr = <'('> GroupFlags ? Alternation <')'>
-Suffix = (Optional | Positive | NonNegative | CurlyRepetition ) Quantifier ? DanglingCurlyRepetitions
+ParenthesizedExpr = <'('> GroupFlags? Alternation <')'>
+Suffix = (Optional | Positive | NonNegative | CurlyRepetition ) Quantifier? DanglingCurlyRepetitions
 Optional = <'?'>
 Positive = <'+'>
 NonNegative = <'*'>
@@ -32,7 +32,7 @@ Dot = '.'
 (** (which are more complicated than you thought they were) **)
 
 
-BCC = <'['> <'&&'> ? BCCIntersection <#"&{2,}"> ? <']'>
+BCC = <'['> (BCCIntersection | BCCNegation) ? <']'>
 BCCIntersection =  BCCUnionLeft (<#"&{2,}"> BCCUnionNonLeft ) *
 BCCUnionLeft = (BCCNegation BCCElemHardLeft | !'^' BCCElemHardLeft) BCCElemNonLeft *
 BCCUnionNonLeft = BCCElemLeft BCCElemNonLeft *
@@ -42,7 +42,6 @@ BCCNegation = '^'
 BCCElemHardLeft = !'&&&' '&&' ? BCCElemBase | (']' ! ('-' BCCRangeRightable)) | BCCRangeWithBracket
 BCCElemLeft = BCCElemBase
 BCCElemNonLeft = BCCElemBase
-
 
 BCCElemBase = BCCCharNonRange | SpecialCharClass | UnicodeCharacterClass | BCCRange | BCC
 BCCRangeRightable = BCCCharEndRange | SpecialCharClass | UnicodeCharacterClass | '&'
@@ -57,7 +56,6 @@ BCCPlainChar = #"[^\]\[&\\]"
 (* This is problematic because re-pattern won't take repeated ampersands in the HardLeft position *)
 BCCDash = '-'
 
-
 (** BASE CHARACTER STUFFS **)
 
 EscapedChar = OctalChar | HexChar | BasicEscapedChar | NormalSlashedCharacters | ControlChar
@@ -69,6 +67,7 @@ HexChar = ShortHexChar | MediumHexChar | LongHexChar
 ShortHexChar = <'\\x'> #'[0-9a-fA-F]{2}'
 MediumHexChar = <'\\u'> #'[0-9a-fA-F]{4}'
 LongHexChar = <'\\x{'> #'[0-9a-fA-F]+' <'}'>
+
 BasicEscapedChar = <'\\'> #"[^a-zA-Z0-9]"
 
 (* probably missing something here *)
@@ -82,15 +81,13 @@ NormalSlashedCharacters = #"\\[tnrfae]"
 ControlChar = <'\\c'> #"[\s\S]"
 
 (** FLAGS **)
-GroupFlags = NamedCapturingGroup
-           | NonCapturingMatchFlags
+GroupFlags = NonCapturingMatchFlags
            | PositiveLookAheadFlag
            | NegativeLookAheadFlag
            | PositiveLookBehindFlag
            | NegativeLookBehindFlag
            | IndependentNonCapturingFlag
 
-NamedCapturingGroup = <'?<'> GroupName <'>'>
 MutatingMatchFlags = <'?'> MatchFlagsExpr & ')'
 NonCapturingMatchFlags = <'?'> !')' MatchFlagsExpr <':'>
 PositiveLookAheadFlag = <'?='>
@@ -100,5 +97,3 @@ NegativeLookBehindFlag = <'?<!'>
 IndependentNonCapturingFlag = <'?>'>
 (* the java 7 docs don't include 'c' here but openjdk accepts it for CANON_EQ *)
 MatchFlagsExpr = #"[idmsuxcU]" * ('-' #"[idmsuxcU]" *) ?
-
-GroupName = #"[a-zA-Z][a-zA-Z0-9]*"

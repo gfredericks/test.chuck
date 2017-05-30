@@ -15,7 +15,7 @@
   [tree]
   (tree-seq #(contains? % :elements) :elements tree))
 
-(defparser the-parser "./resources/com/gfredericks/test/chuck/regex.bnf")
+(defparser the-parser "./resources/com/gfredericks/test/chuck/regex-cljs2.bnf")
 
 (defn ^:private re?
   "Checks if the string compiles with re-pattern."
@@ -295,17 +295,16 @@
                            :feature f})))))))
 
 (defn parse [s]
-  (let [preprocessed s
-        [the-parse & more :as ret] (insta/parses the-parser preprocessed)]
+  (let [[the-parse & more :as ret] (insta/parses the-parser s)]
     (cond (nil? the-parse)
           (throw (ex-info "Parse failure!"
-                          {:type ::parse-error
+                          {:type            ::parse-error
                            :instaparse-data (meta ret)}))
 
           :else
           (-> the-parse
               (analyze)
-              (vary-meta assoc ::instaparse-input preprocessed)
+              (vary-meta assoc ::instaparse-input s)
               (doto (throw-parse-errors))))))
 
 (defmulti ^:private compile-class
@@ -456,3 +455,7 @@
                             {:type ::unsupported-feature
                              :feature "Ambiguous use of & in a character class"}))))))
     (analyzed->generator analyzed)))
+
+(comment
+  (.-flags #"(?i)^abc")
+  (insta/parse the-parser (str #"(?im)^a[a-z\\b]")))
