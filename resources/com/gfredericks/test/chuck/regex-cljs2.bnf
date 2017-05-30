@@ -1,0 +1,52 @@
+Regex = Alternation
+
+Alternation = Concatenation (<'|'> Concatenation)*
+
+Concatenation = SuffixedExpr*
+
+SuffixedExpr = SingleExpr Suffix?
+SingleExpr = BaseExpr | ParenthesizedExpr
+ParenthesizedExpr = <'('> GroupFlags? Alternation <')'>
+Suffix = (Optional | Positive | NonNegative | CurlyRepetition) Quantifier?
+Optional = <'?'>
+Positive = <'+'>
+NonNegative = <'*'>
+CurlyRepetition = <'{'> #"\d+" (<','> #"\d+" ?) ? <'}'>
+Quantifier = '?' | '+'
+BaseExpr = CharExpr | LiteralChar | Anchor | BackReference
+Anchor = '^' | '$' | '\\' #"[bB]"
+
+CharExpr = Dot | LiteralChar
+LiteralChar = EscapedChar | PlainChar
+
+BackReference = <'\\'> #"[1-9][0-9]*"
+
+Dot = '.'
+
+PlainChar = #"[^.|\\+*$^\[(){?]"
+EscapedChar = SpecialCharClass | NormalSlashedCharacters | ControlChar | HexChar | BasicEscapedChar
+
+SpecialCharClass = <'\\'> #"[dDwWsSv0]"
+NormalSlashedCharacters = #"\\[tnrf]"
+
+ControlChar = <'\\c'> #"[A-Z]"
+
+HexChar = ShortHexChar | MediumHexChar | LongHexChar | VeryLongHexChar
+ShortHexChar = <'\\x'> #'[0-9a-fA-F]{2}'
+MediumHexChar = <'\\u'> #'[0-9a-fA-F]{4}'
+LongHexChar = <'\\x{'> #'[0-9a-fA-F]{4}' <'}'>
+VeryLongHexChar = <'\\x{'> #'[0-9a-fA-F]{6}' <'}'>
+
+BasicEscapedChar = <'\\'> #"[^a-zA-Z0-9]"
+
+(** Only on BCC **)
+Backspace = '\\b'
+
+(** FLAGS **)
+GroupFlags = NonCapturingMatchFlags
+           | PositiveLookAheadFlag
+           | NegativeLookAheadFlag
+
+NonCapturingMatchFlags = <'?'> !')' <':'>
+PositiveLookAheadFlag = <'?='>
+NegativeLookAheadFlag = <'?!'>
