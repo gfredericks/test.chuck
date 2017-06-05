@@ -15,7 +15,7 @@
   [tree]
   (tree-seq #(contains? % :elements) :elements tree))
 
-(defparser the-parser "./resources/com/gfredericks/test/chuck/regex-cljs2.bnf")
+(defparser the-parser "./resources/com/gfredericks/test/chuck/regex-cljs.bnf")
 
 (defn ^:private re?
   "Checks if the string compiles with re-pattern."
@@ -100,10 +100,7 @@
                                              {:type ::parse-error
                                               :range [lower upper]})))
                            [lower upper])))
-     ;; the only reason we don't hide this in the parser is to force
-     ;; the "Bad reptition range" check above, so that our "parses
-     ;; exactly what re-pattern does" spec will pass.
-     :DanglingCurlyRepetitions (constantly nil)
+
      :ParenthesizedExpr (fn
                           ([alternation]
                            {:type :group
@@ -117,7 +114,7 @@
                              ;; ignore it; this should correspond to
                              ;; something like #"foo(?:bar)*"
                              (not= group-flags
-                                   [:GroupFlags [:NonCapturingMatchFlags [:MatchFlagsExpr]]])
+                                   [:GroupFlags [:NonCapturingMatchFlags]])
                              (assoc :unsupported #{:flags}))))
      :SingleExpr identity
      :LinebreakMatcher (constantly
@@ -155,21 +152,12 @@
      ;; expressions such as #"((x)|(y))\2\3"?
      :BackReference (constantly (unsupported :backreferences))
 
-     :BCC (fn [intersection & [dangling-ampersands]]
-            (cond-> {:type :class
-                     :elements [intersection]
-                     :brackets? true}
-              dangling-ampersands
-              (assoc :undefined #{:dangling-ampersands})))
-     :BCCIntersection (fn [& unions]
-                        (cond-> {:type :class-intersection
-                                 :elements unions}
-                          ;; This could be supported, but it's
-                          ;; pretty weird so I'm giving up for
-                          ;; now.
-                          (> (count unions) 1)
-                          (assoc :unsupported
-                                 #{"Character class intersections"})))
+     :BCC (fn [union]
+            {:type :class
+             :elements (cond-> []
+                         union (conj union))
+             :brackets? true})
+
      :BCCUnionLeft (fn [& els]
                      (let [[negated? els] (if (= "^" (first els))
                                             [true (rest els)]
@@ -186,31 +174,8 @@
                                    (some :brackets? els)
                                    (assoc :undefined #{"Character classes nested in negations"}))]
                                 els)}))
+
      :BCCNegation identity
-     :BCCUnionNonLeft (fn self [& els]
-                        (if (and (string? (first els)) (re-matches #"&+" (first els)))
-                          ;; This is undefined because compare:
-                          ;;   - (re-seq #"[a-f&&&&c-h]" "abcdefghijklm")
-                          ;;   - (re-seq #"[^a-f&&&&c-h]" "abcdefghijklm")
-                          ;;   - (re-seq #"[^a-f&&c-h]" "abcdefghijklm")
-                          (update-in (apply self (rest els))
-                                     [:undefined]
-                                     (fnil conj #{})
-                                     "Character set intersections with more than two &'s")
-                          {:type :class-union
-                           :elements els}))
-     :BCCElemHardLeft (fn self
-                        ([x]
-                         (if (= x "]")
-                           {:type :character, :character \]}
-                           x))
-                        ([amps x]
-                         (update-in (self x)
-                                    [:undefined]
-                                    (fnil conj #{})
-                                    "Leading double ampersands")))
-     :BCCElemLeft identity
-     :BCCElemNonLeft identity
      :BCCElemBase (fn [x] (if (= :character (:type x))
                             {:type :class-base, :chars #{(:character x)}}
                             x))
@@ -246,29 +211,7 @@
      :ShortHexChar identity
      :MediumHexChar identity
      :LongHexChar identity
-
-     :OctalChar (fn [strs]
-                  {:type :character
-                   :character (char (read-string (apply str "8r" strs)))})
-     :OctalDigits1 list
-     :OctalDigits2 list
-     :OctalDigits3 list
-
-     :UnicodeCharacterClass (fn [p name]
-                              ;; TODO: this is not a complete list
-                              (if (#{"C" "L" "M" "N" "P" "S" "Z"
-                                     "{Lower}" "{Upper}" "{ASCII}"
-                                     "{Alpha}" "{Digit}" "{Alnum}"
-                                     "{Punct}" "{Graph}" "{Print}"
-                                     "{Blank}" "{Cntrl}" "{XDigit}"
-                                     "{Space}" "{javaLowerCase}"
-                                     "{javaUpperCase}" "{javaWhitespace}"
-                                     "{javaMirrored}" "{IsLatin}" "{InGreek}"
-                                     "{Lu}" "{IsAlphabetic}" "{Sc}"} name)
-                                (unsupported :unicode-character-classes)
-                                (throw (ex-info "Bad unicode character class!"
-                                                {:type ::parse-error
-                                                 :class-name name}))))}
+     :VeryLongHexChar identity}
 
     parsed-regex))
 
@@ -281,8 +224,8 @@
       (case (:type m)
         :range
         (let [[m1 m2] (:elements m)
-              c1 (or (some-> m1 :character int) (:n m1))
-              c2 (or (some-> m2 :character int) (:n m2))]
+              c1 (or (some-> m1 :character (.charCodeAt 0)) (:n m1))
+              c2 (or (some-> m2 :character (.charCodeAt 0)) (:n m2))]
           (when (and (integer? c1) (integer? c2) (< c2 c1))
             (throw (ex-info "Bad character range"
                             {:type ::parse-error
@@ -457,5 +400,16 @@
     (analyzed->generator analyzed)))
 
 (comment
-  (.-flags #"(?i)^abc")
+  (def email-re #"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")
+
+  (.-flags email-re)
+  (parse "/[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/")
+  (parse "/[]/")
+  (gen/sample (gen-string-from-regex #"(Apt\.|Suite) \d{3}") 100)
+  (gen/sample (gen-string-from-regex (re-pattern "[]")) 100)
+
+  (try
+    (gen/sample (gen-string-from-regex email-re))
+    (catch :default e
+      (println "Error" (ex-data e))))
   (insta/parse the-parser (str #"(?im)^a[a-z\\b]")))
