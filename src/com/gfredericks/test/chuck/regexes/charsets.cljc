@@ -17,12 +17,31 @@
 
 (defn char-string->long
   [s]
-  (.charCodeAt s 0))
+  #?(:clj (cond (= 1 (count s))
+                (long (first s))
+
+                (= 2 (count s))
+                (let [[c1 c2] s
+                      x1 (int c1)
+                      x2 (int c2)]
+                  (+ 16r10000
+                     (bit-shift-left (- x1 16rD800) 10)
+                     (- x2 16rDC00)))
+
+                :else
+                (throw (ex-info "Bad char-string!" {:arg s})))
+     :cljs (.charCodeAt s 0)))
 
 (defn long->char-string
   [x]
   {:pre [(<= 0 x 16r10FFFF)]}
-  (js/String.fromCharCode x))
+  #?(:clj (if (< x 16r10000)
+            (str (char x))
+            (let [x' (- x 16r10000)
+                  high (bit-shift-right x' 10)
+                  low (bit-and x' 16r3FF)]
+              (str (char (+ high 16rD800)) (char (+ low 16rDC00)))))
+     :cljs (js/String.fromCharCode x)))
 
 (defn ^:private compare-entries
   [[x1 x2] [x3 x4]]
@@ -56,9 +75,9 @@
                 (if merge-right? x6 x4)]]
 
     (cond-> charset
-      merge-left? (disj entry-left)
-      merge-right? (disj entry-right)
-      (or merge-left? merge-right?) (-> (disj entry) (conj merged)))))
+            merge-left? (disj entry-left)
+            merge-right? (disj entry-right)
+            (or merge-left? merge-right?) (-> (disj entry) (conj merged)))))
 
 (defn union*
   "Returns the union of the two charsets."
@@ -74,8 +93,8 @@
                                   (take-while #(zero? (compare-entries % entry))))
 
                     merged-with-overlaps
-                             [(apply min x1 (map first overlaps))
-                              (apply max x2 (map second overlaps))]]
+                    [(apply min x1 (map first overlaps))
+                     (apply max x2 (map second overlaps))]]
                 (-> (apply disj cs overlaps)
                     (conj merged-with-overlaps)
                     (merge-at merged-with-overlaps))))
@@ -97,8 +116,8 @@
                 (let [[x0] (first overlaps)
                       [_ x3] (last overlaps)]
                   (cond-> (apply disj cs overlaps)
-                    (< x0 x1) (conj [x0 (dec x1)])
-                    (> x3 x2) (conj [(inc x2) x3])))
+                          (< x0 x1) (conj [x0 (dec x1)])
+                          (> x3 x2) (conj [(inc x2) x3])))
                 cs)))
           charset-1
           charset-2))
@@ -124,7 +143,8 @@
   index, which must be (<= 0 idx (dec (size charset)))."
   [charset idx]
   (if (empty? charset)
-    (throw (ex-info "Index out of bounds" {}))
+    (throw #?(:clj (IndexOutOfBoundsException.)
+              :cljs (ex-info "Index out of bounds" {})))
     (loop [[x & xs] (seq charset)
            idx idx]
       (let [es (entry-size x)]
@@ -132,7 +152,8 @@
           (long->char-string (entry-nth x idx))
           (if xs
             (recur xs (- idx es))
-            (throw (ex-info "Index out of bounds" {}))))))))
+            (throw #?(:clj (IndexOutOfBoundsException.)
+                      :cljs (ex-info "Index out of bounds" {})))))))))
 
 
 (defn ^:private singletons
