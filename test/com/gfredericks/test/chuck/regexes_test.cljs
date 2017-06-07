@@ -1,5 +1,5 @@
 (ns com.gfredericks.test.chuck.regexes-test
-  (:require [cljs.test :refer-macros [deftest is are]]
+  (:require [cljs.test :refer-macros [deftest is are] :include-macros true]
             [clojure.test.check]
             [clojure.test.check.clojure-test :refer-macros [defspec]]
             [clojure.test.check.generators :as gen]
@@ -9,17 +9,12 @@
             [com.gfredericks.test.chuck.regexes :as regexes]
             [goog.string :as gstr]))
 
-(comment
-  (def email-regex "[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")
-
-  (gen/sample (regexes/gen-string-from-regex email-regex) 10))
-
 (defn format [& args] (apply gstr/format args))
 
 (def gen-regexy-fragment
   (gen/frequency
     [[10 (gen/elements (concat "?*+!|()[]{}<>=^$.\\:-&"
-                               ["\\Q" "\\E" "\\c" "&&" "\\p"]))]
+                               ["\\E" "\\c" "\\p"]))]
      [1 (gen'/for [chars (gen/list (gen/choose 0 7))]
           (apply str "\\0" chars))]
      [1 (gen'/for [:parallel
@@ -49,11 +44,9 @@
                                                            ["[" "]"]
                                                            ["[^" "]"]
                                                            ["{" "}"]
-                                                           ["(?" ")"]
+                                                           ["(?:" ")"]
                                                            ["(?=" ")"]
-                                                           ["(?!" ")"]
-                                                           ["(?<=" ")"]
-                                                           ["(?<!" ")"]])
+                                                           ["(?!" ")"]])
                               els (gen/list g)]]
           (if open
             [open els closed]
@@ -88,7 +81,7 @@
                               [:parses]
                               (catch js/SyntaxError e
                                 [:throws (.-message e)]))
-        [our-result] (try (regexes/parse s)
+        [our-result] (try (regexes/parse (str "/" s "/"))
                           [:parses]
                           (catch :default e
                             (if (= ::regexes/parse-error (:type (ex-data e)))
@@ -98,28 +91,68 @@
         (and (= :throws result)
              (some #(re-find % err-msg) regex-parse-error-exceptions)))))
 
-#_ (deftest parser-regression
-    (are [s] (correct-parse-behavior? s)
-             ;; should always parse
-             "[]-_]" "[-x]" "[x+--y]" "[\\e]" "\\\0" "[[x]-y]" "(?)"
-             "[&&x]" "[x&&y]" "[x&]" "[x&&]" "[&]" "[--?]"
-             "{0}?" "[\\c\n]" "[\\e- ]" "\\Q\\E" "[\\Q][\\E]"
-             "(?:)" "[!-&&]" "\\c\\" "[\u0000-\\00]" "((?){0,0})"
-             "[%-&&&]" "[x&&&&]" "(?<=)" "(?c:Z)"
-             ;; should never parse
-             "[b-a]" "[^]" "[]-X]" "[&&&]" "[\\Q\\E]" "(??)"
-             "\\x{110000}" "{1,0}" "[[[[{-\\c}]]]]" "[x-\\cx]"
-             "[{\\x{10000}-}]" "[b-a]??" "(?)?" "[\\R]"
-             ;; parses in java 8 but not java 7
-             "\\R" "\\H" "\\h" "\\V"))
+(deftest parser-regression
+  (are [s] (correct-parse-behavior? s)
+           ;; should always parse
+           "{?" "[[]"
+           ;; should never parse
+           "?" "[(])" "[[](]" "[([])]"))
 
-(defspec parser-spec (times 1000)
+(defspec parser-spec (times 100)
   (prop/for-all [s gen-strings-that-might-be-regex-like]
-    (correct-parse-behavior? s)))
+    (do
+      (correct-parse-behavior? s))))
+
+(def gen-regex
+  (let [maybes (gen/fmap #(try (re-pattern %)
+                               (catch js/SyntaxError e))
+                 gen-strings-that-might-be-regex-like)]
+    (gen/such-that identity maybes 100)))
+
+(def gen-generator-scenario
+  (gen'/for [regex gen-regex
+             :let [gen (try (regexes/gen-string-from-regex regex)
+                            (catch :default e
+                              (when (not
+                                      (#{::regexes/unsupported-feature
+                                         ::regexes/ungeneratable}
+                                        (:type (ex-data e))))
+                                (throw (ex-info "Craptastic" {:regex regex} e)))))]
+             :when ^{:max-tries 100} gen
+             s gen]
+    {:regex regex, :s s}))
+
+(defspec generator-spec (times 1000)
+  (prop/for-all [{:keys [regex s]} gen-generator-scenario]
+    (re-matches regex s)))
 
 (comment
-  (clojure.test.check/quick-check 1000
+  (parser-regression)
+
+  (parse-spec)
+
+  (cljs.test/run-tests)
+
+  (clojure.test.check/quick-check 100
     (prop/for-all [s gen-strings-that-might-be-regex-like]
       (correct-parse-behavior? s)))
 
-  (regexes/parse "[a-b]"))
+  (clojure.test.check/quick-check 100
+    (prop/for-all [{:keys [regex s]} gen-generator-scenario]
+      (re-matches regex s)))
+
+  (try
+    (regexes/parse "/[[](]/")
+    (catch :default e
+      (println "Error" (ex-data e))))
+
+  (def email-re #"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")
+
+  (regexes/parse-raw "/[[]/")
+
+  (gen/sample (regexes/gen-string-from-regex (re-pattern "[[]")))
+  (try
+    (gen/sample (regexes/gen-string-from-regex email-re))
+    (catch :default e
+      (println "Error" (ex-message e) (ex-data e))))
+  )

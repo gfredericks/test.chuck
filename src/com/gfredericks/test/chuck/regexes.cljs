@@ -25,22 +25,6 @@
        (catch js/SyntaxError e
          false)))
 
-(def ^:private features
-  "Features that vary between versions of the JVM. We use the Pattern
-  class itself to detect what features it supports on the JVM
-  currently being used."
-  {:backslash-R (re? "\\R")
-   ;; not checking \v here because it means something different in
-   ;; Java 7
-   :HV-classes (let [b1 (re? "\\h")
-                     b2 (re? "\\H")
-                     b3 (re? "\\V")]
-                 (if (= b1 b2 b3)
-                   b1
-                   (binding [*out* *err*]
-                     (println "Warning: test.chuck is confused.")
-                     false)))})
-
 (defn ^:private analyze-range
   [begin end]
   {:type :range
@@ -70,7 +54,14 @@
                         (assoc :unsupported #{:flags})))
      :MutatingMatchFlags (constantly :flags)
      :SuffixedExpr (fn
-                     ([regex] regex)
+                     ([regex]
+                      (if (and (vector? regex)
+                               (= 2 (count regex))
+                               (not (keyword? (first regex))))
+                        (throw (ex-info "Invalid regular expression, nothing to repeat"
+                                        {:type ::parse-error
+                                         :expr regex})))
+                      regex)
                      ([regex {:keys [bounds quantifier]}]
                       (cond-> {:type     :repetition
                                :elements [regex]
@@ -89,6 +80,8 @@
      :Optional (constantly [0 1])
      :Positive (constantly [1 nil])
      :NonNegative (constantly [0 nil])
+     :BCCEmpty (constantly ::empty-class)
+
      :CurlyRepetition (fn
                         ([s] (let [n (parse-bigint s)] [n n]))
                         ([s _comma] [(parse-bigint s) nil])
@@ -132,6 +125,12 @@
      :LiteralChar identity
      :PlainChar (fn [s] {:pre [(= 1 (count s))]}
                   {:type :character, :character (first s)})
+
+     :LiteralSpecialChar (fn [s] {:pre [(= 1 (count s))]}
+                  {:type :character, :character (first s)})
+
+     :LiteralCurly (fn [s]
+                     {:type :character, :character "{}"})
 
      :ControlChar (fn [[c]]
                     ;; this is the same calculation openjdk performs so
@@ -230,12 +229,10 @@
             (throw (ex-info "Bad character range"
                             {:type ::parse-error
                              :range [c1 c2]}))))
-        nil)
-      (if-let [f (:feature m)]
-        (when-not (features f)
-          (throw (ex-info "Regex feature not supported on this jvm!"
-                          {:type ::parse-error
-                           :feature f})))))))
+        nil))))
+
+(defn parse-raw [s]
+  (insta/parse the-parser s))
 
 (defn parse [s]
   (let [[the-parse & more :as ret] (insta/parses the-parser s)]
@@ -260,21 +257,11 @@
   (if-let [type (:simple-class m)]
     (case type
       :dot charsets/all-unicode-but-line-terminators
-      :R charsets/single-character-line-breaks
-      \v (if (features :HV-classes)
-           ;; java 8
-           (charsets/predefined-regex-classes \v)
-           ;; java 7
-           (charsets/singleton "\u000B"))
-      (\d \D \s \S \w \W \V \h \H) (charsets/predefined-regex-classes type))
-    (-> m :elements first! compile-class)))
-
-(defmethod compile-class :class-intersection
-  [m]
-
-  (->> (:elements m)
-       (map compile-class)
-       (reduce charsets/intersection)))
+      \v (charsets/singleton "\u000B")
+      (\d \D \s \S \w \W) (charsets/predefined-regex-classes type))
+    (if (empty? (:elements m))
+      (charsets/singleton "")
+      (-> m :elements first! compile-class))))
 
 (defmethod compile-class :class-union
   [m]
@@ -311,15 +298,18 @@
 
 (defmethod analyzed->generator :concatenation
   [{:keys [elements]}]
-  (->> elements
-       (map analyzed->generator)
-       (doall)
-       (apply gen/tuple)
-       (gen/fmap #(apply str %))))
+  (if (contains? (set elements) ::empty-class)
+    (gen/return "")
+    (->> elements
+         (map analyzed->generator)
+         (doall)
+         (apply gen/tuple)
+         (gen/fmap #(apply str %)))))
 
 (defmethod analyzed->generator :alternation
   [{:keys [elements]}]
   (->> elements
+       (remove #{::empty-class})
        (map analyzed->generator)
        (doall)
        (gen/one-of)))
@@ -398,18 +388,3 @@
                             {:type ::unsupported-feature
                              :feature "Ambiguous use of & in a character class"}))))))
     (analyzed->generator analyzed)))
-
-(comment
-  (def email-re #"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")
-
-  (.-flags email-re)
-  (parse "/[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/")
-  (parse "/[]/")
-  (gen/sample (gen-string-from-regex #"(Apt\.|Suite) \d{3}") 100)
-  (gen/sample (gen-string-from-regex (re-pattern "[]")) 100)
-
-  (try
-    (gen/sample (gen-string-from-regex email-re))
-    (catch :default e
-      (println "Error" (ex-data e))))
-  (insta/parse the-parser (str #"(?im)^a[a-z\\b]")))
