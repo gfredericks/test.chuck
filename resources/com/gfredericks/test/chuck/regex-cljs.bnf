@@ -1,0 +1,67 @@
+Regex = <'/'> Alternation <'/'> MatchFlag*
+
+Alternation = Concatenation (<'|'> Concatenation)*
+
+Concatenation = SuffixedExpr*
+
+SuffixedExpr = SingleExpr Suffix? / CurlyRepetition / LiteralSpecialChar Suffix?
+SingleExpr = BaseExpr | ParenthesizedExpr
+ParenthesizedExpr = <'('> GroupFlags? Alternation <')'>
+Suffix = (Optional | Positive | NonNegative | CurlyRepetition) Quantifier?
+Optional = <'?'>
+Positive = <'+'>
+NonNegative = <'*'>
+CurlyRepetition = <'{'> #"\d+" (<','> #"\d+" ?) ? <'}'>
+Quantifier = '?' | '+'
+BaseExpr = CharExpr | LiteralChar | Anchor | BackReference
+
+Anchor = '^' | '$' | '\\' #"[bB]"
+LiteralChar = PlainChar | EscapedChar
+LiteralSpecialChar = '{'
+
+BackReference = <'\\'> #"[1-9][0-9]*"
+
+PlainChar = #"[^.|\\+*$^\[(){?]"
+CharExpr = Dot / LiteralChar / BCCEmpty / BCC
+Dot = '.'
+
+BCC = <'['> BCCUnionLeft? <']'>
+BCCEmpty = '[]'
+
+BCCUnionLeft = BCCNegation? BCCElemBase*
+
+BCCNegation = '^'
+
+BCCElemBase = BCCCharNonRange | SpecialCharClass | BCCRange | BCC
+BCCRangeRightable = BCCCharEndRange | SpecialCharClass
+BCCRange = BCCChar <'-'> BCCCharEndRange
+BCCRangeWithBracket = <']-'> BCCCharEndRange
+BCCCharNonRange = BCCChar !('-' BCCRangeRightable)
+BCCChar = BCCPlainChar | EscapedChar
+BCCCharEndRange = BCCPlainChar | EscapedChar
+BCCPlainChar = #"[^\]\\]" | '\\b'
+
+EscapedChar = SpecialCharClass / NormalSlashedCharacters / ControlChar / HexChar / BasicEscapedChar
+
+HexChar = ShortHexChar | MediumHexChar | LongHexChar | VeryLongHexChar
+ShortHexChar = <'\\x'> #'[0-9a-fA-F]{2}'
+MediumHexChar = <'\\u'> #'[0-9a-fA-F]{4}'
+LongHexChar = <'\\x{'> #'[0-9a-fA-F]{4}' <'}'>
+VeryLongHexChar = <'\\x{'> #'[0-9a-fA-F]{6}' <'}'>
+BasicEscapedChar = <'\\'> #"[\s\S]"
+SpecialCharClass = <'\\'> #"[dDwWsSv0]"
+
+NormalSlashedCharacters = #"\\[tnrf]"
+
+ControlChar = <'\\c'> #"[A-Z]"
+
+(** FLAGS **)
+GroupFlags = NonCapturingMatchFlags
+           | PositiveLookAheadFlag
+           | NegativeLookAheadFlag
+
+NonCapturingMatchFlags = <'?'> !')' <':'>
+PositiveLookAheadFlag = <'?='>
+NegativeLookAheadFlag = <'?!'>
+
+MatchFlag = #"[gimuy]"

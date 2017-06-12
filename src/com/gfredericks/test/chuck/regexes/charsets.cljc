@@ -5,8 +5,7 @@
   Character class directly. Instead the API uses strings of
   one character (for small unicode characters) or two surrogates
   (for large unicode characters)."
-  (:refer-clojure :exclude [empty nth range])
-  (:import [clojure.lang IPersistentVector]))
+  (:refer-clojure :exclude [empty nth range]))
 
 (defn ^:private entry-size
   [[x1 x2]]
@@ -18,29 +17,31 @@
 
 (defn char-string->long
   [s]
-  (cond (= 1 (count s))
-        (long (first s))
+  #?(:clj (cond (= 1 (count s))
+                (long (first s))
 
-        (= 2 (count s))
-        (let [[c1 c2] s
-              x1 (int c1)
-              x2 (int c2)]
-          (+ 16r10000
-             (bit-shift-left (- x1 16rD800) 10)
-             (- x2 16rDC00)))
+                (= 2 (count s))
+                (let [[c1 c2] s
+                      x1 (int c1)
+                      x2 (int c2)]
+                  (+ 16r10000
+                     (bit-shift-left (- x1 16rD800) 10)
+                     (- x2 16rDC00)))
 
-        :else
-        (throw (ex-info "Bad char-string!" {:arg s}))))
+                :else
+                (throw (ex-info "Bad char-string!" {:arg s})))
+     :cljs (.charCodeAt s 0)))
 
 (defn long->char-string
   [x]
   {:pre [(<= 0 x 16r10FFFF)]}
-  (if (< x 16r10000)
-    (str (char x))
-    (let [x' (- x 16r10000)
-          high (bit-shift-right x' 10)
-          low (bit-and x' 16r3FF)]
-      (str (char (+ high 16rD800)) (char (+ low 16rDC00))))))
+  #?(:clj (if (< x 16r10000)
+            (str (char x))
+            (let [x' (- x 16r10000)
+                  high (bit-shift-right x' 10)
+                  low (bit-and x' 16r3FF)]
+              (str (char (+ high 16rD800)) (char (+ low 16rDC00)))))
+     :cljs (js/String.fromCharCode x)))
 
 (defn ^:private compare-entries
   [[x1 x2] [x3 x4]]
@@ -142,7 +143,8 @@
   index, which must be (<= 0 idx (dec (size charset)))."
   [charset idx]
   (if (empty? charset)
-    (throw (IndexOutOfBoundsException.))
+    (throw #?(:clj (IndexOutOfBoundsException.)
+              :cljs (ex-info "Index out of bounds" {})))
     (loop [[x & xs] (seq charset)
            idx idx]
       (let [es (entry-size x)]
@@ -150,7 +152,8 @@
           (long->char-string (entry-nth x idx))
           (if xs
             (recur xs (- idx es))
-            (throw (IndexOutOfBoundsException.))))))))
+            (throw #?(:clj (IndexOutOfBoundsException.)
+                      :cljs (ex-info "Index out of bounds" {})))))))))
 
 
 (defn ^:private singletons

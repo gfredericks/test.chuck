@@ -495,8 +495,6 @@
       (gen/fmap (partial charsets/nth charset)
                 (gen/choose 0 (dec size))))))
 
-
-
 (defmethod analyzed->generator :unsupported
   [{:keys [feature]}]
   (throw (ex-info "Unsupported regex feature!"
