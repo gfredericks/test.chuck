@@ -7,7 +7,7 @@
                  [org.clojure/clojurescript "1.7.48" :scope "provided"]
                  [org.clojure/test.check "0.9.0"]
                  [clj-time "0.10.0"]
-                 [com.andrewmcveigh/cljs-time "0.5.0"]
+                 [com.andrewmcveigh/cljs-time "0.5.1"]
                  [instaparse "1.3.6"]]
   :deploy-repositories [["releases" :clojars]]
   :profiles {:circle-ci {:jvm-opts ["-Xmx1g" "-server"]}}
