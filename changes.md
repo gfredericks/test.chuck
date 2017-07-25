@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.8 (2017-07-25)
+
+Upgrades dependency on cljs-time.
+
 ## 0.2.7
 
 `com.gfredericks.test.chuck.clojure-test/checking` now can accept a
