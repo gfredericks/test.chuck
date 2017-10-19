@@ -5,6 +5,7 @@ test:
   override:
     - lein with-profile +circle-ci test
     - lein doo node node-test once
+    - lein all-my-files-should-end-with-exactly-one-newline-character but-do-they?
 
 machine:
   node:

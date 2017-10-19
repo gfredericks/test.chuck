@@ -12,7 +12,8 @@
   :deploy-repositories [["releases" :clojars]]
   :profiles {:circle-ci {:jvm-opts ["-Xmx1g" "-server"]}}
   :plugins [[lein-cljsbuild "1.0.6"]
-            [lein-doo "0.1.4"]]
+            [lein-doo "0.1.4"]
+            [com.gfredericks/lein-all-my-files-should-end-with-exactly-one-newline-character "0.1.0"]]
 
   :cljsbuild
   {:builds
