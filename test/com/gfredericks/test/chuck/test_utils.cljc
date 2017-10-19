@@ -18,4 +18,3 @@
      (binding [*current-env* (test/empty-env)]
        (let [out (capture-test-var test)]
          [(:report-counters *current-env*) out]))))
-
