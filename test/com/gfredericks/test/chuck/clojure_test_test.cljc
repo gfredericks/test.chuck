@@ -11,7 +11,15 @@
   (checking "negative" 100 [i gen/s-neg-int]
     (is (< i 0))))
 
+(def nb-runs (atom 0))
+
 (deftest options-test
+  ;; no option is OK, defaults to 100 tests
+  (checking "no option works" [i gen/s-pos-int]
+    (swap! nb-runs inc)
+    (is (> 0)))
+  (testing "no option means 100 runs (test.check's default)"
+    (is (= 100 @nb-runs)))
   ;; empty map is OK, defaults to 100 tests
   (checking "strings are strings" {} [s gen/string-ascii]
     (is (string? s)))
