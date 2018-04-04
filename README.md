@@ -211,7 +211,7 @@ The `checking` macro is intended to be used with
          '[com.gfredericks.test.chuck.clojure-test :refer [checking]])
 
 (deftest my-test
-  (checking "that positive numbers are positive" 100
+  (checking "that positive numbers are positive"
     [x gen/s-pos-int]
     (is (pos? x))
     (is (> x 0))))

@@ -108,10 +108,14 @@
   ^{:doc      "A macro intended to replace the testing macro in clojure.test with a
   generative form. To make (testing \"doubling\" (is (= (* 2 2) (+ 2 2))))
   generative, you simply have to change it to
-  (checking \"doubling\" 100 [x gen/int] (is (= (* 2 x) (+ x x)))).
+  (checking \"doubling\" [x gen/int] (is (= (* 2 x) (+ x x)))).
 
-  You can optionally pass in a map options instead of the number of tests,
+  You can optionally pass in a number of a map options,
   which will be passed to `clojure.test.check/quick-check`, e.g.:
+
+    (checking \"doubling\" 100
+      [x gen/int]
+      (is (= (* 2 x) (+ x x))))
 
     (checking \"doubling\" {:num-tests 100 :seed 123 :max-size 10}
       [x gen/int]
@@ -130,7 +134,7 @@
                                                (vector? (first check-decl))
                                                [nil (first check-decl) (next check-decl)]
 
-                                               :else (throw (IllegalArgumentException. "Arguments to `checking` must be either [name bindings body] [name num-tests-or-options bindings body] or [name num-tests-or-options bindings body]")))
+                                               :else (throw (IllegalArgumentException. "Arguments to `checking` must be either [name bindings body] or [name num-tests-or-options bindings body]")))
         num-tests-or-options (tc.clojure-test/process-options num-tests-or-options)]
     `(-testing ~name
                (fn []
