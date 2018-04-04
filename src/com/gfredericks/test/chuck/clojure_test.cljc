@@ -134,7 +134,8 @@
                                                (vector? (first check-decl))
                                                [nil (first check-decl) (next check-decl)]
 
-                                               :else (throw (IllegalArgumentException. "Arguments to `checking` must be either [name bindings body] or [name num-tests-or-options bindings body]")))
+                                               :else (throw #?(:clj (IllegalArgumentException. "Arguments to `checking` must be either [name bindings body] or [name num-tests-or-options bindings body]")
+                                                               :cljs (js/Error. "Arguments to `checking` must be either [name bindings body] or [name num-tests-or-options bindings body]"))))
         num-tests-or-options (tc.clojure-test/process-options num-tests-or-options)]
     `(-testing ~name
                (fn []
