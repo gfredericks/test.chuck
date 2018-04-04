@@ -88,14 +88,13 @@
 (defmacro qc-and-report-exception
   [final-reports num-tests-or-options bindings & body]
   `(report-exception-or-shrunk
-     (let [num-tests-or-options# ~num-tests-or-options]
-       (apply tc/quick-check
-         (times num-tests-or-options#)
-         (prop/for-all ~bindings
-           (let [reports# (capture-reports ~@body)]
-             (swap! ~final-reports save-to-final-reports reports#)
-             (pass? reports#)))
-         (apply concat (options num-tests-or-options#))))))
+     (apply tc/quick-check
+            (times ~num-tests-or-options)
+            (prop/for-all ~bindings
+                          (let [reports# (capture-reports ~@body)]
+                            (swap! ~final-reports save-to-final-reports reports#)
+                            (pass? reports#)))
+            (apply concat (options ~num-tests-or-options)))))
 
 (defn -testing
   [name func]
