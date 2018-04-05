@@ -15,13 +15,13 @@
   ;; no option is OK, defaults to 100 tests
   (let [nb-runs (atom 0)]
     (checking "no option works" [i gen/s-pos-int]
-              (swap! nb-runs inc)
-              (is (> 0)))
+      (swap! nb-runs inc)
+      (is (> 0)))
     (testing "no option means 100 runs (test.check's default)"
       (is (= 100 @nb-runs))))
   ;; empty map is OK, defaults to 100 tests
   (checking "strings are strings" {} [s gen/string-ascii]
-            (is (string? s)))
+    (is (string? s)))
   ;; passes because the number of tests is small
   (checking "small ints" {:num-tests 5} [i gen/s-pos-int]
     (is (< i 10)))

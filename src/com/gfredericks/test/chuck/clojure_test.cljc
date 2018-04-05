@@ -105,7 +105,7 @@
   (ct/report reports))
 
 (defmacro checking
-  ^{:doc      "A macro intended to replace the testing macro in clojure.test with a
+  {:doc      "A macro intended to replace the testing macro in clojure.test with a
   generative form. To make (testing \"doubling\" (is (= (* 2 2) (+ 2 2))))
   generative, you simply have to change it to
   (checking \"doubling\" [x gen/int] (is (= (* 2 x) (+ x x)))).
@@ -123,19 +123,20 @@
 
   For background, see
   http://blog.colinwilliams.name/blog/2015/01/26/alternative-clojure-dot-test-integration-with-test-dot-check/"
-    :arglists '([name bindings body] [name num-tests-or-options bindings body])}
+   :arglists '([name bindings & body] [name num-tests-or-options bindings & body])}
   [name & check-decl]
-  (let [[num-tests-or-options bindings body] (cond
-                                               (and (or number? (first check-decl)
-                                                        map? (first check-decl))
-                                                    (vector? (second check-decl)))
-                                               [(first check-decl) (second check-decl) (nnext check-decl)]
+  (let [[num-tests-or-options bindings body]
+        (cond
+          (and (or (number? (first check-decl))
+                   (map? (first check-decl)))
+               (vector? (second check-decl)))
+          [(first check-decl) (second check-decl) (nnext check-decl)]
 
-                                               (vector? (first check-decl))
-                                               [nil (first check-decl) (next check-decl)]
+          (vector? (first check-decl))
+          [nil (first check-decl) (next check-decl)]
 
-                                               :else (throw #?(:clj (IllegalArgumentException. "Arguments to `checking` must be either [name bindings body] or [name num-tests-or-options bindings body]")
-                                                               :cljs (js/Error. "Arguments to `checking` must be either [name bindings body] or [name num-tests-or-options bindings body]"))))
+          :else (throw #?(:clj  (IllegalArgumentException. "Arguments to `checking` must be either [name bindings body] or [name num-tests-or-options bindings body]")
+                          :cljs (js/Error. "Arguments to `checking` must be either [name bindings body] or [name num-tests-or-options bindings body]"))))
         num-tests-or-options (tc.clojure-test/process-options num-tests-or-options)]
     `(-testing ~name
                (fn []
