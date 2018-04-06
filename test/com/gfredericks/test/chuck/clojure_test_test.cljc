@@ -34,8 +34,8 @@
   ;; bad options throws
   (testing "bad option throws"
     (is (thrown? #?(:clj IllegalArgumentException :cljs js/Object)
-                 (checking "numbers are numbers" "opts as string" [i gen/int]
-                   (is (int? i)))))))
+                 (eval `(checking "numbers are numbers" "opts as string" [i gen/int]
+                          (is (int? i))))))))
 
 (deftest counter
   (checking "increasing" 100 [i gen/s-pos-int]
