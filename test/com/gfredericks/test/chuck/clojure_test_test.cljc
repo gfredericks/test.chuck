@@ -31,6 +31,10 @@
   ;; passes because of max-size
   (checking "short strings" {:num-tests 100 :max-size 9} [s gen/string-ascii]
     (is (< (count s) 10)))
+  ;; using non-literal expression as option
+  (let [opts {:max-size 9}]
+    (checking "short strings again" (assoc opts :num-tests 100) [s gen/string-ascii]
+      (is (< (count s) 10))))
   ;; bad options throws
   (testing "bad option throws"
     (is (thrown? #?(:clj IllegalArgumentException :cljs js/Object)

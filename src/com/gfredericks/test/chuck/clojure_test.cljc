@@ -88,13 +88,14 @@
 (defmacro qc-and-report-exception
   [final-reports num-tests-or-options bindings & body]
   `(report-exception-or-shrunk
-     (apply tc/quick-check
-            (times ~num-tests-or-options)
-            (prop/for-all ~bindings
-                          (let [reports# (capture-reports ~@body)]
-                            (swap! ~final-reports save-to-final-reports reports#)
-                            (pass? reports#)))
-            (apply concat (options ~num-tests-or-options)))))
+     (let [num-tests-or-options# ~num-tests-or-options]
+       (apply tc/quick-check
+         (times num-tests-or-options#)
+         (prop/for-all ~bindings
+           (let [reports# (capture-reports ~@body)]
+             (swap! ~final-reports save-to-final-reports reports#)
+             (pass? reports#)))
+         (apply concat (options num-tests-or-options#))))))
 
 (defn -testing
   [name func]
@@ -127,21 +128,19 @@
   [name & check-decl]
   (let [[num-tests-or-options bindings body]
         (cond
-          (and (or (number? (first check-decl))
-                   (map? (first check-decl)))
-               (vector? (second check-decl)))
+          (vector? (second check-decl))
           [(first check-decl) (second check-decl) (nnext check-decl)]
 
           (vector? (first check-decl))
           [nil (first check-decl) (next check-decl)]
 
           :else (throw (#?(:clj  IllegalArgumentException.
-                           :cljs js/Error.) "Arguments to `checking` must be either [name bindings & body] or [name num-tests-or-options bindings & body]")))
-        num-tests-or-options (tc.clojure-test/process-options num-tests-or-options)]
+                           :cljs js/Error.) "Arguments to `checking` must be either [name bindings & body] or [name num-tests-or-options bindings & body]")))]
     `(-testing ~name
                (fn []
-                 (let [final-reports# (atom [])]
-                   (qc-and-report-exception final-reports# ~num-tests-or-options ~bindings ~@body)
+                 (let [final-reports# (atom [])
+                       num-tests-or-options# (tc.clojure-test/process-options ~num-tests-or-options)]
+                   (qc-and-report-exception final-reports# num-tests-or-options# ~bindings ~@body)
                    (doseq [r# @final-reports#]
                      (-report r#)))))))
 
