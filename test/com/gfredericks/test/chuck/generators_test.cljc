@@ -127,3 +127,22 @@
                 (ct/within? (ct/date-time 2000)
                             (ct/date-time 2009)
                             dt)))
+
+(defn valid-bounded-rec-struct?
+  [breadth height coll]
+  (if (not-any? coll? coll)
+    (and (<= (count coll) breadth)
+         (or (zero? height) (pos? height)))
+    (and (<= (count coll) breadth)
+         (every? identity (map (partial valid-bounded-rec-struct?
+                                        breadth
+                                        (dec height))
+                               coll)))))
+
+(defspec bounded-recursive-gen-spec 100
+  (prop/for-all
+   [bounded-rec (gen'/bounded-recursive-gen gen/vector
+                                            gen/int
+                                            10
+                                            5)]
+   (valid-bounded-rec-struct? 10 5 bounded-rec)))
