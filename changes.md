@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.9 (2018-04-21)
+
+Adds `com.gfredericks.test.chuck.generators/bounded-recursive-gen`.
+
 ## 0.2.8 (2017-07-25)
 
 Upgrades dependency on cljs-time.
