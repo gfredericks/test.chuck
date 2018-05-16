@@ -37,9 +37,9 @@
       (is (< (count s) 10))))
   ;; bad options throws
   (testing "bad option throws"
-    (is (thrown? #?(:clj IllegalArgumentException :cljs js/Object)
-                 (eval `(checking "numbers are numbers" "opts as string" '[i gen/int]
-                          (is (int? i))))))))
+    (is (thrown? #?(:clj Exception :cljs js/Object)
+                 (eval `(checking "numbers are numbers" "opts as string" [i# gen/int]
+                          (is (integer? i#))))))))
 
 (deftest counter
   (checking "increasing" 100 [i gen/s-pos-int]
