@@ -106,27 +106,43 @@
   (ct/report reports))
 
 (defmacro checking
-  "A macro intended to replace the testing macro in clojure.test with a
+  {:doc      "A macro intended to replace the testing macro in clojure.test with a
   generative form. To make (testing \"doubling\" (is (= (* 2 2) (+ 2 2))))
   generative, you simply have to change it to
-  (checking \"doubling\" 100 [x gen/int] (is (= (* 2 x) (+ x x)))).
+  (checking \"doubling\" [x gen/int] (is (= (* 2 x) (+ x x)))).
 
-  You can optionally pass in a map options instead of the number of tests,
+  You can optionally pass the same options as test.check's defspec,
   which will be passed to `clojure.test.check/quick-check`, e.g.:
 
-    (checking \"doubling\" {:num-tests 100 :seed 123 :max-size 10}
+    (checking \"doubling\" 100 ;; number
+      [x gen/int]
+      (is (= (* 2 x) (+ x x))))
+
+    (checking \"doubling\" {:num-tests 100 :seed 123 :max-size 10} ;; options map
       [x gen/int]
       (is (= (* 2 x) (+ x x))))
 
   For background, see
   http://blog.colinwilliams.name/blog/2015/01/26/alternative-clojure-dot-test-integration-with-test-dot-check/"
-  [name num-tests-or-options bindings & body]
-  `(-testing ~name
-    (fn []
-      (let [final-reports# (atom [])]
-        (qc-and-report-exception final-reports# ~num-tests-or-options ~bindings ~@body)
-        (doseq [r# @final-reports#]
-          (-report r#))))))
+   :arglists '([name bindings & body] [name num-tests-or-options bindings & body])}
+  [name & check-decl]
+  (let [[num-tests-or-options bindings body]
+        (cond
+          (vector? (second check-decl))
+          [(first check-decl) (second check-decl) (nnext check-decl)]
+
+          (vector? (first check-decl))
+          [nil (first check-decl) (next check-decl)]
+
+          :else (throw (#?(:clj  IllegalArgumentException.
+                           :cljs js/Error.) "Arguments to `checking` must be either [name bindings & body] or [name num-tests-or-options bindings & body]")))]
+    `(-testing ~name
+               (fn []
+                 (let [final-reports# (atom [])
+                       num-tests-or-options# (tc.clojure-test/process-options ~num-tests-or-options)]
+                   (qc-and-report-exception final-reports# num-tests-or-options# ~bindings ~@body)
+                   (doseq [r# @final-reports#]
+                     (-report r#)))))))
 
 (defmacro for-all
   "An alternative to clojure.test.check.properties/for-all that uses

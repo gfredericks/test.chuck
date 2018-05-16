@@ -1,6 +1,6 @@
 (ns com.gfredericks.test.chuck.clojure-test-test
   (:require #?(:clj  [clojure.test :refer :all])
-            #?(:cljs [cljs.test :refer-macros [deftest is]])
+            #?(:cljs [cljs.test :refer-macros [deftest is testing]])
             [clojure.test.check :refer [quick-check]]
             [clojure.test.check.generators :as gen]
             [com.gfredericks.test.chuck.clojure-test #?(:clj :refer :cljs :refer-macros) [checking for-all]]))
@@ -12,6 +12,13 @@
     (is (< i 0))))
 
 (deftest options-test
+  ;; no option is OK, defaults to 100 tests
+  (let [nb-runs (atom 0)]
+    (checking "no option works" [i gen/s-pos-int]
+      (swap! nb-runs inc)
+      (is (pos? i)))
+    (testing "no option means 100 runs (test.check's default)"
+      (is (= 100 @nb-runs))))
   ;; empty map is OK, defaults to 100 tests
   (checking "strings are strings" {} [s gen/string-ascii]
     (is (string? s)))
@@ -23,7 +30,16 @@
     (is (contains? #{-1 0 1} i)))
   ;; passes because of max-size
   (checking "short strings" {:num-tests 100 :max-size 9} [s gen/string-ascii]
-    (is (< (count s) 10))))
+    (is (< (count s) 10)))
+  ;; using non-literal expression as option
+  (let [opts {:max-size 9}]
+    (checking "short strings again" (assoc opts :num-tests 100) [s gen/string-ascii]
+      (is (< (count s) 10))))
+  ;; bad options throws
+  (testing "bad option throws"
+    (is (thrown? #?(:clj Exception :cljs js/Object)
+                 (eval `(checking "numbers are numbers" "opts as string" [i# gen/int]
+                          (is (integer? i#))))))))
 
 (deftest counter
   (checking "increasing" 100 [i gen/s-pos-int]
