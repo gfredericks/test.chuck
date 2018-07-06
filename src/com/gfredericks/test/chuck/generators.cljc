@@ -225,7 +225,7 @@
 
 (defn ^:private scalb
   [x exp]
-  #?(:clj  (Math/scalb x exp)
+  #?(:clj  (Math/scalb ^double x ^int exp)
      :cljs (* x (.pow js/Math 2 exp))))
 
 (def ^:deprecated double
