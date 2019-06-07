@@ -150,7 +150,6 @@
    #_"[{&&[}{]}]"])
 
 (defspec generator-regression-spec (times 1000)
-  ;; TODO: make a prop in test.chuck that's like for
   (prop/for-all [[re s] (gen'/for [re-s (gen/elements generator-regression-cases)
                                    :let [re (re-pattern re-s)]
                                    s (regexes/gen-string-from-regex re)]
