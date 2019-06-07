@@ -144,7 +144,8 @@
 (def generator-regression-cases
   ["[\\c\\u]" "\\c\\Q\u0080" "\\c\\\u0080" "\\v"
    "[^aceg\\S]"
-   "foo(?:bar)*" ; should allow non-capturing groups
+   "foo(?:bar)*" ;; should allow non-capturing groups
+   "iddqd(?<x>idkfa)" ;; should allow named groups
 
    ;; intersection unsupported for now
    #_"[{&&[}{]}]"])

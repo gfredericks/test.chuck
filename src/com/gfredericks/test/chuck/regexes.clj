@@ -157,16 +157,16 @@
                             {:type :group
                              :elements [alternation]})
                          ([group-flags alternation]
-                          (cond-> {:type :group
-                                   :elements [alternation]
-                                   :flag group-flags}
-                            ;; If the flags are just an empty
-                            ;; NonCapturingMatchFlags, we can safely
-                            ;; ignore it; this should correspond to
-                            ;; something like #"foo(?:bar)*"
-                            (not= group-flags
-                                  [:GroupFlags [:NonCapturingMatchFlags [:MatchFlagsExpr]]])
-                            (assoc :unsupported #{:flags}))))
+                          (let [parsed {:type :group
+                                        :elements [alternation]
+                                        :flag group-flags}
+                                [flag-header [flag-type flag-details]] group-flags]
+                            ;; :NonCapturingMatchFlags corresponds to #"foo(?:bar)*"
+                            ;; :NamedCapturingGroup corresponds to #"foo(?<x>bar)"
+                            ;; We can just ignore these for generation.
+                            (if (#{:NonCapturingMatchFlags :NamedCapturingGroup} flag-type)
+                              parsed
+                              (assoc parsed :unsupported #{:flags})))))
     :SingleExpr identity
     :LinebreakMatcher (constantly
                        {:type :alternation
