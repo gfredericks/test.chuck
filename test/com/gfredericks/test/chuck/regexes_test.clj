@@ -147,7 +147,10 @@
    "foo(?:bar)*" ; should allow non-capturing groups
 
    ;; intersection unsupported for now
-   #_"[{&&[}{]}]"])
+   #_"[{&&[}{]}]"
+
+   ;; I'm not sure this matches anything actually
+   "\\c\\Q0"])
 
 (defspec generator-regression-spec (times 1000)
   ;; TODO: make a prop in test.chuck that's like for
