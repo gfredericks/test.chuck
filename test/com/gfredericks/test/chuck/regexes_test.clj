@@ -124,6 +124,20 @@
                          gen-strings-that-might-be-regex-like)]
     (gen/such-that identity maybes 100)))
 
+(defspec parses-regexes
+  (prop/for-all [s gen-strings-that-might-be-regex-like]
+    (if-let [re (try (re-pattern s) (catch java.util.regex.PatternSyntaxException e nil))]
+      (try
+        (regexes/gen-string-from-regex re)
+        true
+        (catch Throwable e
+          (if (#{::regexes/unsupported-feature
+                 ::regexes/ungeneratable}
+               (:type (ex-data e)))
+            :passes
+            false)))
+      :vapid-success)))
+
 (def gen-generator-scenario
   (gen'/for [regex gen-regex
              :let [gen (try (regexes/gen-string-from-regex regex)
