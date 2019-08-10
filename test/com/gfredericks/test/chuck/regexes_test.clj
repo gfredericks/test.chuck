@@ -149,7 +149,8 @@
    ;; intersection unsupported for now
    #_"[{&&[}{]}]"
 
-   ;; I'm not sure this matches anything actually
+   ;; tests strange behavior in the QE-unquoter related to initial
+   ;; digits
    "\\c\\Q0"])
 
 (defspec generator-regression-spec (times 1000)
