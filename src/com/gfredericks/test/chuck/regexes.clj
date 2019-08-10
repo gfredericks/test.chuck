@@ -61,7 +61,8 @@
                    b1
                    (binding [*out* *err*]
                      (println "Warning: test.chuck is confused.")
-                     false)))})
+                     false)))
+   :grapheme-cluster (re? "\\X")})
 
 (defn ^:private analyze-range
   [begin end]
@@ -205,8 +206,14 @@
     :SpecialCharClass (fn [[c]]
                         (cond-> {:type :class
                                  :simple-class c}
+
                                 (#{\V \h \H} c)
-                                (assoc :feature :HV-classes)))
+                                (assoc :feature :HV-classes)
+
+                                ;; this feature looks hard to support
+                                (= \X c)
+                                (assoc :unsupported #{"Unicode extended grapheme cluster matcher"}
+                                       :feature :grapheme-cluster)))
 
     ;; If we want to support these do we need to be able to detect ungenerateable
     ;; expressions such as #"((x)|(y))\2\3"?

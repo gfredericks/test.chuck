@@ -72,7 +72,7 @@ LongHexChar = <'\\x{'> #'[0-9a-fA-F]+' <'}'>
 BasicEscapedChar = <'\\'> #"[^a-zA-Z0-9]"
 
 (* probably missing something here *)
-SpecialCharClass = <'\\'> #"[wWsSdDhHvV]"
+SpecialCharClass = <'\\'> #"[wWsSdDhHvVX]"
 (* Gotta figure out what these mean *)
 UnicodeCharacterClass = <'\\'> #'[pP]' (#"[CLMNPSZ]" | #"\{[a-zA-Z]+\}")
 

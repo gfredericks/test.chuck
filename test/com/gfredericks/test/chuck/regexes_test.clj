@@ -112,7 +112,10 @@
        "\\x{110000}" "{1,0}" "[[[[{-\\c}]]]]" "[x-\\cx]"
        "[{\\x{10000}-}]" "[b-a]??" "(?)?" "[\\R]"
        ;; parses in java 8 but not java 7
-       "\\R" "\\H" "\\h" "\\V"))
+       "\\R" "\\H" "\\h" "\\V"
+
+       ;; parses in java 11 but not java 8
+       "\\X"))
 
 (defspec parser-spec (times 1000)
   (prop/for-all [s gen-strings-that-might-be-regex-like]
