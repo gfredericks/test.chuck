@@ -3,9 +3,9 @@
   :url "https://github.com/fredericksgary/test.chuck"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/clojure "1.7.0" :scope "provided"]
-                 [org.clojure/clojurescript "1.7.48" :scope "provided"]
-                 [org.clojure/test.check "0.9.0"]
+  :dependencies [[org.clojure/clojure "1.10.1" :scope "provided"]
+                 [org.clojure/clojurescript "1.10.520" :scope "provided"]
+                 [org.clojure/test.check "0.10.0-RC1"]
                  [clj-time "0.10.0"]
                  [com.andrewmcveigh/cljs-time "0.5.1"]
                  [instaparse "1.3.6"]]
@@ -32,10 +32,10 @@
                 :optimizations :none}}]}
 
   :aliases {"test-all"
-            ^{:doc "Runs tests on multiple JVMs; profiles java-7
-                    and java-8 should be defined outside this project."}
+            ^{:doc "Runs tests on multiple JVMs; profiles java-8
+                    and java-11 should be defined outside this project."}
             ["do"
              "clean,"
-             "with-profile" "+java-7" "test,"
+             "with-profile" "+java-8" "test,"
              "clean,"
-             "with-profile" "+java-8" "test"]})
+             "with-profile" "+java-11" "test"]})

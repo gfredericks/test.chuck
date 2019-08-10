@@ -19,8 +19,8 @@
   (checking "small ints" {:num-tests 5} [i gen/s-pos-int]
     (is (< i 10)))
   ;; passes only because of seed
-  (checking "specific values" {:num-tests 5 :seed 12345678} [i gen/int]
-    (is (contains? #{-1 0 1} i)))
+  (checking "specific values" {:num-tests 5 :seed 9012345678} [i gen/int]
+    (is (contains? #{-3 -2 -1 0} i)))
   ;; passes because of max-size
   (checking "short strings" {:num-tests 100 :max-size 9} [s gen/string-ascii]
     (is (< (count s) 10))))
