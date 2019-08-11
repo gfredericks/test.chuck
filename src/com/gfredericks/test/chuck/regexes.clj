@@ -168,7 +168,8 @@
                                  (= group-flags
                                     [:GroupFlags [:NonCapturingMatchFlags [:MatchFlagsExpr]]])
                                  ;; e.g., #"(?<x>bar)"
-                                 (= :NamedCapturingGroup (first group-flags)))
+                                 (let [[flag-header [flag-type flag-details]] group-flags]
+                                   (= :NamedCapturingGroup flag-type)))
                               parsed
                               (assoc parsed :unsupported #{:flags})))))
     :SingleExpr identity
