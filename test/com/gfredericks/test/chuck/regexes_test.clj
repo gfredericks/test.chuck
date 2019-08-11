@@ -171,7 +171,7 @@
 
    ;; tests strange behavior in the QE-unquoter related to initial
    ;; digits
-   "\\c\\Q0"])
+   "\\c\\Q0" "[^\\x{2f498}]"])
 
 (defspec generator-regression-spec (times 1000)
   ;; TODO: make a prop in test.chuck that's like for

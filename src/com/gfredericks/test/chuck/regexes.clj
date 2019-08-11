@@ -129,6 +129,11 @@
     {:type :large-unicode-character
      :code-point code-point}))
 
+(defn ^:private large-unicode-character->string
+  [code-point]
+  (str (Character/highSurrogate code-point)
+       (Character/lowSurrogate code-point)))
+
 (defn analyze
   [parsed-regex]
   (insta/transform
@@ -478,6 +483,10 @@
   [m]
   (charsets/singleton (str (:character m))))
 
+(defmethod compile-class :large-unicode-character
+  [m]
+  (charsets/singleton (large-unicode-character->string (:code-point m))))
+
 (defmulti analyzed->generator :type)
 
 (defmethod analyzed->generator :default
@@ -510,8 +519,7 @@
 
 (defmethod analyzed->generator :large-unicode-character
   [{:keys [code-point]}]
-  (gen/return (str (Character/highSurrogate code-point)
-                   (Character/lowSurrogate code-point))))
+  (gen/return (large-unicode-character->string code-point)))
 
 (defmethod analyzed->generator :repetition
   [{:keys [elements bounds]}]
