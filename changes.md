@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.2.10 (2019-08-10)
+
+Updates to `gen-string-from-regex`
+
+- It now targets the syntax of java 8 and 11 specifically
+- Regex features new in Java 11:
+  - `\X` -- this is now parsed but not supported
+  - `\N{LATIN CAPITAL LETTER X}` is parsed and supported
+  - Large (> UTF-16) code-points in `\N{...}` and in `\x`
+    and `\u` expressions are now fully supported
+- Parses the absurd edge case `#"\c\Q0"` correctly
+
 ## 0.2.9 (2018-04-21)
 
 Adds `com.gfredericks.test.chuck.generators/bounded-recursive-gen`.
