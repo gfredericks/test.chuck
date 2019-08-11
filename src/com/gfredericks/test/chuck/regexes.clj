@@ -141,26 +141,26 @@
                               :elements (->> regexes
                                              (remove nil?)
                                              (remove #{:flags}))}
-                             (some #{:flags} regexes)
-                             (assoc :unsupported #{:flags})))
+                       (some #{:flags} regexes)
+                       (assoc :unsupported #{:flags})))
     :MutatingMatchFlags (constantly :flags)
     :SuffixedExpr (fn
                     ([regex] regex)
                     ([regex {:keys [bounds quantifier]}]
-                       (cond-> {:type     :repetition
-                                :elements [regex]
-                                :bounds   bounds}
-                               quantifier
-                               (assoc :unsupported
-                                 #{:quantifiers}))))
+                     (cond-> {:type     :repetition
+                              :elements [regex]
+                              :bounds   bounds}
+                       quantifier
+                       (assoc :unsupported
+                              #{:quantifiers}))))
     :Suffix (fn
               ;; this function can get a nil 2nd or 3rd arg because of
               ;; DanglingCurlyRepetitions, which we don't hide so we
               ;; get more parse error coverage, e.g. for #"{1,0}"
               [bounds & [quantifier]]
               (cond-> {:bounds bounds}
-                      quantifier
-                      (assoc :quantifier quantifier)))
+                quantifier
+                (assoc :quantifier quantifier)))
     :Optional (constantly [0 1])
     :Positive (constantly [1 nil])
     :NonNegative (constantly [0 nil])
@@ -168,21 +168,21 @@
                        ([s] (let [n (parse-bigint s)] [n n]))
                        ([s _comma] [(parse-bigint s) nil])
                        ([s1 _comma s2]
-                          (let [lower (parse-bigint s1)
-                                upper (parse-bigint s2)]
-                            (when (< upper lower)
-                              (throw (ex-info "Bad repetition range"
-                                              {:type ::parse-error
-                                               :range [lower upper]})))
-                            [lower upper])))
+                        (let [lower (parse-bigint s1)
+                              upper (parse-bigint s2)]
+                          (when (< upper lower)
+                            (throw (ex-info "Bad repetition range"
+                                            {:type ::parse-error
+                                             :range [lower upper]})))
+                          [lower upper])))
     ;; the only reason we don't hide this in the parser is to force
     ;; the "Bad reptition range" check above, so that our "parses
     ;; exactly what re-pattern does" spec will pass.
     :DanglingCurlyRepetitions (constantly nil)
     :ParenthesizedExpr (fn
                          ([alternation]
-                            {:type :group
-                             :elements [alternation]})
+                          {:type :group
+                           :elements [alternation]})
                          ([group-flags alternation]
                           (cond-> {:type :group
                                    :elements [alternation]
@@ -236,13 +236,13 @@
                         (cond-> {:type :class
                                  :simple-class c}
 
-                                (#{\V \h \H} c)
-                                (assoc :feature :HV-classes)
+                          (#{\V \h \H} c)
+                          (assoc :feature :HV-classes)
 
-                                ;; this feature looks hard to support
-                                (= \X c)
-                                (assoc :unsupported #{"Unicode extended grapheme cluster matcher"}
-                                       :feature :grapheme-cluster)))
+                          ;; this feature looks hard to support
+                          (= \X c)
+                          (assoc :unsupported #{"Unicode extended grapheme cluster matcher"}
+                                 :feature :grapheme-cluster)))
 
     ;; If we want to support these do we need to be able to detect ungenerateable
     ;; expressions such as #"((x)|(y))\2\3"?
@@ -252,17 +252,17 @@
            (cond-> {:type :class
                     :elements [intersection]
                     :brackets? true}
-                   dangling-ampersands
-                   (assoc :undefined #{:dangling-ampersands})))
+             dangling-ampersands
+             (assoc :undefined #{:dangling-ampersands})))
     :BCCIntersection (fn [& unions]
                        (cond-> {:type :class-intersection
                                 :elements unions}
-                               ;; This could be supported, but it's
-                               ;; pretty weird so I'm giving up for
-                               ;; now.
-                               (> (count unions) 1)
-                               (assoc :unsupported
-                                 #{"Character class intersections"})))
+                         ;; This could be supported, but it's
+                         ;; pretty weird so I'm giving up for
+                         ;; now.
+                         (> (count unions) 1)
+                         (assoc :unsupported
+                                #{"Character class intersections"})))
     :BCCUnionLeft (fn [& els]
                     (let [[negated? els] (if (= "^" (first els))
                                            [true (rest els)]
@@ -270,14 +270,13 @@
                       {:type :class-union
                        :elements
                        (if negated?
-                         [(cond->
-                           {:type :class-negation
-                            :elements [{:type :class-union
-                                        :elements els}]}
-                           ;; the jvm's behavior here seems pretttty weird:
-                           ;; compare #"[^[x]]" and #"[^[x]x]"
-                           (some :brackets? els)
-                           (assoc :undefined #{"Character classes nested in negations"}))]
+                         [(cond-> {:type :class-negation
+                                   :elements [{:type :class-union
+                                               :elements els}]}
+                            ;; the jvm's behavior here seems pretttty weird:
+                            ;; compare #"[^[x]]" and #"[^[x]x]"
+                            (some :brackets? els)
+                            (assoc :undefined #{"Character classes nested in negations"}))]
                          els)}))
     :BCCNegation identity
     :BCCUnionNonLeft (fn self [& els]
@@ -294,14 +293,14 @@
                           :elements els}))
     :BCCElemHardLeft (fn self
                        ([x]
-                          (if (= x "]")
-                            {:type :character, :character \]}
-                            x))
+                        (if (= x "]")
+                          {:type :character, :character \]}
+                          x))
                        ([amps x]
-                          (update-in (self x)
-                                     [:undefined]
-                                     (fnil conj #{})
-                                     "Leading double ampersands")))
+                        (update-in (self x)
+                                   [:undefined]
+                                   (fnil conj #{})
+                                   "Leading double ampersands")))
     :BCCElemLeft identity
     :BCCElemNonLeft identity
     :BCCElemBase (fn [x] (if (= :character (:type x))
