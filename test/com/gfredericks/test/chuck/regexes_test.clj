@@ -164,7 +164,8 @@
 (def generator-regression-cases
   ["[\\c\\u]" "\\c\\Q\u0080" "\\c\\\u0080" "\\v"
    "[^aceg\\S]"
-   "foo(?:bar)*" ; should allow non-capturing groups
+   "foo(?:bar)*" ;; should allow non-capturing groups
+   "iddqd(?<x>idkfa)" ;; should allow named groups
 
    ;; intersection unsupported for now
    #_"[{&&[}{]}]"
@@ -174,7 +175,6 @@
    "\\c\\Q0" "[^\\x{2f498}]"])
 
 (defspec generator-regression-spec (times 1000)
-  ;; TODO: make a prop in test.chuck that's like for
   (prop/for-all [[re s] (gen'/for [re-s (gen/elements generator-regression-cases)
                                    :let [re (re-pattern re-s)]
                                    s (regexes/gen-string-from-regex re)]
