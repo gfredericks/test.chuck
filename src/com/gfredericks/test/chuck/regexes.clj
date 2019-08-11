@@ -154,17 +154,21 @@
     :DanglingCurlyRepetitions (constantly nil)
     :ParenthesizedExpr (fn
                          ([alternation]
-                            {:type :group
-                             :elements [alternation]})
+                          {:type :group
+                           :elements [alternation]})
                          ([group-flags alternation]
                           (let [parsed {:type :group
                                         :elements [alternation]
-                                        :flag group-flags}
-                                [flag-header [flag-type flag-details]] group-flags]
+                                        :flag group-flags}]
                             ;; :NonCapturingMatchFlags corresponds to #"foo(?:bar)*"
                             ;; :NamedCapturingGroup corresponds to #"foo(?<x>bar)"
                             ;; We can just ignore these for generation.
-                            (if (#{:NonCapturingMatchFlags :NamedCapturingGroup} flag-type)
+                            (if (or
+                                 ;; e.g., #"(?:bar)" (no flags)
+                                 (= group-flags
+                                    [:GroupFlags [:NonCapturingMatchFlags [:MatchFlagsExpr]]])
+                                 ;; e.g., #"(?<x>bar)"
+                                 (= :NamedCapturingGroup (first group-flags)))
                               parsed
                               (assoc parsed :unsupported #{:flags})))))
     :SingleExpr identity
