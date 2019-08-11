@@ -62,7 +62,16 @@
                    (binding [*out* *err*]
                      (println "Warning: test.chuck is confused.")
                      false)))
-   :grapheme-cluster (re? "\\X")})
+   :grapheme-cluster (re? "\\X")
+   :named-characters (re? "\\N{LATIN CAPITAL LETTER X}")})
+
+(def ^:private code-point-of
+  "Like Character/codePointOf, except always returns nil if we're on
+  java 8 or something and the method doesn't even exist."
+  (try
+    (eval '#(Character/codePointOf %))
+    (catch Exception e
+      (constantly nil))))
 
 (defn ^:private analyze-range
   [begin end]
@@ -111,6 +120,14 @@
   [feature]
   {:type :unsupported,
    :unsupported #{feature}})
+
+(defn ^:private code-point-literal
+  [code-point]
+  (if (< code-point 0x10000)
+    {:type :character
+     :character (char code-point)}
+    {:type :large-unicode-character
+     :code-point code-point}))
 
 (defn analyze
   [parsed-regex]
@@ -198,6 +215,18 @@
                    ;; this is the same calculation openjdk performs so
                    ;; it must be right.
                    {:type :character, :character (-> c int (bit-xor 64) char)})
+
+    :NamedChar (fn [s]
+                 (if-let [code-point (try
+                                       (code-point-of s)
+                                       (catch IllegalArgumentException e
+                                         false))]
+                   (assoc
+                    (code-point-literal code-point)
+                    :feature :named-characters)
+                   (throw (ex-info "Bad character name"
+                                   {:type ::parse-error
+                                    :character-name s}))))
 
     ;; sounds super tricky. looking forward to investigating
     :Anchor (constantly (unsupported :anchors))
@@ -301,12 +330,7 @@
                    (throw (ex-info "Bad hex character!"
                                    {:type ::parse-error
                                     :hex-string hex-string})))
-                 (if (> n 16rFFFF)
-                   {:type :large-unicode-character
-                    :unsupported #{"large unicode hex literals"}
-                    :n n}
-                   {:type :character
-                    :character (char (int n))})))
+                 (code-point-literal (int n))))
     :ShortHexChar identity
     :MediumHexChar identity
     :LongHexChar identity
@@ -352,8 +376,12 @@
       (case (:type m)
         :range
         (let [[m1 m2] (:elements m)
-              c1 (or (some-> m1 :character int) (:n m1))
-              c2 (or (some-> m2 :character int) (:n m2))]
+              element->codepoint (fn [x]
+                                   (case (:type x)
+                                     :character (-> x :character int)
+                                     :large-unicode-character (:code-point x)))
+              c1 (or (some-> m1 element->codepoint) (:n m1))
+              c2 (or (some-> m2 element->codepoint) (:n m2))]
           (when (and (integer? c1) (integer? c2) (< c2 c1))
             (throw (ex-info "Bad character range"
                             {:type ::parse-error
@@ -480,6 +508,11 @@
   [{:keys [character]}]
   {:pre [character]}
   (gen/return (str character)))
+
+(defmethod analyzed->generator :large-unicode-character
+  [{:keys [code-point]}]
+  (gen/return (str (Character/highSurrogate code-point)
+                   (Character/lowSurrogate code-point))))
 
 (defmethod analyzed->generator :repetition
   [{:keys [elements bounds]}]

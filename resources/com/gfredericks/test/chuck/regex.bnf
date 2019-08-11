@@ -60,7 +60,7 @@ BCCDash = '-'
 
 (** BASE CHARACTER STUFFS **)
 
-EscapedChar = OctalChar | HexChar | BasicEscapedChar | NormalSlashedCharacters | ControlChar
+EscapedChar = OctalChar | HexChar | BasicEscapedChar | NormalSlashedCharacters | ControlChar | NamedChar
 OctalChar = <'\\0'> (OctalDigits1 | OctalDigits2 | OctalDigits3)
 OctalDigits1 = #"[0-7]" ! #"[0-7]"
 OctalDigits2 = (#"[0-3][0-7]" ! #"[0-7]") | #"[4-7][0-7]"
@@ -70,6 +70,7 @@ ShortHexChar = <'\\x'> #'[0-9a-fA-F]{2}'
 MediumHexChar = <'\\u'> #'[0-9a-fA-F]{4}'
 LongHexChar = <'\\x{'> #'[0-9a-fA-F]+' <'}'>
 BasicEscapedChar = <'\\'> #"[^a-zA-Z0-9]"
+NamedChar = <'\\N{'> #'[-A-Z0-9\(\) ]+' <'}'>
 
 (* probably missing something here *)
 SpecialCharClass = <'\\'> #"[wWsSdDhHvVX]"

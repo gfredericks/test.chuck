@@ -111,11 +111,14 @@
        "[b-a]" "[^]" "[]-X]" "[&&&]" "[\\Q\\E]" "(??)"
        "\\x{110000}" "{1,0}" "[[[[{-\\c}]]]]" "[x-\\cx]"
        "[{\\x{10000}-}]" "[b-a]??" "(?)?" "[\\R]"
+       "\\N{NOT ANY UNICODE CHARACTER NAME}"
        ;; parses in java 8 but not java 7
        "\\R" "\\H" "\\h" "\\V"
 
        ;; parses in java 11 but not java 8
-       "\\X"))
+       "\\X" "\\N{LATIN CAPITAL LETTER X}"
+       ;; non-UTF-16 characters
+       "\\N{PILE OF POO}"))
 
 (defspec parser-spec (times 1000)
   (prop/for-all [s gen-strings-that-might-be-regex-like]
