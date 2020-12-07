@@ -21,7 +21,7 @@ Anchor = '^' | '$' | '\\' #"[bBAGZz]"
 LiteralChar = PlainChar | EscapedChar
 
 (* this will be hard -- will require counting in the analyzer to figure
-   out where the number stops and numberic literals begin *)
+   out where the number stops and numeric literals begin *)
 BackReference = <'\\'> #"[1-9][0-9]*"
 
 PlainChar = #"[^.|\\+*$^\[(){?]"
