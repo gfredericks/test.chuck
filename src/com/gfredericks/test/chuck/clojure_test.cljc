@@ -123,20 +123,22 @@
 
   generative, you simply have to change it to
 
-    (checking \"doubling\" [x gen/int]
+    (checking \"doubling\"
+      [x gen/int]
       (is (= (* 2 x) (+ x x)))).
 
   Test failures will be reported for the smallest case only.
 
   Bindings and body are passed to com.gfredericks.test.chuck.properties/for-all.
 
-  Options can be provided to `clojure.test.check/quick-check` when the second
-  argument is an integer (number of tests) or a map (with :num-tests being the
-  number of tests). e.g.:
+  Options can be provided to `clojure.test.check/quick-check` as an optional
+  second argument, and should either evaluate to an integer (number of tests) or a
+  map (with :num-tests specifying the number of tests). e.g.:
 
-    (checking \"doubling\" {:num-tests 100 :seed 123 :max-size 10}
-      [x gen/int]
-      (is (= (* 2 x) (+ x x))))
+    (let [options {:num-tests 100 :seed 123 :max-size 10}]
+      (checking \"doubling\" options
+        [x gen/int]
+        (is (= (* 2 x) (+ x x)))))
 
   For background, see
   http://blog.colinwilliams.name/blog/2015/01/26/alternative-clojure-dot-test-integration-with-test-dot-check/"
