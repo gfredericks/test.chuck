@@ -12,8 +12,10 @@
     (is (< i 0))))
 
 (deftest options-test
-  ;; empty map is OK, defaults to 100 tests
+  ;; empty map or no options are OK, defaults to 100 tests
   (checking "strings are strings" {} [s gen/string-ascii]
+    (is (string? s)))
+  (checking "strings are strings" [s gen/string-ascii]
     (is (string? s)))
   ;; passes because the number of tests is small
   (checking "small ints" {:num-tests 5} [i gen/s-pos-int]
