@@ -22,15 +22,14 @@
 
 (defmethod ct/report #?(:clj ::shrunk :cljs [::ct/default ::shrunk]) [m]
   (newline)
-  (println "Tests failed, smallest case:" (pr-str (-> m :shrunk :smallest))
-           "\nSeed" (:seed m)))
+  (println (str "Tests failed, smallest case: " (pr-str (-> m :shrunk :smallest))
+                "\nSeed: " (:seed m))))
 
 (defn report-exception-or-shrunk [result]
   (if (:result result)
     (is (not-exception? (:result result)) result)
-    (do
-      (with-test-out*
-        (fn [] (ct/report (shrunk-report result)))))))
+    (with-test-out*
+      (fn [] (ct/report (shrunk-report result))))))
 
 (defn pass? [reports]
   (every? #(= (:type %) :pass) reports))
@@ -48,33 +47,34 @@
 #?(:cljs
 (defmethod ct/report [::chuck-capture :error]
   [m]
-  (swap! *chuck-captured-reports* conj m)))
+  (swap! *chuck-captured-reports* conj (assoc m ::testing-contexts (:testing-contexts (ct/get-current-env))))))
 
 #?(:cljs
 (defmethod ct/report [::chuck-capture :fail]
   [m]
-  (swap! *chuck-captured-reports* conj m)))
+  (swap! *chuck-captured-reports* conj (assoc m ::testing-contexts (:testing-contexts (ct/get-current-env))))))
 
 #?(:cljs
 (defmethod ct/report [::chuck-capture :pass]
   [m]
-  (swap! *chuck-captured-reports* conj m)))
+  (swap! *chuck-captured-reports* conj (assoc m ::testing-contexts (:testing-contexts (ct/get-current-env))))))
 
 (defn capture-reports*
   [reports-atom f]
   #?(:clj
-     (binding [ct/report #(swap! reports-atom conj %)]
+     (binding [ct/report #(swap! reports-atom conj (assoc % ::testing-contexts ct/*testing-contexts*))]
        (f))
 
      :cljs
      (binding [*chuck-captured-reports* reports-atom
-               cljs.test/*current-env* (cljs.test/empty-env ::chuck-capture)]
+               ct/*current-env* (assoc (ct/empty-env ::chuck-capture)
+                                       :testing-contexts (:testing-contexts (ct/get-current-env)))]
        (f))))
 
 (defmacro capture-reports
   [& body]
   `(let [reports# (atom [])]
-     (capture-reports* reports# (fn [] ~@body))
+     (capture-reports* reports# (fn [] (do ~@body)))
      @reports#))
 
 (defn times [num-tests-or-options]
@@ -88,12 +88,13 @@
 (defmacro qc-and-report-exception
   [final-reports num-tests-or-options bindings & body]
   `(report-exception-or-shrunk
-     (let [num-tests-or-options# ~num-tests-or-options]
+     (let [num-tests-or-options# ~num-tests-or-options
+           final-reports# ~final-reports]
        (apply tc/quick-check
          (times num-tests-or-options#)
          (prop/for-all ~bindings
            (let [reports# (capture-reports ~@body)]
-             (swap! ~final-reports save-to-final-reports reports#)
+             (swap! final-reports# save-to-final-reports reports#)
              (pass? reports#)))
          (apply concat (options num-tests-or-options#))))))
 
@@ -102,36 +103,64 @@
   (testing name (func)))
 
 (defn -report
-  [reports]
-  (ct/report reports))
+  [report]
+  #?(:clj
+     (binding [ct/*testing-contexts* (::testing-contexts report)]
+       (ct/report report))
+     :cljs
+     (let [old-env (ct/get-current-env)]
+       (ct/set-env! (assoc old-env :testing-contexts (::testing-contexts report)))
+       (try (ct/report report)
+            (finally
+              (ct/set-env! (assoc (ct/get-current-env) :testing-contexts (:testing-contexts old-env))))))))
 
 (defmacro checking
   "A macro intended to replace the testing macro in clojure.test with a
-  generative form. To make (testing \"doubling\" (is (= (* 2 2) (+ 2 2))))
+  generative form. To make
+
+    (testing \"doubling\"
+      (is (= (* 2 2) (+ 2 2))))
+
   generative, you simply have to change it to
-  (checking \"doubling\" 100 [x gen/int] (is (= (* 2 x) (+ x x)))).
 
-  You can optionally pass in a map of options instead of the number of tests,
-  which will be passed to `clojure.test.check/quick-check`, e.g.:
-
-    (checking \"doubling\" {:num-tests 100 :seed 123 :max-size 10}
+    (checking \"doubling\"
       [x gen/int]
-      (is (= (* 2 x) (+ x x))))
+      (is (= (* 2 x) (+ x x)))).
+
+  Test failures will be reported for the smallest case only.
+
+  Bindings and body are passed to com.gfredericks.test.chuck.properties/for-all.
+
+  Options can be provided to `clojure.test.check/quick-check` as an optional
+  second argument, and should either evaluate to an integer (number of tests) or a
+  map (with :num-tests specifying the number of tests). e.g.:
+
+    (let [options {:num-tests 100 :seed 123 :max-size 10}]
+      (checking \"doubling\" options
+        [x gen/int]
+        (is (= (* 2 x) (+ x x)))))
 
   For background, see
   http://blog.colinwilliams.name/blog/2015/01/26/alternative-clojure-dot-test-integration-with-test-dot-check/"
-  [name num-tests-or-options bindings & body]
-  `(-testing ~name
-    (fn []
-      (let [final-reports# (atom [])]
-        (qc-and-report-exception final-reports# ~num-tests-or-options ~bindings ~@body)
-        (doseq [r# @final-reports#]
-          (-report r#))))))
+  {:forms '[(checking name num-tests-or-options? [bindings*] body*)]}
+  [name & opt+body]
+  (let [[num-tests-or-options opt+body] (if (vector? (first opt+body))
+                                          [{} opt+body]
+                                          ((juxt first next) opt+body)) 
+        [bindings & body] opt+body]
+    `(let [final-reports# (atom [])]
+       (-testing ~name
+         (fn []
+           (qc-and-report-exception final-reports# ~num-tests-or-options ~bindings ~@body)))
+       (doseq [r# @final-reports#]
+         (-report r#)))))
 
 (defmacro for-all
-  "An alternative to clojure.test.check.properties/for-all that uses
+  "An alternative to com.gfredericks.test.chuck.properties/for-all that uses
   clojure.test-style assertions (i.e., clojure.test/is) rather than
-  the truthiness of the body expression."
+  the truthiness of the body expression.
+  
+  See `checking` to additionally report clojure.test assertion failures."
   [bindings & body]
   `(prop/for-all
      ~bindings
