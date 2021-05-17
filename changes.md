@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.11 (2021-05-17)
+
+- Support testing inside checking and make checking options optional
+  ([#65](https://github.com/gfredericks/test.chuck/pull/65))
+
 ## 0.2.10 (2019-08-10)
 
 Updates to `gen-string-from-regex`
