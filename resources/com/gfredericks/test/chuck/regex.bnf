@@ -15,8 +15,9 @@ Positive = <'+'>
 NonNegative = <'*'>
 CurlyRepetition = <'{'> #"\d+" (',' #"\d+" ?) ? <'}'>
 Quantifier = '?' | '+'
-BaseExpr = CharExpr | LiteralChar | LinebreakMatcher | Anchor | BackReference
+BaseExpr = CharExpr | LiteralChar | LinebreakMatcher | GraphemeClusterMatcher | Anchor | BackReference
 LinebreakMatcher = '\\R'
+GraphemeClusterMatcher = '\\X'
 Anchor = '^' | '$' | '\\' #"[bBAGZz]"
 LiteralChar = PlainChar | EscapedChar
 
@@ -73,7 +74,7 @@ BasicEscapedChar = <'\\'> #"[^a-zA-Z0-9]"
 NamedChar = <'\\N{'> #'[-A-Z0-9\(\) ]+' <'}'>
 
 (* probably missing something here *)
-SpecialCharClass = <'\\'> #"[wWsSdDhHvVX]"
+SpecialCharClass = <'\\'> #"[wWsSdDhHvV]"
 (* Gotta figure out what these mean *)
 UnicodeCharacterClass = <'\\'> #'[pP]' (#"[CLMNPSZ]" | #"\{[a-zA-Z]+\}")
 

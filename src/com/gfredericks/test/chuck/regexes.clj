@@ -215,6 +215,12 @@
                                    {:type :class
                                     :simple-class :R}]
                         :feature :backslash-R})
+    :GraphemeClusterMatcher (constantly
+                             {:type :class
+                              :simple-class "X"
+                              ;; this feature looks hard to support
+                              :unsupported #{"Unicode extended grapheme cluster matcher"}
+                              :feature :grapheme-cluster})
     :BaseExpr identity
     :CharExpr identity
     :LiteralChar identity
@@ -247,12 +253,7 @@
                                  :simple-class c}
 
                           (#{\V \h \H} c)
-                          (assoc :feature :HV-classes)
-
-                          ;; this feature looks hard to support
-                          (= \X c)
-                          (assoc :unsupported #{"Unicode extended grapheme cluster matcher"}
-                                 :feature :grapheme-cluster)))
+                          (assoc :feature :HV-classes)))
 
     ;; If we want to support these do we need to be able to detect ungenerateable
     ;; expressions such as #"((x)|(y))\2\3"?
