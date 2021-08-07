@@ -118,7 +118,11 @@
        ;; parses in java 11 but not java 8
        "\\X" "\\N{LATIN CAPITAL LETTER X}"
        ;; non-UTF-16 characters
-       "\\N{PILE OF POO}"))
+       "\\N{PILE OF POO}"
+
+       ;; issue #70; apparently these character class syntaxes can't
+       ;; go inside square brackets
+       "[\\X]" "[\\R]"))
 
 (defspec parser-spec (times 1000)
   (prop/for-all [s gen-strings-that-might-be-regex-like]
