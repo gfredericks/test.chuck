@@ -1,0 +1,68 @@
+name: Test
+
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+  schedule:
+    # monthly
+    - cron: "0 0 1 * *"
+
+env:
+  #bump to clear caches
+  ACTION_CACHE_VERSION: 'v1'
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        java: ['8', '11', '16']
+        impl: ['clj', 'cljs']
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - uses: actions/cache@v1
+        with:
+          path: ~/.m2/repository
+          key: ${{ env.ACTION_CACHE_VERSION }}-${{ runner.os }}-maven-${{ hashFiles('**/project.clj') }}-${{ matrix.impl }}
+          restore-keys: |
+            ${{ env.ACTION_CACHE_VERSION }}-${{ runner.os }}-maven-${{ hashFiles('**/project.clj') }}-
+            ${{ env.ACTION_CACHE_VERSION }}-${{ runner.os }}-maven-
+      - name: Prepare java
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: ${{ matrix.java }}
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '10.13.0'
+      - name: Install clojure tools
+        uses: DeLaGuardo/setup-clojure@3.4
+        with:
+          lein: 2.9.6
+      - name: Test multiplier for master branch
+        if: ${{ github.event_name == 'push' }}
+        run: echo "TEST_CHECK_FACTOR=5" >> $GITHUB_ENV
+      - name: Test multiplier for pull requests
+        if: ${{ github.event_name == 'pull_request' }}
+        run: echo "TEST_CHECK_FACTOR=2" >> $GITHUB_ENV
+      - name: Test multiplier for cron
+        if: ${{ github.event_name == 'schedule' }}
+        run: echo "TEST_CHECK_FACTOR=10" >> $GITHUB_ENV
+      - name: Run tests
+        run: |
+          set -ex
+          case $TEST_IMPL in
+            clj) lein with-profile +ci test
+                 ;;
+            cljs) lein doo node node-test once
+                  ;;
+            *) echo "Bad impl: $TEST_IMPL"
+               exit 1
+               ;;
+          esac
+        env:
+          TEST_IMPL: ${{ matrix.impl }}
+      - run: lein all-my-files-should-end-with-exactly-one-newline-character but-do-they?

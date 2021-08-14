@@ -53,6 +53,8 @@ This will normally run the test 20 times, but if you set the
 `TEST_CHECK_FACTOR` environment variable to e.g. `3.5`, it will run
 the tests 70 times.
 
+In ClojureScript, `TEST_CHECK_FACTOR` will be retrieved at compile-time.
+
 ### Generators
 
 ``` clojure

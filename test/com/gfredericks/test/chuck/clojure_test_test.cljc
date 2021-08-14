@@ -3,12 +3,13 @@
             #?(:cljs [cljs.test :refer-macros [deftest is]])
             [clojure.test.check :refer [quick-check]]
             [clojure.test.check.generators :as gen]
+            [com.gfredericks.test.chuck :refer [times]]
             [com.gfredericks.test.chuck.clojure-test #?(:clj :refer :cljs :refer-macros) [checking for-all]]))
 
 (deftest integer-facts
-  (checking "positive" 100 [i gen/s-pos-int]
+  (checking "positive" (times 100) [i gen/s-pos-int]
     (is (> i 0)))
-  (checking "negative" 100 [i gen/s-neg-int]
+  (checking "negative" (times 100) [i gen/s-neg-int]
     (is (< i 0))))
 
 (deftest options-test
@@ -24,11 +25,11 @@
   (checking "specific values" {:num-tests 5 :seed 9012345678} [i gen/int]
     (is (contains? #{-3 -2 -1 0} i)))
   ;; passes because of max-size
-  (checking "short strings" {:num-tests 100 :max-size 9} [s gen/string-ascii]
+  (checking "short strings" {:num-tests (times 100) :max-size 9} [s gen/string-ascii]
     (is (< (count s) 10))))
 
 (deftest counter
-  (checking "increasing" 100 [i gen/s-pos-int]
+  (checking "increasing" (times 100) [i gen/s-pos-int]
     (let [c (atom i)]
       (swap! c inc)
       (is (= @c (inc i)))
