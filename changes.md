@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.12 (2021-08-15)
+
+- clj-kondo config for `checking` (thanks to [Derek Passen](https://github.com/dpassen)
+  and [Dmitry Dzhus](https://github.com/dzhus))
+- add `times` support for cljs (thanks to [Ambrose
+  Bonnaire-Sergeant](https://github.com/frenchy64))
+- minor fix to the regex parser w.r.t. the grapheme cluster character
+  class ([#71](https://github.com/gfredericks/test.chuck/pull/71))
+
+
 ## 0.2.11 (2021-05-17)
 
 - Support testing inside checking and make checking options optional
