@@ -23,9 +23,14 @@ Please note that as of version 0.2.0, test.chuck (mostly) supports
 ClojureScript, and requires a minimum Clojure version of 1.7.0. Using
 ClojureScript requires a minimum test.check version of 0.8.0.
 
-Leiningen dependency coordinates:
+Dependency coordinates:
 
 ``` clojure
+;; deps.edn
+{
+  com.gfredericks/test.chuck {:mvn/version "0.2.12"}
+}
+;; leiningen
 [com.gfredericks/test.chuck "0.2.12"]
 ```
 
