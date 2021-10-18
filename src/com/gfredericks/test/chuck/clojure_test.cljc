@@ -27,7 +27,7 @@
 
 (defn report-exception-or-shrunk [result]
   (if (:result result)
-    (is (not-exception? (:result result)) result)
+    (is (not-exception? (:result result)) (pr-str result))
     (with-test-out*
       (fn [] (ct/report (shrunk-report result))))))
 
