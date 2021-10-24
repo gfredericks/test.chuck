@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.13 (2021-10-24)
+
+- Exceptions are [printed readably](https://github.com/gfredericks/test.chuck/pull/74)
+  (thanks to [Ambrose Bonnaire-Sergeant](https://github.com/frenchy64)
+
 ## 0.2.12 (2021-08-15)
 
 - clj-kondo config for `checking` (thanks to [Derek Passen](https://github.com/dpassen)
