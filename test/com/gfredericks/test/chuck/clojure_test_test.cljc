@@ -45,5 +45,13 @@
                        ;; sticking a failing assertion in between two
                        ;; passing ones
                        (is (zero? x))
-                       (is (= x x)))]
-    (is (not (:result (quick-check 20 failing-prop))))))
+                       (is (= x x)))
+        ret (quick-check 20 failing-prop)]
+
+    #?(:clj (is (pos? (:fail @*report-counters*))))
+
+    ;; Reset the report counters back because we want the test to pass if the "test" failed
+    #?(:clj (dosync (ref-set *report-counters* *initial-report-counters*))
+       :cljs (cljs.test/set-env! (cljs.test/empty-env)))
+
+    (is (not (:result ret)))))

@@ -165,4 +165,6 @@
   `(prop/for-all
      ~bindings
      (let [reports# (capture-reports ~@body)]
+       (doseq [r# reports#]
+         (-report r#))
        (pass? reports#))))
