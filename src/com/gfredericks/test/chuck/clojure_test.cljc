@@ -1,10 +1,11 @@
 (ns com.gfredericks.test.chuck.clojure-test
   (:require [clojure.test.check :as tc]
             [clojure.test.check.clojure-test :as tc.clojure-test]
-            [com.gfredericks.test.chuck.properties :as prop
-             #?@(:cljs [:include-macros true])]
+            [com.gfredericks.test.chuck.properties :as prop]
             #?(:clj  [clojure.test :as ct :refer [is testing]]
-               :cljs [cljs.test :as ct :refer-macros [is testing]])))
+               :cljs [cljs.test :as ct :refer-macros [is testing]]))
+  #?(:cljs
+     (:require-macros [com.gfredericks.test.chuck.clojure-test])))
 
 ;; exists in clojure.test.check.clojure-test v0.9.0
 (defn with-test-out* [f]
@@ -146,12 +147,12 @@
   [name & opt+body]
   (let [[num-tests-or-options opt+body] (if (vector? (first opt+body))
                                           [{} opt+body]
-                                          ((juxt first next) opt+body)) 
+                                          ((juxt first next) opt+body))
         [bindings & body] opt+body]
     `(let [final-reports# (atom [])]
        (-testing ~name
-         (fn []
-           (qc-and-report-exception final-reports# ~num-tests-or-options ~bindings ~@body)))
+                 (fn []
+                   (qc-and-report-exception final-reports# ~num-tests-or-options ~bindings ~@body)))
        (doseq [r# @final-reports#]
          (-report r#)))))
 
@@ -159,10 +160,10 @@
   "An alternative to com.gfredericks.test.chuck.properties/for-all that uses
   clojure.test-style assertions (i.e., clojure.test/is) rather than
   the truthiness of the body expression.
-  
+
   See `checking` to additionally report clojure.test assertion failures."
   [bindings & body]
   `(prop/for-all
-     ~bindings
-     (let [reports# (capture-reports ~@body)]
-       (pass? reports#))))
+    ~bindings
+    (let [reports# (capture-reports ~@body)]
+      (pass? reports#))))

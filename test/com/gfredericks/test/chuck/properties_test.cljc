@@ -3,10 +3,7 @@
             [clojure.test.check.generators :as gen]
             [clojure.test.check.clojure-test :as ct
              #?(:clj :refer :cljs :refer-macros) [defspec]]
-            [com.gfredericks.test.chuck.properties :as prop'
-             #?@(:cljs [:include-macros true])]
-            [com.gfredericks.test.chuck.generators :as gen'
-             #?@(:cljs [:include-macros true])]
+            [com.gfredericks.test.chuck.properties :as prop']
             #?(:clj  [clojure.test :refer :all]
                :cljs [cljs.test :refer-macros [deftest is]])))
 

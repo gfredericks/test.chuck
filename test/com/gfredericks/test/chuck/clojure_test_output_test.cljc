@@ -7,7 +7,7 @@
             [clojure.string :as str]
             [clojure.test.check.generators :as gen]
             [com.gfredericks.test.chuck.test-utils :refer [capture-report-counters-and-out]]
-            [com.gfredericks.test.chuck.clojure-test :as chuck #?(:clj :refer :cljs :refer-macros) [checking]]))
+            [com.gfredericks.test.chuck.clojure-test :as chuck :refer [checking]]))
 
 (deftest a-failing-test
   (checking "all ints lt 5" 100
@@ -38,7 +38,7 @@
         msg (with-out-str (pp/pprint (str/split-lines out)))]
     (testing "clojure.test reporting"
       (is (= test-results {:test 1, :pass 0, :fail 2, :error 0}))
-      (is (str/includes? 
+      (is (str/includes?
             out
             (str/join
               \newline
@@ -48,7 +48,7 @@
                "  actual: (not (< 5 5))"]))
           msg)
       (is (str/includes?
-            out 
+            out
             (str/join
               \newline
               ["all ints lt 5 test `testing` logging2"

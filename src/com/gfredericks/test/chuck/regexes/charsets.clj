@@ -5,8 +5,7 @@
   Character class directly. Instead the API uses strings of
   one character (for small unicode characters) or two surrogates
   (for large unicode characters)."
-  (:refer-clojure :exclude [empty nth range])
-  (:import [clojure.lang IPersistentVector]))
+  (:refer-clojure :exclude [empty nth range]))
 
 (defn ^:private entry-size
   [[x1 x2]]
