@@ -1,10 +1,8 @@
 (ns com.gfredericks.test.chuck.exception-handling-test
-  (:require #?(:clj  [clojure.test :refer :all]
-               :cljs [cljs.test :as test :refer [test-vars]
-                      :refer-macros [is testing deftest]])
+  (:require [clojure.test :refer [test-vars is deftest]]
             [com.gfredericks.test.chuck.test-utils :refer [capture-report-counters-and-out]]
             [clojure.test.check.generators :as gen]
-            [com.gfredericks.test.chuck.clojure-test #?(:clj :refer :cljs :refer-macros) [checking]]))
+            [com.gfredericks.test.chuck.clojure-test :refer [checking]]))
 
 (deftest this-test-should-crash-and-be-caught
   (checking "an int is zero or one" 100 [i gen/int]

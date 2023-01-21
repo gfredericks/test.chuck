@@ -1,10 +1,9 @@
 (ns com.gfredericks.test.chuck.clojure-test-test
-  (:require #?(:clj  [clojure.test :refer :all])
-            #?(:cljs [cljs.test :refer-macros [deftest is]])
+  (:require [clojure.test :refer [deftest is]]
             [clojure.test.check :refer [quick-check]]
             [clojure.test.check.generators :as gen]
             [com.gfredericks.test.chuck :refer [times]]
-            [com.gfredericks.test.chuck.clojure-test #?(:clj :refer :cljs :refer-macros) [checking for-all]]))
+            [com.gfredericks.test.chuck.clojure-test :refer [checking for-all]]))
 
 (deftest integer-facts
   (checking "positive" (times 100) [i gen/s-pos-int]

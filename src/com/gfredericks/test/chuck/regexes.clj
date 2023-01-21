@@ -1,6 +1,6 @@
 (ns com.gfredericks.test.chuck.regexes
   "Internals of the string-from-regex generator."
-  (:require [clojure.set :as set]
+  (:require [clojure.java.io]
             [clojure.test.check.generators :as gen]
             [com.gfredericks.test.chuck.regexes.charsets :as charsets]
             [instaparse.core :as insta]))
@@ -42,9 +42,8 @@
 (defn ^:private re?
   "Checks if the string compiles with re-pattern."
   [s]
-  (try (re-pattern s)
-       true
-       (catch java.util.regex.PatternSyntaxException e
+  (try (and (re-pattern s) true)
+       (catch java.util.regex.PatternSyntaxException _e
          false)))
 
 (def ^:private features
@@ -70,7 +69,7 @@
   java 8 or something and the method doesn't even exist."
   (try
     (eval '#(Character/codePointOf %))
-    (catch Exception e
+    (catch Exception _e
       (constantly nil))))
 
 (defn ^:private analyze-range
@@ -200,7 +199,7 @@
                                  (= group-flags
                                     [:GroupFlags [:NonCapturingMatchFlags [:MatchFlagsExpr]]])
                                  ;; e.g., #"(?<x>bar)"
-                                 (let [[flag-header [flag-type flag-details]] group-flags]
+                                 (let [[_flag-header [flag-type _flag-details]] group-flags]
                                    (= :NamedCapturingGroup flag-type)))
                               parsed
                               (assoc parsed :unsupported #{:flags})))))
@@ -235,7 +234,7 @@
     :NamedChar (fn [s]
                  (if-let [code-point (try
                                        (code-point-of s)
-                                       (catch IllegalArgumentException e
+                                       (catch IllegalArgumentException _e
                                          false))]
                    (assoc
                     (code-point-literal code-point)
@@ -307,7 +306,7 @@
                         (if (= x "]")
                           {:type :character, :character \]}
                           x))
-                       ([amps x]
+                       ([_amps x]
                         (update-in (self x)
                                    [:undefined]
                                    (fnil conj #{})
@@ -315,8 +314,8 @@
     :BCCElemLeft identity
     :BCCElemNonLeft identity
     :BCCElemBase (fn [x] (if (= :character (:type x))
-                           {:type :class-base, :chars #{(:character x)}}
-                           x))
+                          {:type :class-base, :chars #{(:character x)}}
+                          x))
     :BCCRange analyze-range
     :BCCRangeWithBracket #(analyze-range {:type :character, :character \]} %)
     :BCCChar identity
@@ -332,7 +331,7 @@
                                 :character (normal-slashed-characters c)})
 
     :BasicEscapedChar (fn [[c]] {:type :character
-                                 :character c})
+                                :character c})
 
     :HexChar (fn [^String hex-string]
                (let [n (BigInteger. hex-string 16)]
@@ -352,7 +351,7 @@
     :OctalDigits2 list
     :OctalDigits3 list
 
-    :UnicodeCharacterClass (fn [p name]
+    :UnicodeCharacterClass (fn [_p name]
                              ;; TODO: this is not a complete list
                              (if (#{"C" "L" "M" "N" "P" "S" "Z"
                                     "{Lower}" "{Upper}" "{ASCII}"
@@ -405,7 +404,7 @@
                               {:type ::parse-error
                                :text s})))))
         nil)
-      (if-let [f (:feature m)]
+      (when-let [f (:feature m)]
         (when-not (features f)
           (throw (ex-info "Regex feature not supported on this jvm!"
                           {:type ::parse-error
@@ -416,7 +415,7 @@
   passed to analyzed->generator."
   [s]
   (let [preprocessed (remove-QE s)
-        [the-parse & more :as ret] (insta/parses the-parser preprocessed)]
+        [the-parse & _more :as ret] (insta/parses the-parser preprocessed)]
     (cond (nil? the-parse)
           (throw (ex-info "Parse failure!"
                           {:type ::parse-error

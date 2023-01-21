@@ -1,13 +1,9 @@
 (ns com.gfredericks.test.chuck.generators-test
-  (:require [clojure.test.check.clojure-test
-             #?(:clj :refer :cljs :refer-macros) [defspec]]
+  (:require [clojure.test.check.clojure-test :refer [defspec]]
             [clojure.test.check.generators :as gen]
             [#?(:clj clj-time.core :cljs cljs-time.core) :as ct]
-            [#?(:clj clj-time.coerce :cljs cljs-time.coerce) :as ctc]
-            [clojure.test.check.properties :as prop
-             #?@(:cljs [:include-macros true])]
-            [com.gfredericks.test.chuck.generators :as gen'
-             #?@(:cljs [:include-macros true])]))
+            [clojure.test.check.properties :as prop]
+            [com.gfredericks.test.chuck.generators :as gen']))
 
 (def lists-and-counts
   (gen'/for [nums (gen/vector gen/nat)

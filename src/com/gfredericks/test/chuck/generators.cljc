@@ -1,12 +1,12 @@
 (ns com.gfredericks.test.chuck.generators
   "Yes this namespace's name has five components."
   (:refer-clojure :exclude [double for partition])
-  #?(:cljs (:require-macros [com.gfredericks.test.chuck.generators :refer [for]]))
   (:require [clojure.test.check.generators :as gen]
             [#?(:clj clojure.core :cljs cljs.core) :as core]
             [#?(:clj clj-time.core :cljs cljs-time.core) :as ct]
-            [#?(:clj clj-time.coerce :cljs cljs-time.coerce) :as ctc]
-            #?(:clj [com.gfredericks.test.chuck.regexes :as regexes])))
+            #?(:clj [com.gfredericks.test.chuck.regexes :as regexes]))
+  #?(:cljs
+     (:require-macros [com.gfredericks.test.chuck.generators :refer [for]])))
 
 ;; Hoping this will be in test.check proper:
 ;; http://dev.clojure.org/jira/browse/TCHECK-15
@@ -131,7 +131,7 @@
 
             (= k2 :when)
             (let [max-tries-meta (-> v2 meta :max-tries)
-                  max-tries-arg (if max-tries-meta
+                  max-tries-arg (when max-tries-meta
                                   [max-tries-meta])
                   v1' `(gen/such-that (fn [~k1] ~v2) ~v1 ~@max-tries-arg)]
               `(for [~k1 ~v1' ~@even-more] ~expr))

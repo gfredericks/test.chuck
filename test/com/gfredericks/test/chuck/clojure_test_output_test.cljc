@@ -1,13 +1,12 @@
 (ns com.gfredericks.test.chuck.clojure-test-output-test
-  (:require #?(:clj  [clojure.test :as ct :refer [test-vars deftest is testing]]
-               :cljs [cljs.test :as ct :refer [test-vars] :refer-macros [deftest is testing]])
+  (:require [clojure.test :as ct :refer [test-vars deftest is testing]]
             #?(:cljs [cljs.reader :refer [read-string]])
             [clojure.edn :as edn]
             [clojure.pprint :as pp]
             [clojure.string :as str]
             [clojure.test.check.generators :as gen]
             [com.gfredericks.test.chuck.test-utils :refer [capture-report-counters-and-out]]
-            [com.gfredericks.test.chuck.clojure-test :as chuck #?(:clj :refer :cljs :refer-macros) [checking]]))
+            [com.gfredericks.test.chuck.clojure-test :as chuck :refer [checking]]))
 
 (deftest a-failing-test
   (checking "all ints lt 5" 100
@@ -38,23 +37,23 @@
         msg (with-out-str (pp/pprint (str/split-lines out)))]
     (testing "clojure.test reporting"
       (is (= test-results {:test 1, :pass 0, :fail 2, :error 0}))
-      (is (str/includes? 
-            out
-            (str/join
-              \newline
-              ["all ints lt 5 test `testing` logging1"
-               "test `is` logging1"
-               "expected: (< i 5)"
-               "  actual: (not (< 5 5))"]))
+      (is (str/includes?
+           out
+           (str/join
+            \newline
+            ["all ints lt 5 test `testing` logging1"
+             "test `is` logging1"
+             "expected: (< i 5)"
+             "  actual: (not (< 5 5))"]))
           msg)
       (is (str/includes?
-            out 
-            (str/join
-              \newline
-              ["all ints lt 5 test `testing` logging2"
-               "test `is` logging2"
-               "expected: (< i 5 6)"
-               "  actual: (not (< 5 5 6))"]))
+           out
+           (str/join
+            \newline
+            ["all ints lt 5 test `testing` logging2"
+             "test `is` logging2"
+             "expected: (< i 5 6)"
+             "  actual: (not (< 5 5 6))"]))
           msg))
     (testing "test.check reporting"
       (is (map? tc-report))
