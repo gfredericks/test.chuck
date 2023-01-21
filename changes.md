@@ -2,12 +2,12 @@
 
 ## 0.2.14 (2023-01-21)
 
-- Various linter cleanup (thanks to [Sam Ritchie](https://github.com/sritchie)
+- Various linter cleanup (thanks to [Sam Ritchie](https://github.com/sritchie))
 
 ## 0.2.13 (2021-10-24)
 
 - Exceptions are [printed readably](https://github.com/gfredericks/test.chuck/pull/74)
-  (thanks to [Ambrose Bonnaire-Sergeant](https://github.com/frenchy64)
+  (thanks to [Ambrose Bonnaire-Sergeant](https://github.com/frenchy64))
 
 ## 0.2.12 (2021-08-15)
 
