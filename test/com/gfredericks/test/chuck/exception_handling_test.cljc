@@ -1,7 +1,5 @@
 (ns com.gfredericks.test.chuck.exception-handling-test
-  (:require #?(:clj  [clojure.test :refer :all]
-               :cljs [cljs.test :as test :refer [test-vars]
-                      :refer-macros [is deftest]])
+  (:require [clojure.test :refer [test-vars is deftest]]
             [com.gfredericks.test.chuck.test-utils :refer [capture-report-counters-and-out]]
             [clojure.test.check.generators :as gen]
             [com.gfredericks.test.chuck.clojure-test :refer [checking]]))

@@ -1,11 +1,9 @@
 (ns com.gfredericks.test.chuck.properties-test
   (:require [clojure.test.check :as tc]
             [clojure.test.check.generators :as gen]
-            [clojure.test.check.clojure-test :as ct
-             #?(:clj :refer :cljs :refer-macros) [defspec]]
+            [clojure.test.check.clojure-test :as ct :refer [defspec]]
             [com.gfredericks.test.chuck.properties :as prop']
-            #?(:clj  [clojure.test :refer :all]
-               :cljs [cljs.test :refer-macros [deftest is]])))
+            [clojure.test :refer [deftest is]]))
 
 (deftest it-handles-exceptions-correctly
   (is

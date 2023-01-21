@@ -1,6 +1,5 @@
 (ns com.gfredericks.test.chuck.clojure-test-test
-  (:require #?(:clj  [clojure.test :refer :all])
-            #?(:cljs [cljs.test :refer-macros [deftest is]])
+  (:require [clojure.test :refer [deftest is]]
             [clojure.test.check :refer [quick-check]]
             [clojure.test.check.generators :as gen]
             [com.gfredericks.test.chuck :refer [times]]

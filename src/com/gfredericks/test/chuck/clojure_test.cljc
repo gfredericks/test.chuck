@@ -2,8 +2,7 @@
   (:require [clojure.test.check :as tc]
             [clojure.test.check.clojure-test :as tc.clojure-test]
             [com.gfredericks.test.chuck.properties :as prop]
-            #?(:clj  [clojure.test :as ct :refer [is testing]]
-               :cljs [cljs.test :as ct :refer-macros [is testing]]))
+            [clojure.test :as ct :refer [is testing]])
   #?(:cljs
      (:require-macros [com.gfredericks.test.chuck.clojure-test])))
 
