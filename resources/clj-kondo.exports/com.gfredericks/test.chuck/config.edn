@@ -1,4 +1,9 @@
-{:hooks
+{:lint-as
+ {com.gfredericks.test.chuck.generators/for clojure.core/for
+  com.gfredericks.test.chuck.generators/for-all clojure.core/for
+  com.gfredericks.test.chuck.clojure-test/for-all clojure.core/for}
+
+ :hooks
  {:analyze-call
   {com.gfredericks.test.chuck.clojure-test/checking
    clj-kondo.com.gfredericks.test.chuck.checking/checking}}}
