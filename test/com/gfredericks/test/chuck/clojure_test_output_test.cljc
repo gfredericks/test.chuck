@@ -93,6 +93,45 @@
               (get-in tc-report path))))
       (is (= [{'i 0}] (get-in tc-report [:shrunk :smallest]))))))
 
+;; https://github.com/gfredericks/test.chuck/issues/78
+(deftest an-error-during-gen-test
+  (try (checking "preamble" {:seed 123456}
+                 [_ (gen/return nil)
+                  :let [_ (throw (ex-info "error during gen" {}))]]
+                 (is true))
+       (catch #?(:cljs :default :clj Throwable) e
+         (is false (.-stack e)))))
+
+(deftest checking-prints-seed-on-gen-error-test
+  (let [[test-results all-out] (capture-report-counters-and-out #'an-error-during-gen-test)
+        ;; skip test preamble
+        [_ out] (str/split all-out
+                           #".*preamble\n"
+                           2)
+        _ (assert out (pr-str {:test-results test-results
+                               :all-out all-out}))
+        ;; report is printed after `testing`
+        tc-report (try (edn/read-string
+                         {:readers (assoc default-data-readers
+                                          'error #(-> %
+                                                      (assoc ::error-tag true)))}
+                         out)
+                       (catch #?(:cljs :default :clj Exception) e
+                         (println (pr-str {:out out
+                                           :all-out all-out}))
+                         (throw e)))
+        error-map-msg-key #?(:clj :cause :cljs :message)]
+    (testing "clojure.test reporting"
+      (is (= test-results {:test 1, :pass 0, :fail 1, :error 0})))
+    (testing "thrown exception"
+      (is (false? (:pass? tc-report))
+          (pr-str tc-report))
+      (is (get-in tc-report [:result ::error-tag]))
+      (is (get-in tc-report [:result-data :clojure.test.check.properties/error ::error-tag]))
+      (is (= 123456 (:seed tc-report)))
+      (is (not (contains? tc-report :shrunk))))))
+
 (defn test-ns-hook []
   (test-vars [#'failure-output-test
-              #'error-output-test]))
+              #'error-output-test
+              #'checking-prints-seed-on-gen-error-test]))
