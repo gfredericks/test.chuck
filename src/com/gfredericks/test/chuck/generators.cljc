@@ -3,7 +3,7 @@
   (:refer-clojure :exclude [double for partition])
   (:require [clojure.test.check.generators :as gen]
             [#?(:clj clojure.core :cljs cljs.core) :as core]
-            [#?(:clj clj-time.core :cljs cljs-time.core) :as ct]
+            #?@(:bb [] :clj [[clj-time.core :as ct]] :cljs [[cljs-time.core :as ct]])
             #?(:clj [com.gfredericks.test.chuck.regexes :as regexes]))
   #?(:cljs
      (:require-macros [com.gfredericks.test.chuck.generators :refer [for]])))
@@ -268,12 +268,19 @@
               (select-keys m ks))
             (subsequence (keys m))))
 
+#?(:bb nil :default
 (def valid-offset-fns [ct/millis ct/seconds ct/minutes ct/hours ct/days ct/months ct/years])
+)
 
+#?(:bb nil :default
 (def ^:private valid-offset-fn? (set valid-offset-fns))
+)
 
+#?(:bb nil :default
 (def ^:private yr-2000 (ct/date-time 2000))
+)
 
+#?(:bb nil :default
 (defn datetime
   "Generates datetime within given range and format.
 
@@ -321,6 +328,7 @@
              (gen/tuple (gen/elements offset-fns)
                         (gen/large-integer* {:min offset-min
                                              :max offset-max})))))
+)
 
 (defn- bounded-recursive-helper
   [container-gen-fn scalar-gen scalar-size max-breadth curr-height]
