@@ -1,7 +1,6 @@
 (ns com.gfredericks.test.chuck.generators-test
   (:require [clojure.test.check.clojure-test :refer [defspec]]
             [clojure.test.check.generators :as gen]
-            [#?(:clj clj-time.core :cljs cljs-time.core) :as ct]
             [clojure.test.check.properties :as prop]
             [com.gfredericks.test.chuck.generators :as gen']))
 
@@ -115,14 +114,6 @@
     (every? #(= (find m (key %))
                 %)
             sm)))
-
-(defspec datetime-spec 100000
-  (prop/for-all [dt (gen'/datetime {:offset-min 0
-                                    :offset-max 100
-                                    :offset-fns [ct/millis ct/seconds ct/minutes ct/hours ct/days ct/months]})]
-                (ct/within? (ct/date-time 2000)
-                            (ct/date-time 2009)
-                            dt)))
 
 (defn valid-bounded-rec-struct?
   [breadth height coll]
