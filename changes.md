@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.15 (2025-04-13)
+
+- Babashka compatibility (thanks to [Wes Morgan](https://github.com/cap10morgan))
+
 ## 0.2.14 (2023-01-21)
 
 - Various linter cleanup (thanks to [Sam Ritchie](https://github.com/sritchie))
