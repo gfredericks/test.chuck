@@ -72,7 +72,9 @@
         tc-report (edn/read-string
                     {:readers (assoc default-data-readers
                                      'error #(-> %
-                                                 (assoc ::error-tag true)))}
+                                                 (assoc ::error-tag true))
+                                     ;; Babashka outputs #object tags for namespaces, so we need to handle them
+                                     #?@(:bb ['object (constantly nil)]))}
                     out)
         error-map-msg-key #?(:clj :cause :cljs :message)]
     (testing "clojure.test reporting"
