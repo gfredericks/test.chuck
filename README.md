@@ -31,7 +31,7 @@ Dependency coordinates:
   com.gfredericks/test.chuck {:mvn/version "0.2.14"}
 }
 ;; leiningen
-[com.gfredericks/test.chuck "0.2.14"]
+[com.gfredericks/test.chuck "0.2.15"]
 ```
 
 ## Usage
