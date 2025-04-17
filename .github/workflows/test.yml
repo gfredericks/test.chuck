@@ -67,3 +67,23 @@ jobs:
         env:
           TEST_IMPL: ${{ matrix.impl }}
       - run: lein all-my-files-should-end-with-exactly-one-newline-character but-do-they?
+  bb-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install Babashka
+        uses: DeLaGuardo/setup-clojure@13
+        with:
+          bb: 1.12.198
+      - name: Test multiplier for master branch
+        if: ${{ github.event_name == 'push' }}
+        run: echo "TEST_CHECK_FACTOR=5" >> $GITHUB_ENV
+      - name: Test multiplier for pull requests
+        if: ${{ github.event_name == 'pull_request' }}
+        run: echo "TEST_CHECK_FACTOR=2" >> $GITHUB_ENV
+      - name: Test multiplier for cron
+        if: ${{ github.event_name == 'schedule' }}
+        run: echo "TEST_CHECK_FACTOR=10" >> $GITHUB_ENV
+      - name: Run tests with Babashka
+        run: bb run test
