@@ -76,6 +76,14 @@ jobs:
         uses: DeLaGuardo/setup-clojure@13.2
         with:
           bb: 1.12.198
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.m2/repository
+            ~/.gitlibs
+            ~/.deps.clj
+          key: bb-cljdeps-${{ hashFiles('deps.edn', 'bb.edn') }}
+          restore-keys: bb-cljdeps-
       - name: Test multiplier for master branch
         if: ${{ github.event_name == 'push' }}
         run: echo "TEST_CHECK_FACTOR=5" >> $GITHUB_ENV
