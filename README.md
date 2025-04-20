@@ -23,6 +23,12 @@ Please note that as of version 0.2.0, test.chuck (mostly) supports
 ClojureScript, and requires a minimum Clojure version of 1.7.0. Using
 ClojureScript requires a minimum test.check version of 0.8.0.
 
+As of version 0.2.15, test.chuck (also mostly) supports [Babashka](https://babashka.org/).
+The main unsupported feature is the time-related generators. This is because
+they use joda-time, which Babashka does not include. A java.time-based
+implementation would, in theory, work with Babashka and would be a welcome
+contribution from the community.
+
 Dependency coordinates:
 
 ``` clojure
@@ -263,6 +269,10 @@ To run with slimer.js, phantom or rhino:
 
     # replace {js-env} with phantom, slimer or rhino
     $ lein doo {js-env} test
+
+To run the tests under Babashka:
+
+    $ bb run test
 
 ## Acknowledgments
 

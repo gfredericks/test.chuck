@@ -3,4 +3,4 @@
         clj-time/clj-time {:mvn/version "0.15.2"}
         com.andrewmcveigh/cljs-time {:mvn/version "0.5.2"}
         instaparse/instaparse {:mvn/version "1.4.10"}
-        io.github.babashka/instaparse-bb {:git/sha "1a7a9b8", :git/tag "v0.0.5"}}}
+        io.github.babashka/instaparse-bb {:git/sha "0d0c88e", :git/tag "v0.0.6"}}}
