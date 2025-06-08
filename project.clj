@@ -8,7 +8,13 @@
                  [org.clojure/test.check "1.1.0"]
                  [clj-time "0.15.2"]
                  [com.andrewmcveigh/cljs-time "0.5.2"]
-                 [instaparse "1.4.10"]]
+                 [instaparse "1.4.10"]
+                 ;; as far as I can tell, instaparse-bb is not
+                 ;; published as a maven library, so we can't depend
+                 ;; on it this way; I think that means babashka is
+                 ;; only supported via clojure CLI tools, but I'm not
+                 ;; 100% sure
+                 #_[io.github.babashka/instaparse-bb "0.0.6"]]
   :deploy-repositories [["releases" :clojars]]
   :profiles {:ci {:jvm-opts ["-Xmx1g" "-server"]}}
   :plugins [[lein-cljsbuild "1.1.8"]
