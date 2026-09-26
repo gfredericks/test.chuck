@@ -62,7 +62,9 @@
                      (println "Warning: test.chuck is confused.")
                      false)))
    :grapheme-cluster (re? "\\X")
-   :named-characters (re? "\\N{LATIN CAPITAL LETTER X}")})
+   :named-characters (re? "\\N{LATIN CAPITAL LETTER X}")
+   ;; Some JVMs accept a trailing && after a nested class and a literal.
+   :rejects-dangling-class-intersection (not (re? "[[a]b&&]"))})
 
 (def ^:private code-point-of
   "Like Character/codePointOf, except always returns nil if we're on
@@ -401,6 +403,26 @@
                 s (subs input-string begin end)]
             (when (re-find #"^\[^?&&[\]&]" s)
               (throw (ex-info "Bad character class syntax!"
+                              {:type ::parse-error
+                               :text s})))
+            ;; On some JVMs, a trailing && is invalid when the final
+            ;; operand contains a nested class followed by a literal
+            ;; below U+0100. Ending with a range or character class is
+            ;; accepted; a nested class at the start of an operand
+            ;; after && does not trigger this case.
+            (when (and (:rejects-dangling-class-intersection features)
+                       (re-find #"&{2,}]$" s)
+                       (let [unions (:elements (first (:elements m)))
+                             elements (:elements (last unions))
+                             elements (if (and (> (count unions) 1)
+                                               (:brackets? (first elements)))
+                                        (rest elements)
+                                        elements)
+                             last-element (last elements)]
+                         (and (= :class-base (:type last-element))
+                              (every? #(< (int %) 256) (:chars last-element))
+                              (some :brackets? (butlast elements)))))
+              (throw (ex-info "Bad trailing character class intersection!"
                               {:type ::parse-error
                                :text s})))))
         nil)

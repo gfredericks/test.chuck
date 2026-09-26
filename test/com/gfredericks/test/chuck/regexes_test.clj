@@ -122,7 +122,16 @@
 
        ;; issue #70; apparently these character class syntaxes can't
        ;; go inside square brackets
-       "[\\X]" "[\\R]"))
+       "[\\X]" "[\\R]"
+
+       ;; Trailing intersections interact with nested classes and the
+       ;; final element of the union; behavior varies across JVMs.
+       "[([\\00])&&]" "[[a]b&&]" "[a[b]c&&]" "[[a]b[c]d&&]"
+       "[a&&b[c]d&&]" "[[a]\\n&&]" "[[a]\\u00ff&&]"
+       "[a&&[b]c[d]e&&]" "[[a]b&&c[d]e&&]"
+       "[[a]&&]" "[a[b]&&]" "[[a]b-c&&]" "[[a]\\d&&]"
+       "[[a]b[c]&&]" "[a&&[b]c&&]" "[[a]b&&c&&]"
+       "[[a]\\u0100&&]" "[a&&[b]cd&&]" "[[a]b&&c[d]&&]"))
 
 (defspec parser-spec (times 1000)
   (prop/for-all [s gen-strings-that-might-be-regex-like]
